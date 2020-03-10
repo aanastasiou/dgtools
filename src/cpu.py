@@ -7,13 +7,18 @@ import pdb
 
 class Digirule:
     def __init__(self):
+        # Program counter
         self._pc = 0
+        # Previous program counter (a stak where the pc is pushed during CALL/RETURN)
         self._ppc = []
+        # Accumulator
         self._acc = 0
         # The status reg contains the zero flag (bit 0) and the carry flag (bit 1)
         self._ZERO_FLAG_BIT = 1 << 0 # Directly convert bits to their binary representations here
         self._CARRY_FLAG_BIT = 1 << 1
         self._ADDRLED_FLAG_BIT = 1 << 2     
+        # Registers are memory mapped and this is retained in this VM
+        # The following were obtained from the documentation
         self._status_reg_ptr = 252
         self._bt_reg_ptr = 253
         self._addrled_reg_ptr = 254
@@ -23,11 +28,22 @@ class Digirule:
         self._speed_setting = 0
                 
     def load_program(self, a_program, offset=0):
+        """
+        Loads a program starting from the specified address.
+        
+        Notes:
+            * A program is basically an array of (most commonly) 256 values
+            * Offset is the offset within the Digirule memory where the first
+              byte of the program would reside.
+        """
         for k in enumerate(a_program):
             self._mem[k[0]+offset] = k[1]            
         return self
         
     def set_button_register(self, new_value):
+        """
+        Sets the values of the button register to simulate key-presses.
+        """
         self._wr_mem(self._bt_reg_ptr, new_value & 255)
         return self
         
@@ -248,7 +264,6 @@ class Digirule:
             if (self._rd_mem(addr) & bit_to_check_mask) == bit_to_check_mask:
                 self._pc+=2
 
-        
         # JUMP
         if cmd == 28:
             self._pc = self._read_next()
@@ -417,11 +432,53 @@ def asm2obj(asm):
                 mem[k] = symbols[mem[k]]
     return mem, labels, symbols
     
-def mem_dump(mem,n_page, page_length=8):
-    offset = n_page*page_length
-    for k in range(offset, offset+page_length):
-        print(mem[k],"-",bin(mem[k]))
-        
+def mem_dump(mem, offset_from=0, offset_to=256, line_length=16):
+    """
+    Dumps memory in a hex-editor style view
+    """
+    to_ret = f"Offset (h)\t " + " ".join([format(k, "02X") for k in range(0,line_length)])+"\n"
+    total_length = offset_to - offset_from
+    n_lines = total_length // line_length
+    remaining_chars = total_length % line_length
+    for k in range(0, n_lines):
+        mem_page = [mem[u] for u in range(offset_from+k*line_length,offset_from+k*line_length+line_length)]
+        to_ret += "\t" + format(offset_from+k*8, "02X") + "\t" + " ".join([format(q,"02X") for q in mem_page]) + " " + "".join([chr(q) if q>9 else "." for q in mem_page]) + "\n"        
+    return to_ret
+    
+    
+def trace_program(program, output_file, extra_symbols=None, with_mem_dump=True):
+    """
+    Produces a detailed trace of program execution in Markdown format
+    
+    :param program:
+    :param output_file:
+    :param exra_symbols: A list of symbol name, offset, length to monitor during execution
+    """
+    machine = Digirule()
+    machine.load_program(program)
+    done = False
+    n=0
+    with open(output_file, "wt") as fd:
+        fd.write("# Program Trace\n\n")
+        while not done:
+            fd.write(f"## Machine Registers at n={n} \n\n")
+            fd.write(f"```\nProgram Counter:{machine._pc}\nAccumulator:{machine._acc}\nStatus Reg:{machine._mem[machine._status_reg_ptr]}\n"
+                     f"Button Register:{machine._mem[machine._bt_reg_ptr]}\nAddr.Led Register:{machine._mem[machine._addrled_reg_ptr]}\n"
+                     f"Data Led Register:{machine._mem[machine._dataled_reg_ptr]}\nSpeed setting:{machine._speed_setting} \n")
+            fd.write(f"Program counter stack:{machine._ppc}\n```\n\n")
+            if with_mem_dump:
+                fd.write(f"## Full memory dump:\n```\n{mem_dump(machine._mem)}\n```\n\n")
+            if extra_symbols is not None:
+                fd.write(f"### Specific Symbols\n\n")
+                symbols_paragraph = "\n".join(map(lambda x:f"{x[0]} {machine._mem[x[1]:(x[1]+x[2])]}",extra_symbols))
+                fd.write(f"```\n{symbols_paragraph}\n```\n\n")
+            fd.write(f"## Onboard I/O\n\n")
+            fd.write(f"```\n{str(machine)}\n```\n\n")
+            fd.write("-------------\n\n")
+            done = not machine._exec_next()
+            n+=1
+    return mem
+    
 if __name__ == "__main__":
     # cpu = Digirule()
     # program = [0,0,2,15,0,3]
@@ -429,11 +486,11 @@ if __name__ == "__main__":
     # z = get_asm_model()
     # z.setDefaultWhitespaceChars([" ","\n", "\t"])
     # f = z.parseFile("./first.asm")
-    with open("./first.asm", "rt") as fd:
+    with open("./short.asm", "rt") as fd:
         data = fd.read()
     mem,l,s = asm2obj(data)
-    machine = Digirule()
-    machine.load_program(mem)
-    machine.run()
-    
-    
+    trace_program(mem,"./for_short.md", extra_symbols=[("stack_ptr",l["stack_ptr"],1),("stack",l["stack"],20), ("r0",l["r0"],1), ("t0",l["t0"],1), ("t1",l["t1"],1)], with_mem_dump=False)
+    #machine = Digirule()
+    #machine.load_program(mem)
+    #machine.run()
+    #mem_dump(mem, line_length=8)
