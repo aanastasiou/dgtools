@@ -1,0 +1,11 @@
+COPYRA r0
+ADDRA r1
+COPYAR r3
+HALT
+r0:
+.DB 1
+r1:
+.DB 1
+r3:
+.DB 0
+

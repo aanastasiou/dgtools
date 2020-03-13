@@ -1,15 +1,36 @@
-import sys
-import pdb
-import pyparsing
+#!/usr/bin/env python
+"""
+
+Simulates a program running on a Digirule 2.
+Part of dgtools.
+
+:author: Athanasios Anastasiou
+:date: Mar 2020.
+
+"""
 
 import sys
+import pickle
 import pdb
+import click
+import os
 
 class Digirule:
+    """
+    Abstracts the Digirule 2 hardware.
+    
+    Maps all registers, flags and memory spaces accessible.
+    
+    Notes:
+    
+        * Functions that change the state of the VM but do not return values, should return `self`
+        
+    """
     def __init__(self):
         # Program counter
         self._pc = 0
         # Previous program counter (a stak where the pc is pushed during CALL/RETURN)
+        # TODO: HIGH, There might be constraints in the depth of this stack. Not yet implemented.
         self._ppc = []
         # Accumulator
         self._acc = 0
@@ -17,7 +38,7 @@ class Digirule:
         self._ZERO_FLAG_BIT = 1 << 0 # Directly convert bits to their binary representations here
         self._CARRY_FLAG_BIT = 1 << 1
         self._ADDRLED_FLAG_BIT = 1 << 2     
-        # Registers are memory mapped and this is retained in this VM
+        # Certain registers are memory mapped (why not all?)
         # The following were obtained from the documentation
         self._status_reg_ptr = 252
         self._bt_reg_ptr = 253
@@ -25,7 +46,64 @@ class Digirule:
         self._dataled_reg_ptr = 255
         self._mem = [0 for k in range(0,256)]
         # The speed setting is just for visualisation
+        # TODO: LOW, Make the speed setting functional
         self._speed_setting = 0
+        # If the Digirule is in interactive mode and a program tries to read from the button register
+        # it prompts the user for input
+        self._interactive_mode = False
+        self._interactive_callback = self._default_interactive_callback
+        
+    @staticmethod
+    def _default_interactive_callback():
+        """
+        Prompts the user for (binary) button input.
+        
+        :returns: Type checked user input
+        :rtype: uint8
+        """
+        done = False
+        while not done:
+            user_input = input("BT:")
+            try:
+                user_input_numeric = int(user_input, 2)
+                if user_input_numeric>255:
+                    raise ValueError("User input greater than 255")
+                else:
+                    done = True
+            except ValueError as ve:
+                sys.stdout.write(f"ERROR:{ve}\n")
+                
+        return user_input_numeric
+        
+    @property
+    def interactive_mode(self):
+        return self._interactive_mode
+        
+    @interactive_mode.setter
+    def interactive_mode(self, new_mode):
+        self._interactive_mode = new_mode
+        
+    @property 
+    def interactive_callback(self):
+        return self._interactive_callback
+        
+    @interactive_callback.setter
+    def interactive_callback(self, new_callback):
+        # TODO: HIGH, Need to type check the signature of new_callback
+        self._interactive_callback = new_callback
+    
+    @property
+    def mem(self):
+        return self._mem
+        
+    @property
+    def speed(self):
+        return self._speed_setting
+        
+    @speed.setter
+    def speed(self, new_value):
+        # TODO, HIGH: `new_value` needs type checking
+        self._speed_setting = new_value & 0xFF
                 
     def load_program(self, a_program, offset=0):
         """
@@ -36,6 +114,7 @@ class Digirule:
             * Offset is the offset within the Digirule memory where the first
               byte of the program would reside.
         """
+        # TODO: HIGH, Needs type and range checking.
         for k in enumerate(a_program):
             self._mem[k[0]+offset] = k[1]            
         return self
@@ -44,6 +123,7 @@ class Digirule:
         """
         Sets the values of the button register to simulate key-presses.
         """
+        # TODO: HIGH, Needs type checking
         self._wr_mem(self._bt_reg_ptr, new_value & 255)
         return self
         
@@ -64,6 +144,12 @@ class Digirule:
         return self
         
     def _set_acc_value(self, new_value):
+        """
+        Sets the accumulator value, taking care of the zero and carry flags.
+        
+        :param new_value: The value to set the Accumulator to.
+        :type new_value: uint8
+        """
         self._acc = new_value & 255
         if new_value == 0:
             self._set_status_reg(self._ZERO_FLAG_BIT, 1)
@@ -91,28 +177,45 @@ class Digirule:
         return 1 if self._mem[self._status_reg_ptr] & self._ZERO_FLAG_BIT == self._ZERO_FLAG_BIT else 0
         
     def _wr_mem(self, addr, value):
-        # TODO: HIGH, addr cannot go higher than 252
-        # TODO: HIGH, value cannot go higher than 255
-        # TODO: HIGH, addr cannot go lower than 0
-        self._mem[addr] = value
+        # TODO: HIGH, addr cannot go higher than 252 or it will overwrite peripherals.
+        self._mem[addr & 0xFF] = value & 0xFF
         return self
         
     def _rd_mem(self, addr):
+        """
+        Reads memory from the specified address.
+        
+        Notes:
+        
+            * If the VM is in interactive mode and the button register is attempted to be read, it prompts the user 
+              for input.
+        """
+        if addr == self._bt_reg_ptr and self._interactive_mode:
+            self._mem[addr] = self._interactive_callback()
         return self._mem[addr]
                 
     def _exec_next(self):
         """
-        Executes a command
+        Fetches and executes commands from memory.
+        
+        :returns: 0 if a HALT is executed 1 otherwise.
+        :rtype: int
         """
+        # TODO: MED, Obviously, each command can be abstracted in its own callback so that the VM becomes easily 
+        #      extensible and trully re-usable.
+        
+        # Fetch...
         cmd = self._read_next()
         
         if cmd>32:
-            # Throw an exception
+            # TODO: HIGH, throw a CPU exception
+            # TODO: HIGH, These can be intercepted and re-interpreted. Package state along.
             pass
             
+        # ...Execute    
         # HALT
         if cmd == 0:
-            # TODO: HIGH, Throw exception
+            # TODO: HIGH, Throw HALT exception
             return 0 
         
         # NOP
@@ -154,15 +257,15 @@ class Digirule:
             
         # ADDRA
         if cmd == 9:
-            self._set_acc_value(self._get_acc_value()+self._rd_mem(self._read_next()))
+            self._set_acc_value(self._get_acc_value() + self._rd_mem(self._read_next()))
             
         # SUBLA
         if cmd == 10:
-            self._set_acc_value(self._get_acc_value()-self._read_next())
+            self._set_acc_value(self._get_acc_value() - self._read_next())
             
         # SUBRA
         if cmd == 11:
-            self._set_acc_value(self._get_acc_value()-self._rd_mem(self._read_next()))
+            self._set_acc_value(self._get_acc_value() - self._rd_mem(self._read_next()))
             
         # ANDLA
         if cmd == 12:
@@ -305,162 +408,71 @@ class Digirule:
         return self._exec_next()
         
     def __str__(self):
-        return "ADDR LED:"+format(self._pc,"08b")+"\nDATA LED:"+format(self._rd_mem(self._pc), "08b")+"\nBTT SW  :"+format(self._rd_mem(self._bt_reg_ptr),"08b")
+        return f"ADDR LED:{self._pc:08b}\n" \
+               f"DATA LED:{self._rd_mem(self._dataled_reg_ptr):08b}\n"\
+               f"  BTT SW:{self._mem[self._bt_reg_ptr]:08b}\n"
 
-        
-def get_asm_parser():
-    """
-    identifer = [a-zA-Z_][a-zA-Z_0-9]+
-    program = statement+
-    statement = asm_statement or assembler_directive
-    asm_statement = asm_label or asm_keyword
-    asm_label = ":" followed by an identifier
-    asm_keyword = symbolic_def|data_segment
-    symbolic_def = "%%define"
-    data_segment = ".CODE" + symbolic_def+
-    assembler_directive = "\t|at least 4 whitespace" followed by command_line
-    command_line = keyword followed by parameter_list
-    keyword = (one of the digirule keywords)
-    parameter_list = space separated list of tokens at most 2 entries long
-    """
-    uchar2num = lambda toks:int(toks[0])
-    buchar2num = lambda toks:int(toks[0],2)
-    xuchar2num = lambda toks:int(toks[0],16)
-    identifier = pyparsing.Regex(r"[a-zA-Z_][a-zA-Z0-9_]+")
-    literal_uchar = pyparsing.Regex(r"[-]?[0-9][0-9]?[0-9]?").setParseAction(uchar2num)
-    literal_buchar = pyparsing.Regex(r"0b[0|1]+").setParseAction(buchar2num)
-    literal_xuchar = pyparsing.Regex(r"0x[0-9A-F][0-9A-F]?").setParseAction(xuchar2num)
-    literal = literal_uchar ^ literal_buchar ^ literal_xuchar
-    literal_or_identifier = pyparsing.Group(literal("literal") ^ identifier("symbol"))("value_type")
-    # Digirule ASM commands
-    asm_halt = pyparsing.Group(pyparsing.Regex(r"HALT")("cmd"))("0")
-    asm_nop = pyparsing.Group(pyparsing.Regex(r"NOP")("cmd"))("1")
-    asm_speed = pyparsing.Group(pyparsing.Regex(r"SPEED")("cmd") + literal_or_identifier("value"))("2")
-    asm_copylr = pyparsing.Group(pyparsing.Regex("COPYLR")("cmd") + literal_or_identifier("value") + literal_or_identifier("addr"))("3")
-    asm_copyla = pyparsing.Group(pyparsing.Regex(r"COPYLA")("cmd") + literal_or_identifier("value"))("4")
-    asm_copyar = pyparsing.Group(pyparsing.Regex("COPYAR")("cmd") + literal_or_identifier("addr"))("5")
-    asm_copyra = pyparsing.Group(pyparsing.Regex("COPYRA")("cmd") + literal_or_identifier("addr"))("6")
-    asm_copyrr = pyparsing.Group(pyparsing.Regex("COPYRR")("cmd") + literal_or_identifier("addr_from") + literal_or_identifier("addr_to"))("7")
-    asm_addla = pyparsing.Group(pyparsing.Regex("ADDLA")("cmd") + literal_or_identifier("value"))("8")
-    asm_addra = pyparsing.Group(pyparsing.Regex("ADDRA")("cmd") + literal_or_identifier("addr"))("9")
-    asm_subla = pyparsing.Group(pyparsing.Regex("SUBLA")("cmd") + literal_or_identifier("value"))("10")
-    asm_subra = pyparsing.Group(pyparsing.Regex("SUBRA")("cmd") + literal_or_identifier("value"))("11")
-    asm_andla = pyparsing.Group(pyparsing.Regex("ANDLA")("cmd") + literal_or_identifier("value"))("12")
-    asm_andra = pyparsing.Group(pyparsing.Regex("ANDRA")("cmd") + literal_or_identifier("addr"))("13")
-    asm_orla = pyparsing.Group(pyparsing.Regex("ORLA")("cmd") + literal_or_identifier("value"))("14")
-    asm_orra = pyparsing.Group(pyparsing.Regex("ORRA")("cmd") + literal_or_identifier("addr"))("15")
-    asm_xorla = pyparsing.Group(pyparsing.Regex("XORLA")("cmd") + literal_or_identifier("value"))("16")
-    asm_xorra = pyparsing.Group(pyparsing.Regex("XORRA")("cmd") + literal_or_identifier("addr"))("17")
-    asm_decr = pyparsing.Group(pyparsing.Regex("DECR")("cmd") + literal_or_identifier("addr"))("18")
-    asm_incr = pyparsing.Group(pyparsing.Regex("INCR")("cmd") + literal_or_identifier("addr"))("19")
-    asm_decrjz = pyparsing.Group(pyparsing.Regex("DECRJZ")("cmd") + literal_or_identifier("addr"))("20")
-    asm_incrjz = pyparsing.Group(pyparsing.Regex("INCRJZ")("cmd") + literal_or_identifier("addr"))("21")
-    asm_shiftrl = pyparsing.Group(pyparsing.Regex("SHIFTRL")("cmd") + literal_or_identifier("addr"))("22")
-    asm_shiftrr = pyparsing.Group(pyparsing.Regex("SHIFTRR")("cmd") + literal_or_identifier("addr"))("23")
-    asm_cbr = pyparsing.Group(pyparsing.Regex("CBR")("cmd") + literal_or_identifier("n_bit") + literal_or_identifier("addr"))("24")
-    asm_sbr = pyparsing.Group(pyparsing.Regex("SBR")("cmd") + literal_or_identifier("n_bit") + literal_or_identifier("addr"))("25")
-    asm_bcrsc = pyparsing.Group(pyparsing.Regex("BCRSC")("cmd") + literal_or_identifier("n_bit") + literal_or_identifier("addr"))("26")
-    asm_bcrss = pyparsing.Group(pyparsing.Regex("BCRSS")("cmd") + literal_or_identifier("n_bit") + literal_or_identifier("addr"))("27")
-    asm_jump = pyparsing.Group(pyparsing.Regex("JUMP")("cmd") + literal_or_identifier("addr"))("28")
-    asm_call = pyparsing.Group(pyparsing.Regex("CALL")("cmd") + literal_or_identifier("addr"))("29")
-    asm_retla = pyparsing.Group(pyparsing.Regex("RETLA")("cmd") + literal_or_identifier("value"))("30")
-    asm_return = pyparsing.Group(pyparsing.Regex("RETURN")("cmd"))("31")
-    asm_addrpc = pyparsing.Group(pyparsing.Regex("ADDRPC")("cmd") + literal_or_identifier("value"))("32")
-    asm_command = pyparsing.Group(asm_halt ^ asm_nop ^ asm_speed ^ asm_copylr ^ asm_copyla ^ asm_copyar ^ asm_copyra ^ asm_copyrr ^ \
-              asm_addla ^ asm_addra ^ asm_subla ^ asm_subra ^ asm_andla ^ asm_andra ^ asm_subla ^ asm_subra ^ \
-              asm_andla ^ asm_andra ^ asm_orla ^ asm_orra ^ asm_xorla ^ asm_xorra ^ asm_decr ^ asm_incr ^ \
-              asm_decrjz ^ asm_incrjz ^ asm_shiftrl ^ asm_shiftrr ^ asm_cbr ^ asm_sbr ^ asm_bcrsc ^ asm_bcrss ^ \
-              asm_jump ^ asm_call ^ asm_retla ^ asm_return ^ asm_addrpc)
-    asm_statement = asm_command
-    # Assembler directives
-    # .DB A static list of byte defs
-    # label: Defines a label
-    dir_label = pyparsing.Group(identifier("idf") + pyparsing.Suppress(":"))("def_label")
-    dir_db = pyparsing.Group(pyparsing.Regex(".DB")("cmd") + pyparsing.delimitedList(literal_or_identifier)("values"))("def_db")
-    dir_equ = pyparsing.Group(pyparsing.Regex(".EQU")("cmd") + identifier("idf") + pyparsing.Suppress("=") + literal("value"))("def_equ")
-    #dir_comment = pyparsing.Group(pyparsing.Suppress("#") + pyparsing.Regex(r".*?\n")("text"))("def_comment")
-    #program_statement = pyparsing.Group((asm_statement ^ pyparsing.Group(dir_label ^ dir_db ^ dir_equ ^ dir_comment)) + pyparsing.Optional(dir_comment))
-    program = pyparsing.OneOrMore(asm_statement ^ pyparsing.Group(dir_label ^ dir_db ^ dir_equ))
-    #program = pyparsing.OneOrMore(program_statement)
-    # program.ignore(dir_comment)
-    return program    
-    
-def asm2obj(asm):
-    """
-    Puts together a binary for the Digirule target architecture from an "asm" definition
-    """
-    parser = get_asm_parser()
-    parsed_code = parser.parseString(asm)
-    mem = [0 for k in range(0,256)]
-    mem_ptr = 0
-    labels = {}
-    symbols = {}
-    # Read through the code and load it to memory
-    # While doing that, keep track of where labels point and what symbols resolve to. These will be substituted
-    # in the second pass.
-    for a_line in parsed_code:
-        command, arguments = list(a_line.items())[0]
-        if command == "def_label":
-            # Tie the label to where it points to
-            labels[arguments["idf"]] = mem_ptr
-        elif command == "def_db":
-            # .DB simply defines raw data that are simply dumped where they appear. If a label is not set to a 
-            # data block, it cannot be referenced.
-            value_data = list(map(lambda x:x[0],arguments["values"]))
-            mem[mem_ptr:mem_ptr+len(value_data)] = value_data
-            mem_ptr+=len(value_data)
-        elif command == "def_equ":
-            symbols[arguments["idf"]] = arguments["value"]
-        else:
-            # It's a command. The opcode of the command has already been recognised, but we need to grab the operands
-            # wherever they are available
-            numeric_command = int(command)
-            mem[mem_ptr] = numeric_command
-            mem_ptr+=1
-            if numeric_command in [3,7,24,25,26,27]:
-                mem[mem_ptr] = arguments[1][0]
-                mem[mem_ptr + 1] = arguments[2][0]
-                mem_ptr+=2
-            elif numeric_command not in [0,1,31]:
-                mem[mem_ptr] = arguments[1][0] 
-                mem_ptr+=1
-    for k in range(0, len(mem)):
-        if type(mem[k]) is str:
-            if mem[k] in labels:
-                mem[k] = labels[mem[k]]
-            elif mem[k] in symbols:
-                mem[k] = symbols[mem[k]]
-    return mem, labels, symbols
-    
+
 def mem_dump(mem, offset_from=0, offset_to=256, line_length=16):
     """
-    Dumps memory in a hex-editor style view
+    Dumps memory in a hex-editor style view.
+    
+    :param mem: A memory block to hex dump.
+    :type mem: list<uint8>[256]
+    :param offset_from: Where to start the dump from
+    :type offset_from: int
+    :param offset_to: Where to end the dump at
+    :type offset_to: int
+    :param line_length: How many bytes per character to print in one line
+    :type line_length: int
+    :returns: A multiline string containing the hex dump.
+    :rtype: str
     """
-    to_ret = f"Offset (h)\t " + " ".join([format(k, "02X") for k in range(0,line_length)])+"\n"
+    char_map_from = "\n\a\t\r"
+    char_map_to = "...."
+    trans_tab = str.maketrans(char_map_from, char_map_to)
+    to_ret = f"Offset (h)\t" + " ".join([format(k, "02X") for k in range(0,line_length)])+"\n"
     total_length = offset_to - offset_from
     n_lines = total_length // line_length
     remaining_chars = total_length % line_length
     for k in range(0, n_lines):
         mem_page = [mem[u] for u in range(offset_from+k*line_length,offset_from+k*line_length+line_length)]
-        to_ret += "\t" + format(offset_from+k*8, "02X") + "\t" + " ".join([format(q,"02X") for q in mem_page]) + " " + "".join([chr(q) if q>9 else "." for q in mem_page]) + "\n"        
+        # TODO: HIGH, Change this to an f-string.
+        to_ret += "\t\t" + format(offset_from+k*8, "02X") + "\t" + " ".join([format(q,"02X") for q in mem_page]) + " " + ("".join([chr(q) if q>9 else "." for q in mem_page])).translate(trans_tab) + "\n"        
     return to_ret
     
     
-def trace_program(program, output_file, extra_symbols=None, with_mem_dump=True):
+def trace_program(program, output_file, max_n=200, trace_title="", in_interactive_mode=False, extra_symbols=None, with_mem_dump=True):
     """
-    Produces a detailed trace of program execution in Markdown format
+    Produces a detailed trace of program execution in Markdown format.
     
-    :param program:
-    :param output_file:
-    :param exra_symbols: A list of symbol name, offset, length to monitor during execution
+    :param program: A fully compiled Digirule2 binary.
+    :type program: List<uint8>[256]
+    :param output_file: The Markdown filename to generate.
+    :type output_file: str
+    :param max_n: Maximum number of steps to allow the VM to run for.
+    :type max_n: int
+    :param trace_title: A very simple title for the trace.
+    :type trace_title: str
+    :param in_interactive_mode: Whether to execute the program in interactive mode.
+    :type in_interactive_mode: bool
+    :param with_mem_dump: Whether to be producing a full memory dump at each time step of execution.
+    :param exra_symbols: A list of symbol name, offset, length to explicitly monitor during execution
+    :type extra_symbols: List<str, int, int>
+    :returns: A Digirule2 object at its final state when the last command was executed.
+    :rtype: Digirule
     """
     machine = Digirule()
     machine.load_program(program)
+    if in_interactive_mode:
+        machine.interactive_mode = True
     done = False
     n=0
+    # This function could simply be returning a string with the Markdown format but for long programs, that might 
+    # become too big too quickly. This is why the file is created on the fly right here.
     with open(output_file, "wt") as fd:
-        fd.write("# Program Trace\n\n")
-        while not done:
+        fd.write(f"# Program Trace {trace_title} \n\n")
+        while not done and n<max_n:
             fd.write(f"## Machine Registers at n={n} \n\n")
             fd.write(f"```\nProgram Counter:{machine._pc}\nAccumulator:{machine._acc}\nStatus Reg:{machine._mem[machine._status_reg_ptr]}\n"
                      f"Button Register:{machine._mem[machine._bt_reg_ptr]}\nAddr.Led Register:{machine._mem[machine._addrled_reg_ptr]}\n"
@@ -477,20 +489,54 @@ def trace_program(program, output_file, extra_symbols=None, with_mem_dump=True):
             fd.write("-------------\n\n")
             done = not machine._exec_next()
             n+=1
-    return mem
+            
+    return machine
+
+@click.command()
+@click.argument("input_file", type=click.Path(exists=True))
+@click.option("--output_trace_file","-otf", type=click.Path(), help="Filename containing trace information in Markdown.")
+@click.option("--output_memdump_file", "-omf", type=click.Path(), help="Filename containing final memory space.")
+@click.option("--title","-t", type=str, help="An optional title for the produced trace.", default="")
+@click.option("--with_dump", "-wd", is_flag=True, help="Whether to include a complete dump of memory at every time step.")
+@click.option("--interactive_mode", "-I", is_flag=True, help="Whether to execute the program in interactive mode.")
+@click.option("--trace_symbol", "-ts", multiple=True, nargs=3, type=(str,int,int), help="Adds a symbol to be traced explicitly.")    
+@click.option("--max_n","-mn", type=int, default=200, help="Maximum number of time steps to allow the sim to run for.")
+def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, interactive_mode, trace_symbol, max_n):
+    """
+    Command line program that produces a trace of a Digirule2 binary on simulated hardware.
     
+    \f
+    :param input_file: The `.dgb` file to simulate.
+    :type input_file: str<Path>
+    :param output_trace_file: The filename of the Markdown file containing human readable trace information.
+    :type output_trace_file: str<Path>
+    :param output_memdump_file: The filename of the `[]_memdump.dgb.` file containing the final machine memory state.
+    :type output_memdump_file: str<Path>
+    :param title: A human readable title for the trace.
+    :type title: str
+    :param with_dump: Whether to produce a memory dump at each timestep of code execution.
+    :type with_dump: bool
+    :param interactive_mode: Whether execution should be performed in interactive mode.
+    :type interactive_mode: bool
+    :param trace_symbol: A list of memory locations (name, offset, length) to explicitly track while producing the trace.
+    :type trace_symbol: tuple<tuple<str, int, int>>
+    :param max_n: The total number of timesteps to allow execution to run for.
+    :type max_n:int
+    """
+    # TODO: HIGH, The .dgb should also contain the machine state itself.
+    if output_trace_file is None:
+        output_trace_file = f"{os.path.splitext(input_file)[0]}_trace.md"
+    
+    if output_memdump_file is None:
+        output_memdump_file = f"{os.path.splitext(input_file)[0]}_memdump.dgb"
+        
+    with open(input_file, "rb") as fd:
+        compiled_program = pickle.load(fd)
+    # TODO, HIGH: Check (at least) if the compiled_program is a dictionary with three known attributes.
+    machine_after_execution = trace_program(compiled_program["program"], output_trace_file, max_n = max_n, trace_title = title, in_interactive_mode=interactive_mode, with_mem_dump=with_dump, extra_symbols=trace_symbol)
+    compiled_program["program"] = machine_after_execution._mem
+    with open(output_memdump_file, "wb") as fd:
+        pickle.dump(compiled_program, fd)
+        
 if __name__ == "__main__":
-    # cpu = Digirule()
-    # program = [0,0,2,15,0,3]
-    # cpu.load_program(program)
-    # z = get_asm_model()
-    # z.setDefaultWhitespaceChars([" ","\n", "\t"])
-    # f = z.parseFile("./first.asm")
-    with open("./short.asm", "rt") as fd:
-        data = fd.read()
-    mem,l,s = asm2obj(data)
-    trace_program(mem,"./for_short.md", extra_symbols=[("stack_ptr",l["stack_ptr"],1),("stack",l["stack"],20), ("r0",l["r0"],1), ("t0",l["t0"],1), ("t1",l["t1"],1)], with_mem_dump=False)
-    #machine = Digirule()
-    #machine.load_program(mem)
-    #machine.run()
-    #mem_dump(mem, line_length=8)
+    dgsim()

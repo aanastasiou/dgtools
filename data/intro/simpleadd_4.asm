@@ -1,0 +1,8 @@
+.EQU a=1
+COPYLA a
+ADDRA 253
+COPYAR r3
+HALT
+r3:
+.DB 0
+

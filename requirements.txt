@@ -1,9 +1,12 @@
 backcall==0.1.0
+click==7.1.1
 decorator==4.4.2
 fancycompleter==0.9.1
 ipython==7.9.0
 ipython-genutils==0.2.0
 jedi==0.16.0
+Jinja2==2.11.1
+MarkupSafe==1.1.1
 parso==0.6.2
 pdbpp==0.10.2
 pexpect==4.8.0
