@@ -36,6 +36,7 @@ CALL f_get_stack_head
 COPYAR f_from
 COPYLR r0 f_to
 CALL f_copy_by_ref
+RETURN
 
 f_get_stack_head:
 COPYLA stack
