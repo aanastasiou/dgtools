@@ -57,7 +57,7 @@ The most common workflow is:
 
 ## Where to from here?
 
-``dgtools`` documentation is up on `ReadTheDocs <https://dgtools.readthedocs.io/en/latest/>`_ and in ``doc/``.
+``dgtools`` documentation is up on `Read The Docs <https://dgtools.readthedocs.io/en/latest/>`_ and in ``doc/``.
 
 * The features of each of the programs included in `dgtools` are best demonstrated through 
 [this introductory walkthrough](https://dgtools.readthedocs.io/en/latest/introductory_topics.html)
