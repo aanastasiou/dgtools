@@ -57,13 +57,13 @@ The most common workflow is:
 
 ## Where to from here?
 
-The documentation in ``doc/`` contains detailed information about the use and functionality of the scripts. It is a 
-standard sphinx project but certain parts of it can (sort of) be read through github directly.
+``dgtools`` documentation is up on `ReadTheDocs <https://dgtools.readthedocs.io/en/latest/>`_ and in ``doc/``.
 
 * The features of each of the programs included in `dgtools` are best demonstrated through 
-[this introductory walkthrough](doc/source/introductory_topics.rst)
+[this introductory walkthrough](https://dgtools.readthedocs.io/en/latest/introductory_topics.html)
 
-* Advanced uses of the Digirule 2 ASM are discussed in [this advanced walkthrough](doc/source/advanced_topics.md)
+* Advanced uses of the Digirule 2 ASM are discussed in 
+ [this advanced walkthrough](https://dgtools.readthedocs.io/en/latest/advanced_topics.html)
 
 Enjoy
 
