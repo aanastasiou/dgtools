@@ -1,8 +1,31 @@
 #!/usr/bin/env python
 """
 
-Simulates a program running on a Digirule 2.
-Part of dgtools.
+Usage: dgsim.py [OPTIONS] INPUT_FILE
+
+  Command line program that produces a trace of a Digirule2 binary on
+  simulated hardware.
+
+Options:
+  -otf, --output-trace_file PATH  Filename containing trace information in
+                                  Markdown.
+
+  -omf, --output-memdump_file PATH
+                                  Filename containing final memory space.
+  -t, --title TEXT                An optional title for the produced trace.
+  -wd, --with-dump                Whether to include a complete dump of memory
+                                  at every time step.
+
+  -I, --interactive-mode          Whether to execute the program in
+                                  interactive mode.
+
+  -ts, --trace-symbol <TEXT INTEGER INTEGER>...
+                                  Adds a symbol to be traced explicitly.
+  -mn, --max-n INTEGER            Maximum number of time steps to allow the
+                                  sim to run for.
+
+  --help                          Show this message and exit.
+
 
 :author: Athanasios Anastasiou
 :date: Mar 2020.
@@ -14,6 +37,7 @@ import pickle
 import pdb
 import click
 import os
+import types
 
 class Digirule:
     """
@@ -89,7 +113,9 @@ class Digirule:
         
     @interactive_callback.setter
     def interactive_callback(self, new_callback):
-        # TODO: HIGH, Need to type check the signature of new_callback
+        if type(new_callback) is not types.FunctionType:
+            # TODO: HIGH, Raise exception "Object is not a callback"
+            pass
         self._interactive_callback = new_callback
     
     @property
@@ -102,7 +128,9 @@ class Digirule:
         
     @speed.setter
     def speed(self, new_value):
-        # TODO, HIGH: `new_value` needs type checking
+        if type(new_value) is not int:
+            # TODO: HIGH, Raise exception "new_value is not int"
+            pass
         self._speed_setting = new_value & 0xFF
                 
     def load_program(self, a_program, offset=0):
@@ -114,7 +142,12 @@ class Digirule:
             * Offset is the offset within the Digirule memory where the first
               byte of the program would reside.
         """
-        # TODO: HIGH, Needs type and range checking.
+        if type(offset) is not int:
+            # TODO: HIGH, Raise exception "offset is not int"
+            pass
+        if len(a_program)+offset>256:
+            # TODO: HIGH, Raise exception "Memory range missmatch"
+            pass
         for k in enumerate(a_program):
             self._mem[k[0]+offset] = k[1]            
         return self
@@ -123,11 +156,18 @@ class Digirule:
         """
         Sets the values of the button register to simulate key-presses.
         """
-        # TODO: HIGH, Needs type checking
+        if type(new_value) is not int:
+            # TODO: HIGH, Raise exception "new_value is not int"
+            pass
         self._wr_mem(self._bt_reg_ptr, new_value & 255)
         return self
         
     def _read_next(self):
+        """
+        The equivalent of "fetch".
+        
+        It fetches a byte from the current program counter and advances the program counter.
+        """
         value = self._rd_mem(self._pc)
         self._incr_pc()
         return value
@@ -177,7 +217,7 @@ class Digirule:
         return 1 if self._mem[self._status_reg_ptr] & self._ZERO_FLAG_BIT == self._ZERO_FLAG_BIT else 0
         
     def _wr_mem(self, addr, value):
-        # TODO: HIGH, addr cannot go higher than 252 or it will overwrite peripherals.
+        # TODO: MED, addr cannot go higher than 252 or it will overwrite peripherals. It should generate a warning.
         self._mem[addr & 0xFF] = value & 0xFF
         return self
         
@@ -196,26 +236,26 @@ class Digirule:
                 
     def _exec_next(self):
         """
-        Fetches and executes commands from memory.
+        Fetches and executes an opcode from memory.
         
         :returns: 0 if a HALT is executed 1 otherwise.
         :rtype: int
         """
-        # TODO: MED, Obviously, each command can be abstracted in its own callback so that the VM becomes easily 
-        #      extensible and trully re-usable.
+        # TODO: LOW, Obviously, each command can be abstracted in its own callback so that the VM becomes easily 
+        #      extensible and re-usable.
         
         # Fetch...
         cmd = self._read_next()
         
         if cmd>32:
-            # TODO: HIGH, throw a CPU exception
-            # TODO: HIGH, These can be intercepted and re-interpreted. Package state along.
+            # TODO: HIGH, Raise exception "opcode not supported"
+            # TODO: LOW, These can be intercepted and re-interpreted. Package state along.
             pass
             
         # ...Execute    
         # HALT
         if cmd == 0:
-            # TODO: HIGH, Throw HALT exception
+            # TODO: HIGH, Raise exception HALT
             return 0 
         
         # NOP
@@ -393,11 +433,20 @@ class Digirule:
         return 1
         
     def goto(self, offset):
+        if type(offset) is not int:
+            # TODO: HIGH, Raise exception "offset is not int"
+            pass
+        if offset<0 or offset>255:
+            # TODO: HIGH, Raise exception "offset out of range"
+            pass
         self._pc = offset
     
     def run(self, offset=0):
         """
-        Executes commands from the current program counter until it meets HLT
+        Executes commands from the current program counter until a HALT opcode.
+        
+        :param offset: The offset within `_mem` to start executing from.
+        :type offset: int
         """
         self._pc = offset
         cnt = self._exec_next()
@@ -408,6 +457,9 @@ class Digirule:
         return self._exec_next()
         
     def __str__(self):
+        """
+        Returns a string representing the current state of the VM as it would be visible to a user.
+        """
         return f"ADDR LED:{self._pc:08b}\n" \
                f"DATA LED:{self._rd_mem(self._dataled_reg_ptr):08b}\n"\
                f"  BTT SW:{self._mem[self._bt_reg_ptr]:08b}\n"
@@ -436,9 +488,14 @@ def mem_dump(mem, offset_from=0, offset_to=256, line_length=16):
     n_lines = total_length // line_length
     remaining_chars = total_length % line_length
     for k in range(0, n_lines):
+        # Memory page to visualise
         mem_page = [mem[u] for u in range(offset_from+k*line_length,offset_from+k*line_length+line_length)]
-        # TODO: HIGH, Change this to an f-string.
-        to_ret += "\t\t" + format(offset_from+k*8, "02X") + "\t" + " ".join([format(q,"02X") for q in mem_page]) + " " + ("".join([chr(q) if q>9 else "." for q in mem_page])).translate(trans_tab) + "\n"        
+        # The same memory page in hex
+        mem_page_hex = " ".join([f"{q:02X}" for q in mem_page])
+        # The same memory page in chr depictions.
+        # TODO: MED, The character translation table can be improved here to get rid of the >9 and clarify depictions.
+        mem_page_char = "".join([chr(q) if q>9 else "." for q in mem_page]).translate(trans_tab)
+        to_ret += f"\t\t{(offset_from+k*8):02X}\t{mem_page_hex} {mem_page_char}\n"        
     return to_ret
     
     
@@ -493,14 +550,14 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
     return machine
 
 @click.command()
-@click.argument("input_file", type=click.Path(exists=True))
-@click.option("--output_trace_file","-otf", type=click.Path(), help="Filename containing trace information in Markdown.")
-@click.option("--output_memdump_file", "-omf", type=click.Path(), help="Filename containing final memory space.")
+@click.argument("input-file", type=click.Path(exists=True))
+@click.option("--output-trace_file","-otf", type=click.Path(), help="Filename containing trace information in Markdown.")
+@click.option("--output-memdump_file", "-omf", type=click.Path(), help="Filename containing final memory space.")
 @click.option("--title","-t", type=str, help="An optional title for the produced trace.", default="")
-@click.option("--with_dump", "-wd", is_flag=True, help="Whether to include a complete dump of memory at every time step.")
-@click.option("--interactive_mode", "-I", is_flag=True, help="Whether to execute the program in interactive mode.")
-@click.option("--trace_symbol", "-ts", multiple=True, nargs=3, type=(str,int,int), help="Adds a symbol to be traced explicitly.")    
-@click.option("--max_n","-mn", type=int, default=200, help="Maximum number of time steps to allow the sim to run for.")
+@click.option("--with-dump", "-wd", is_flag=True, help="Whether to include a complete dump of memory at every time step.")
+@click.option("--interactive-mode", "-I", is_flag=True, help="Whether to execute the program in interactive mode.")
+@click.option("--trace-symbol", "-ts", multiple=True, nargs=3, type=(str,int,int), help="Adds a symbol to be traced explicitly.")    
+@click.option("--max-n","-mn", type=int, default=200, help="Maximum number of time steps to allow the sim to run for.")
 def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, interactive_mode, trace_symbol, max_n):
     """
     Command line program that produces a trace of a Digirule2 binary on simulated hardware.
@@ -523,6 +580,7 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
     :param max_n: The total number of timesteps to allow execution to run for.
     :type max_n:int
     """
+    # TODO: HIGH, trace_symbol needs further validation
     # TODO: HIGH, The .dgb should also contain the machine state itself.
     if output_trace_file is None:
         output_trace_file = f"{os.path.splitext(input_file)[0]}_trace.md"

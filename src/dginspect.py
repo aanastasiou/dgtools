@@ -1,8 +1,28 @@
 #!/usr/bin/env python
 """
 
-Inspects or modifies the contents of a compiled .dgb file.
-Part of dgtools.
+Usage: dginspect.py [OPTIONS] INPUT_FILE
+
+  Command line tool to inspect and modify .dgb files.
+
+  If modifying the .dgb file, a backup (.bak) with the version prior to
+  applying the modifications  is created automatically. To turn this
+  functionality off, see option `--no-backup`
+
+Options:
+  -g, --get-mem <TEXT INTEGER INTEGER>...
+                                  Get a memory range (defined as ADDR(INT)
+                                  LENGTH(INT) in bytes and label it by TEXT.
+
+  -s, --set-mem <INTEGER INTEGER>...
+                                  Set a memory value (as Address, Value).
+  -sy, --set-sym <TEXT INTEGER>...
+                                  Set a symbol (Defined with .EQU) to a new
+                                  value.
+
+  -nb, --no-backup                If set then no backup file is created.
+  --help                          Show this message and exit.
+
 
 :author: Athanasios Anastasiou
 :date: Mar 2020
@@ -15,7 +35,7 @@ import click
 from dgsim import mem_dump
 
 @click.command()
-@click.argument("input_file", type=click.Path(exists=True))
+@click.argument("input-file", type=click.Path(exists=True))
 @click.option("--get-mem","-g", multiple=True, type=(str, int, int), nargs=3, 
               help="Get a memory range (defined as ADDR(INT) LENGTH(INT) in bytes and label it by TEXT.")
 @click.option("--set-mem","-s",multiple=True, type=(int, int), nargs=2, 
@@ -43,6 +63,7 @@ def dginspect(input_file, get_mem, set_mem, set_sym, no_backup):
     :param no_backup: By default, this function creates a backup file if it were to modify memory. This option turns 
                      backups off.
     """
+    # TODO: HIGH, get_mem, set_mem, set_sym needs further validation
     with open(input_file, "rb") as fd:
         compiled_program = pickle.load(fd)
         

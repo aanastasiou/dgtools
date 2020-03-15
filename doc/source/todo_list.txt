@@ -1,0 +1,24 @@
+TODO List as of Sun Mar 15 20:09:55 GMT 2020
+../src/dgasm.py:33 TODO: HIGH, This grammar can parse comments as well but they are not yet enabled. Enable them.
+../src/dgasm.py:125 TODO: HIGH, To enable comments, modify how the AST is interpreted here.
+../src/dgasm.py:156 TODO: HIGH, This does not need to be a scan across the full object code, it can simply isolate
+../src/dgasm.py:171 TODO: HIGH, Raise exception Symbol Not Found
+../src/dgasm.py:174 TODO: MED, Better if this returns an already initialised machine.
+../src/dginspect.py:66 TODO: HIGH, get_mem, set_mem, set_sym needs further validation
+../src/dgsim.py:57 TODO: HIGH, There might be constraints in the depth of this stack. Not yet implemented.
+../src/dgsim.py:73 TODO: LOW, Make the speed setting functional
+../src/dgsim.py:117 TODO: HIGH, Raise exception "Object is not a callback"
+../src/dgsim.py:132 TODO: HIGH, Raise exception "new_value is not int"
+../src/dgsim.py:146 TODO: HIGH, Raise exception "offset is not int"
+../src/dgsim.py:149 TODO: HIGH, Raise exception "Memory range missmatch"
+../src/dgsim.py:160 TODO: HIGH, Raise exception "new_value is not int"
+../src/dgsim.py:220 TODO: MED, addr cannot go higher than 252 or it will overwrite peripherals. It should generate a warning.
+../src/dgsim.py:244 TODO: LOW, Obviously, each command can be abstracted in its own callback so that the VM becomes easily 
+../src/dgsim.py:251 TODO: HIGH, Raise exception "opcode not supported"
+../src/dgsim.py:252 TODO: LOW, These can be intercepted and re-interpreted. Package state along.
+../src/dgsim.py:258 TODO: HIGH, Raise exception HALT
+../src/dgsim.py:437 TODO: HIGH, Raise exception "offset is not int"
+../src/dgsim.py:440 TODO: HIGH, Raise exception "offset out of range"
+../src/dgsim.py:496 TODO: MED, The character translation table can be improved here to get rid of the >9 and clarify depictions.
+../src/dgsim.py:583 TODO: HIGH, trace_symbol needs further validation
+../src/dgsim.py:584 TODO: HIGH, The .dgb should also contain the machine state itself.

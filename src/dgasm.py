@@ -1,8 +1,16 @@
 #!/usr/bin/env python
 """
 
-The assembler for Digirule 2 assembly.
-Part of dgtools.
+Usage: dgasm.py [OPTIONS] INPUT_FILE
+
+  Command line tool to produce Digirule 2 binaries (.dgb).
+
+  The script produces a `.dgb` file with the same name as the `.asm` in its
+  input, see option `-o` to set the output file explicitly.
+
+Options:
+  -o, --output-file PATH
+  --help                  Show this message and exit.
 
 :author: Athanasios Anastasiou
 :date: Mar 2020
@@ -16,31 +24,30 @@ import click
 
 def get_asm_parser():
     """
-    identifer = [a-zA-Z_][a-zA-Z_0-9]+
-    program = statement+
-    statement = asm_statement or assembler_directive
-    asm_statement = asm_label or asm_keyword
-    asm_label = ":" followed by an identifier
-    asm_keyword = symbolic_def|data_segment
-    symbolic_def = "%%define"
-    data_segment = ".CODE" + symbolic_def+
-    assembler_directive = "\t|at least 4 whitespace" followed by command_line
-    command_line = keyword followed by parameter_list
-    keyword = (one of the digirule keywords)
-    parameter_list = space separated list of tokens at most 2 entries long
+    Returns the Digirule2 Assembly parser.
+    
+    Notes:
+        
+        * See inline comments for specification of the grammar
     """
-    # TODO: HIGH, The docstring of this function is NOT the implemented grammar.
-    # TODO: HIGH, This grammar understands comments as well but they are not yet enabled. Enable them.
+    # TODO: HIGH, This grammar can parse comments as well but they are not yet enabled. Enable them.
+    # Action functions to convert valid string literals to numbers
     uchar2num = lambda toks:int(toks[0])
     buchar2num = lambda toks:int(toks[0],2)
     xuchar2num = lambda toks:int(toks[0],16)
+    # An identifier for labels and symbols. It must be at least 1 character, start with a letter or number and
+    # can include the underscore.
     identifier = pyparsing.Regex(r"[a-zA-Z_][a-zA-Z0-9_]*")
+    # A literal can be a decimal number (4,14,52), a binary number (0b100, 0b1110, 0b110100) or a hexadecimal number
+    # (0x4, 0x0E, 0x34). 
     literal_uchar = pyparsing.Regex(r"[-]?[0-9][0-9]?[0-9]?").setParseAction(uchar2num)
     literal_buchar = pyparsing.Regex(r"0b[0|1]+").setParseAction(buchar2num)
     literal_xuchar = pyparsing.Regex(r"0x[0-9A-F][0-9A-F]?").setParseAction(xuchar2num)
     literal = literal_uchar ^ literal_buchar ^ literal_xuchar
+    # Opcodes can accept literals or identifiers (.EQU or labels) as opcodes.
     literal_or_identifier = pyparsing.Group(literal("literal") ^ identifier("symbol"))("value_type")
     # Digirule ASM commands
+    # Each succesfully parsed command is tagged by its opcode.
     asm_halt = pyparsing.Group(pyparsing.Regex(r"HALT")("cmd"))("0")
     asm_nop = pyparsing.Group(pyparsing.Regex(r"NOP")("cmd"))("1")
     asm_speed = pyparsing.Group(pyparsing.Regex(r"SPEED")("cmd") + literal_or_identifier("value"))("2")
@@ -81,7 +88,7 @@ def get_asm_parser():
               asm_jump ^ asm_call ^ asm_retla ^ asm_return ^ asm_addrpc)
     asm_statement = asm_command
     # Assembler directives
-    # .DB A static list of byte defs
+    # .DB A static space delimited list of byte defs
     # label: Defines a label
     # .EQU A "symbol" (that in the future would be able to evaluate to anything.
     dir_label = pyparsing.Group(identifier("idf") + pyparsing.Suppress(":"))("def_label")
@@ -148,19 +155,23 @@ def asm2obj(asm):
     symbol_offsets = {}
     # TODO: HIGH, This does not need to be a scan across the full object code, it can simply isolate
     #      the references and produce substitutions just for those (more efficient)
-    for k in range(0, len(mem)):
-        # If it is a string it is a reference and it needs to be substituted
-        if type(mem[k]) is str:
-            if mem[k] in labels:
-                mem[k] = labels[mem[k]]
-            elif mem[k] in symbols:
-                # Note where the symbol is used
-                if mem[k] not in symbol_offsets:
-                    symbol_offsets[mem[k]] = []
-                if k not in symbol_offsets[mem[k]]:
-                    symbol_offsets[mem[k]].append(k)
-                # Make the substitution
-                mem[k] = symbols[mem[k]]
+    subst_entries = filter(lambda x:type(x[1]) is str, enumerate(mem))
+    for an_entry in subst_entries:
+        if an_entry[1] in labels:
+            mem[an_entry[0]] = labels[an_entry[1]]
+        elif an_entry[1] in symbols:
+            # Note where the symbol is used
+            if an_entry[1] not in symbol_offsets:
+                symbol_offsets[an_entry[1]] = []
+            if an_entry[0] not in symbol_offsets[an_entry[1]]:
+                symbol_offsets[an_entry[1]].append(an_entry[0])
+            # Make the substitution
+            mem[an_entry[0]] = symbols[an_entry[1]]
+        else:
+            # TODO: HIGH, Raise exception Symbol Not Found
+            pass
+            
+    # TODO: MED, Better if this returns an already initialised machine.
     return {"program":mem, "labels":labels, "symbols":symbol_offsets}
     
 @click.command()
