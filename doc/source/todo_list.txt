@@ -1,9 +1,9 @@
-TODO List as of Sun Mar 15 20:09:55 GMT 2020
+TODO List as of Tue Mar 17 00:29:47 GMT 2020
 ../src/dgasm.py:33 TODO: HIGH, This grammar can parse comments as well but they are not yet enabled. Enable them.
-../src/dgasm.py:125 TODO: HIGH, To enable comments, modify how the AST is interpreted here.
-../src/dgasm.py:156 TODO: HIGH, This does not need to be a scan across the full object code, it can simply isolate
-../src/dgasm.py:171 TODO: HIGH, Raise exception Symbol Not Found
-../src/dgasm.py:174 TODO: MED, Better if this returns an already initialised machine.
+../src/dgasm.py:116 TODO: HIGH, The parser needs to be flagging parse errors along with the locations where these happened.
+../src/dgasm.py:126 TODO: HIGH, To enable comments, modify how the AST is interpreted here.
+../src/dgasm.py:170 TODO: HIGH, Raise exception Symbol Not Found
+../src/dgasm.py:173 TODO: MED, Better if this returns an already initialised machine.
 ../src/dginspect.py:66 TODO: HIGH, get_mem, set_mem, set_sym needs further validation
 ../src/dgsim.py:57 TODO: HIGH, There might be constraints in the depth of this stack. Not yet implemented.
 ../src/dgsim.py:73 TODO: LOW, Make the speed setting functional

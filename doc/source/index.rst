@@ -23,6 +23,7 @@ generate traces of your own code.
 
    introductory_topics
    advanced_topics
+   digirule2_asm
    script_detail
    current_todos
 

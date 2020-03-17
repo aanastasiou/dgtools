@@ -113,6 +113,7 @@ def asm2obj(asm):
     :rtype: dict<"program":list<uint8>, "labels":dict<str, int>>, "symbols":dict<str,int>>
     """
     parser = get_asm_parser()
+    # TODO: HIGH, The parser needs to be flagging parse errors along with the locations where these happened.
     parsed_code = parser.parseString(asm)
     mem = [0 for k in range(0,256)]
     mem_ptr = 0
@@ -153,8 +154,6 @@ def asm2obj(asm):
     # The first pass produces an intermediate object that still contains symbolic references.
     # This second pass here substitutes those references and produces the final object.
     symbol_offsets = {}
-    # TODO: HIGH, This does not need to be a scan across the full object code, it can simply isolate
-    #      the references and produce substitutions just for those (more efficient)
     subst_entries = filter(lambda x:type(x[1]) is str, enumerate(mem))
     for an_entry in subst_entries:
         if an_entry[1] in labels:
