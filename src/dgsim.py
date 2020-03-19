@@ -34,7 +34,6 @@ Options:
 
 import sys
 import pickle
-import pdb
 import click
 import os
 import types
@@ -196,7 +195,7 @@ class Digirule:
         else:
             self._set_status_reg(self._ZERO_FLAG_BIT, 0)
             
-        if new_value > 255:
+        if new_value > 255 or new_value < 0:
             self._set_status_reg(self._CARRY_FLAG_BIT, 1)
         else:
             self._set_status_reg(self._CARRY_FLAG_BIT, 0)
@@ -207,11 +206,12 @@ class Digirule:
         return self._acc
         
     def _set_status_reg(self, field_mask, value):
-        self._mem[self._status_reg_ptr] |= (field_mask * value)
+        current_value = self._mem[self._status_reg_ptr]
+        self._mem[self._status_reg_ptr] ^= (-value ^ current_value) & field_mask
         return self
         
     def _get_status_reg(self, field_mask):
-        return 1 if self._mem[self._status_reg_ptr] & field_mask == field_mask else 0
+        return 1 if (self._mem[self._status_reg_ptr] & field_mask) == field_mask else 0
         
     def _get_zero_flag(self):
         return 1 if self._mem[self._status_reg_ptr] & self._ZERO_FLAG_BIT == self._ZERO_FLAG_BIT else 0
@@ -287,8 +287,13 @@ class Digirule:
         # COPYRR
         if cmd == 7:
             addr1 = self._read_next()
+            value_addr1 = self._rd_mem(addr1)
             addr2 = self._read_next()
-            self._wr_mem(addr2, self._rd_mem(addr1))
+            self._wr_mem(addr2, value_addr1)
+            if value_addr1==0:
+                self._set_status_reg(self._ZERO_FLAG_BIT, 1)
+            else:
+                self._set_status_reg(self._ZERO_FLAG_BIT, 0)
             
         # ADDLA
         if cmd == 8:
@@ -368,7 +373,7 @@ class Digirule:
             addr = self._read_next()
             value = self._rd_mem(addr)
             next_carry_value = 1 if value & 128 == 128 else 0
-            self._wr_mem(addr, ((value<<1) & 255)|self._get_status_reg(self._CARRY_FLAG_BIT))
+            self._wr_mem(addr, ((value<<1) & 0xFF)|self._get_status_reg(self._CARRY_FLAG_BIT))
             self._set_status_reg(self._CARRY_FLAG_BIT,next_carry_value)
 
         # SHIFTRR
@@ -376,7 +381,7 @@ class Digirule:
             addr = self._read_next()
             value = self._rd_mem(addr)
             next_carry_value = 1 if value & 1 == 1 else 0
-            self._wr_mem(addr, ((value>>1) & 255)|(self._get_status_reg(self._CARRY_FLAG_BIT) << 7))
+            self._wr_mem(addr, ((value>>1) & 0xFF)|(self._get_status_reg(self._CARRY_FLAG_BIT) << 7))
             self._set_status_reg(self._CARRY_FLAG_BIT,next_carry_value)
             
         # CBR
@@ -388,6 +393,8 @@ class Digirule:
                     
         # SBR
         if cmd == 25:
+            # TODO: MED, In CBR and SBR, if the bit is zero, it should raise an error either at compilation time or 
+            #       runtime. 
             bit_to_clear = self._read_next()
             addr = self._read_next()
             new_value = self._rd_mem(addr) | (255 - (1<<bit_to_clear))

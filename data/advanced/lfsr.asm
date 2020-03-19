@@ -1,10 +1,5 @@
-.EQU rnd_state=27
+.EQU rnd_state=171
 start:
-COPYRR state r1
-SHIFTRR r1
-SHIFTRR r1
-HALT
-
 COPYRR state r1
 COPYRA r1
 SHIFTRR r1
@@ -34,7 +29,7 @@ HALT
 state:
 .DB rnd_state
 r0:
-.DB 1
+.DB 10
 r1:
 .DB 0
 r2:

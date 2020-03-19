@@ -51,3 +51,5 @@ The "problem" with simulating these opcodes is the extra work that is required t
 So, one possible modification to the instruction set would be to add commands that do something **by reference**. 
 
 For example, `COPYRR` **by reference** and `JUMP` **by reference**.
+
+We need a CLC command to clear carry so that SHIFTRR and SHIFTRL can behave simply as shifts
