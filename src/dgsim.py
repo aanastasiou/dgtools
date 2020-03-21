@@ -397,7 +397,7 @@ class Digirule:
             #       runtime. 
             bit_to_clear = self._read_next()
             addr = self._read_next()
-            new_value = self._rd_mem(addr) | (255 - (1<<bit_to_clear))
+            new_value = self._rd_mem(addr) | (1<<bit_to_clear)
             self._wr_mem(addr, new_value)
             
         # BCRSC

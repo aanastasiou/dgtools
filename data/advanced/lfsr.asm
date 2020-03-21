@@ -5,24 +5,23 @@ COPYRR state r1
 SHIFTRR state
 CBR 1 252
 SHIFTRR state
-CBR 1 252
 XORRA state
-SHIFTRR state
 CBR 1 252
+SHIFTRR state
 XORRA state
-SHIFTRR state
 CBR 1 252
+SHIFTRR state
 XORRA state
 ANDLA 1
 COPYAR r2
-SHIFTRR r1
 CBR 1 252
+SHIFTRR r1
 DECRJZ r2
-JUMP set_bit
-clr_bit:
+JUMP clr_bit
+set_bit:
 SBR 7 r1
 JUMP resume
-set_bit:
+clr_bit:
 CBR 7 r1
 resume:
 COPYRR r1 state
