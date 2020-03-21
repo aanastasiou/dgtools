@@ -352,7 +352,7 @@ class Digirule:
         if cmd == 20:
             addr = self._read_next()
             value = self._rd_mem(addr) - 1
-            self._wr_mem(addr, value)
+            self._wr_mem(addr, value & 0xFF)
             if value == 0:
                 self._set_status_reg(self._ZERO_FLAG_BIT,0)
                 self._pc+=2
@@ -361,7 +361,7 @@ class Digirule:
         if cmd == 21:
             addr = self._read_next()
             value = self._rd_mem(addr) + 1
-            self._wr_mem(addr, value)
+            self._wr_mem(addr, value & 0xFF)
             if value == 0:
                 self._set_status_reg(self._ZERO_FLAG_BIT,1)
                 self._pc += 2
