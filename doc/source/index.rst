@@ -24,6 +24,7 @@ generate traces of your own code.
    introductory_topics
    advanced_topics
    lfsr
+   pov
    digirule2_asm
    instruction_set_notes
    script_detail

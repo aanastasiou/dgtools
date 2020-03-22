@@ -53,7 +53,7 @@ Memory Operations
 Copy by reference
 ^^^^^^^^^^^^^^^^^
 
-As demonstrated in section :ref:`advanced_topics`, there is a clear need for an indirect copy command. That is, a copy
+As demonstrated in section :ref:`advanced-topics`, there is a clear need for an indirect copy command. That is, a copy
 command that can copy between memory offsets stored in memory.
 
 Currently, ``COPYRR addr1 addr2`` is a 3 byte command that performs ``mem[addr2] = mem[addr1]``. Unless ``COPYRR`` 
