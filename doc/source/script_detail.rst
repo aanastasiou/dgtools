@@ -1,6 +1,5 @@
 .. _detailed_script_descriptions:
 
-============================
 Detailed Script Descriptions
 ============================
 
@@ -8,19 +7,19 @@ At the moment this section includes the help sections of each script as it would
 ``> ./[script.py] --help`` call.
 
 ``dgasm.py``
-============
+------------
 
 .. automodule:: dgasm
 
 
 ``dginspect.py``
-================
+----------------
 
 .. automodule:: dginspect
 
 
 ``dgsim.py``
-============
+------------
 
 .. automodule:: dgsim
 

@@ -1,4 +1,3 @@
-=======================
 Introducing ``dgtools``
 =======================
 
@@ -10,7 +9,7 @@ example of adding two numbers which goes through 5 revisions here, each one intr
 of `dgtools`.
 
 Adding two literals
-===================
+-------------------
 
 Adding two literals is a matter of three commands in Digirule 2 ASM:
 
@@ -48,7 +47,7 @@ the accumulator holds.
 .. _simple_add_with_mem:
 
 Adding two literals saving the result to memory
-=============================================== 
+----------------------------------------------- 
 
 Leaving the result of the addition to the accumulator is fine, but more commonly these results would have to be shifted
 out of the Accumulator to memory.
@@ -103,7 +102,7 @@ For an example of the sort of output produced by ``dgsim``, you can see
 it through pandoc, available in `this file <_static/simpleadd_2_trace.html>`_.
 
 Adding two literals, sending the output to the Data LEDs
-========================================================
+--------------------------------------------------------
 
 Certain registers of the Digirule 2 are memory mapped. For example, the Data LEDs are accessible at address 255.
 ``dgasm`` allows the definition of "symbols" that point to specific expressions. In the future, these symbols might 
@@ -137,7 +136,7 @@ separate sections of offsets, the "Label" and "Static Symbol". Both of these sho
 where **a label points to** and where **a literal value would be substituted at**.
 
 Adding a literal and a user supplied input
-==========================================
+------------------------------------------
 
 The Digirule 2 has an elementary input device attached to the CPU at address ``253``. Reading that "register" allows 
 the program to read user input in the form of a binary number. 
@@ -177,7 +176,7 @@ Again, the result of the final state can be inspected through ``dginspect``.
 .. _cplx_intro_example_5:
 
 Adding two literals with command line parametrisation
-=====================================================
+-----------------------------------------------------
 
 It probably has become apparent by now that ``dgsim`` can operate as a separate virtualised computing unit. It can 
 run programs and save its final state and it also provides ways of extracting those values from its memory space.

@@ -1,6 +1,5 @@
 .. _advanced-topics:
 
-===============================
 Advanced Digirule 2 Programming
 ===============================
 
@@ -15,7 +14,7 @@ based on these pre-requisites it demonstrates function calling with parameters p
 
 
 Defining a Stack
-================
+----------------
 
 The Digirule 2 is capable of referencing approximately 256 bytes of main memory. Therefore, it should be possible to 
 implement a stack as a statically allocated array of ``N`` values where the push and pop operations are carried out 
@@ -26,7 +25,7 @@ The only problem here is that the Digirule 2 instruction set does not support **
 the **value** of a memory address (i.e. where a memory location is pointing to), to the **value** of another address. 
 
 Implementing indirect memory access
------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To achieve this, we are going to use the label capabilities of ``dgasm`` to "build" a ``COPYRR`` that can copy memory 
 indirectly. 
@@ -58,7 +57,7 @@ the next two bytes, perform the copy, hit the RETURN and go back to where it was
 
 
 Getting the "head" of the stack
--------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Defining the stack through ``dgasm`` is as trivial as defining a label and immediately populating it with values. For 
 example:
@@ -209,7 +208,7 @@ This listing is available in :download:`../../data/advanced/stack.asm`
 
 
 Function calls using a stack
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Now that the Digirule 2 has a stack, it can call any function with any number of argument by 
 adopting a `"calling convention" <https://en.wikipedia.org/wiki/Calling_convention>`_ and defining a standardised 
@@ -342,7 +341,7 @@ externally as per :ref:`this example from the introductory section <cplx_intro_e
 
 
 Conclusion
-==========
+----------
 
 Now that Digirule 2 has a stack and a set of standardised registers, it is possible to start thinking about implementing 
 a higher level language that compiles down to its assembly.

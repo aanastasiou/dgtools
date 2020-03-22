@@ -2,8 +2,10 @@
 The Digirule 2 ASM
 ==================
 
-The command repertoir of the Digirule 2 ASM is as follows:
+This section summarises the instruction set of the Digirule2. 
 
+Commands
+--------
 
 +--------------+--------------+--------------+--------------+--------------+
 | Flow Control |    Memory    |  Arithmetic  |     Logic    |     Other    |
@@ -27,4 +29,6 @@ The command repertoir of the Digirule 2 ASM is as follows:
 | RETUN        |              |              |              |              |
 +--------------+--------------+--------------+--------------+--------------+
 
-For more information please see the PDF User Manual
+* ``HALT, RETURN, NOP`` are 1 Byte commands.
+* ``COPYLR, COPYRR, BCRSC, BCRSS`` are 3 byte commands
+* All other commands are 2 byte commands.
