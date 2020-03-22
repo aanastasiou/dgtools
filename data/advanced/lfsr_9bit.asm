@@ -1,33 +1,29 @@
 .EQU status_reg=252
+.EQU data_led=255
 .EQU rnd_state=42
 .EQU gen_n_numbers=10
 COPYLR array array_idx
 start:
-COPYRA state
-COPYRR state r1
-SHIFTRR state
+BCRSS 0 state
+JUMP op_a_was_0
+JUMP op_a_was_1
+op_a_was_0:
+BCRSS 5 state
+JUMP op_a_was_0_op_b_was_0
+JUMP op_a_was_0_op_b_was_1
+op_a_was_1:
+BCRSS 5 state
+JUMP op_a_was_1_op_b_was_0
+JUMP op_a_was_1_op_b_was_1
+op_a_was_1_op_b_was_1:
+op_a_was_0_op_b_was_0:
 CBR 1 status_reg
+JUMP continue
+op_a_was_0_op_b_was_1:
+op_a_was_1_op_b_was_0:
+SBR 1 status_reg
+continue:
 SHIFTRR state
-XORRA state
-CBR 1 status_reg
-SHIFTRR state
-XORRA state
-CBR 1 status_reg
-SHIFTRR state
-XORRA state
-ANDLA 1
-COPYAR r2
-CBR 1 status_reg
-SHIFTRR r1
-DECRJZ r2
-JUMP clr_bit
-set_bit:
-SBR 7 r1
-JUMP resume
-clr_bit:
-CBR 7 r1
-resume:
-COPYRR r1 state
 COPYLR state f_from
 COPYRR array_idx f_to
 CALL f_copy
@@ -39,10 +35,6 @@ state:
 .DB rnd_state
 r0:
 .DB gen_n_numbers
-r1:
-.DB 0
-r2:
-.DB 0
 
 f_copy:
 .DB 7
@@ -56,4 +48,3 @@ array:
 .DB 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 array_idx:
 .DB 0
-
