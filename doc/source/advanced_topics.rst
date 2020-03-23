@@ -208,7 +208,7 @@ This listing is available in :download:`../../data/advanced/stack.asm`
 
 
 Function calls using a stack
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+----------------------------
 
 Now that the Digirule 2 has a stack, it can call any function with any number of argument by 
 adopting a `"calling convention" <https://en.wikipedia.org/wiki/Calling_convention>`_ and defining a standardised 
