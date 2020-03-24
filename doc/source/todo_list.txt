@@ -1,4 +1,4 @@
-TODO List as of Tue Mar 24 22:10:45 GMT 2020
+TODO List as of Tue Mar 24 22:20:14 GMT 2020
 ../src/dgasm.py:34 TODO: HIGH, This grammar can parse comments as well but they are not yet enabled. Enable them.
 ../src/dgasm.py:117 TODO: HIGH, The parser needs to be flagging parse errors along with the locations where these happened.
 ../src/dgasm.py:127 TODO: HIGH, To enable comments, modify how the AST is interpreted here.
@@ -6,10 +6,10 @@ TODO List as of Tue Mar 24 22:10:45 GMT 2020
 ../src/dginspect.py:67 TODO: LOW, DGBArchive can become a separate entity and reduce duplication of checks.
 ../src/dgsim.py:57 TODO: MED, There might be constraints in the depth of this stack. Not yet implemented.
 ../src/dgsim.py:73 TODO: LOW, Make the speed setting functional
-../src/dgsim.py:222 TODO: MED, addr cannot go higher than 252 or it will overwrite peripherals. It should generate a warning.
-../src/dgsim.py:246 TODO: LOW, Obviously, each command can be abstracted in its own callback so that the VM becomes easily 
-../src/dgsim.py:253 TODO: LOW, Unsupported opcodes could be intercepted and re-interpreted?
-../src/dgsim.py:396 TODO: MED, In CBR and SBR, if the bit is zero, it should raise an error at compile time.
-../src/dgsim.py:428 TODO: MED, If you get a RETLA without first having called CALL, it should raise an exception at compile time.
-../src/dgsim.py:501 TODO: MED, The character translation table can be improved here to get rid of the >9 and clarify depictions.
-../src/dgsim.py:588 TODO: HIGH, trace_symbol needs further validation
+../src/dgsim.py:219 TODO: MED, addr cannot go higher than 252 or it will overwrite peripherals. It should generate a warning.
+../src/dgsim.py:243 TODO: LOW, Obviously, each command can be abstracted in its own callback so that the VM becomes easily 
+../src/dgsim.py:250 TODO: LOW, Unsupported opcodes could be intercepted and re-interpreted?
+../src/dgsim.py:393 TODO: MED, In CBR and SBR, if the bit is zero, it should raise an error at compile time.
+../src/dgsim.py:425 TODO: MED, If you get a RETLA without first having called CALL, it should raise an exception at compile time.
+../src/dgsim.py:498 TODO: MED, The character translation table can be improved here to get rid of the >9 and clarify depictions.
+../src/dgsim.py:585 TODO: HIGH, trace_symbol needs further validation
