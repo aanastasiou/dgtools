@@ -64,9 +64,16 @@ def dginspect(input_file, get_mem, set_mem, set_sym, no_backup):
                      backups off.
     """
     # TODO: HIGH, get_mem, set_mem, set_sym needs further validation
+    # TODO: LOW, DGBArchive can become a separate entity and reduce duplication of checks.
     with open(input_file, "rb") as fd:
         compiled_program = pickle.load(fd)
         
+    if type(compiled_program) is not dict:
+        raise DgtoolsErrorDgbarchiveCorrupted(f"Archive corrupted.")
+    
+    if len(set(compiled_program) - {"program", "labels", "symbols"}) != 0:
+        raise DgtoolsErrorDgbarchiveCorrupted(f"Archive corrupted.")        
+
     sys.stdout.write(f"Inspecting {input_file}\n")
     sys.stdout.write(f"Program:\n{compiled_program['program']}\n\n")
     sys.stdout.write(f"Label offsets:\n{compiled_program['labels']}\n\n")

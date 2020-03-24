@@ -21,6 +21,7 @@ import os
 import pyparsing
 import pickle
 import click
+from exceptions import DgtoolsErrorSymbolAlreadyDefined, DgtoolsErrorSymbolNotFound
 
 def get_asm_parser():
     """
@@ -127,7 +128,10 @@ def asm2obj(asm):
         command, arguments = list(a_line.items())[0]
         if command == "def_label":
             # Tie the label to where it points to
-            labels[arguments["idf"]] = mem_ptr
+            if arguments["idf"] not in labels:
+                labels[arguments["idf"]] = mem_ptr
+            else:
+                raise DgtoolsErrorSymbolAlreadyDefined(f"Label {arguments['idf']} is getting redefined.")
         elif command == "def_db":
             # .DB simply defines raw data that are simply dumped where they appear. If a label is not set to a 
             # data block, it cannot be referenced.
@@ -135,7 +139,10 @@ def asm2obj(asm):
             mem[mem_ptr:mem_ptr+len(value_data)] = value_data
             mem_ptr+=len(value_data)
         elif command == "def_equ":
-            symbols[arguments["idf"]] = arguments["value"]
+            if arguments["idf"] not in symbols:
+                symbols[arguments["idf"]] = arguments["value"]
+            else:
+                raise DgtoolsErrorSymbolAlreadyDefined(f"Symbol {arguments['idf']} is getting redefined")
         else:
             # It's a command. The opcode of the command has already been recognised, but we need to grab the operands
             # wherever they are available
@@ -167,10 +174,8 @@ def asm2obj(asm):
             # Make the substitution
             mem[an_entry[0]] = symbols[an_entry[1]]
         else:
-            # TODO: HIGH, Raise exception Symbol Not Found
-            pass
+            raise DgtoolsErrorSymbolNotFound(f"Symbol {an_entry[1]} not found.")
             
-    # TODO: MED, Better if this returns an already initialised machine.
     return {"program":mem, "labels":labels, "symbols":symbol_offsets}
     
 @click.command()

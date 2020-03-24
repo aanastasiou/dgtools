@@ -37,6 +37,7 @@ import pickle
 import click
 import os
 import types
+from exceptions import DgtoolsErrorOpcodeNotSupported, DgtoolsErrorDgbarchiveCorrupted
 
 class Digirule:
     """
@@ -53,7 +54,7 @@ class Digirule:
         # Program counter
         self._pc = 0
         # Previous program counter (a stak where the pc is pushed during CALL/RETURN)
-        # TODO: HIGH, There might be constraints in the depth of this stack. Not yet implemented.
+        # TODO: MED, There might be constraints in the depth of this stack. Not yet implemented.
         self._ppc = []
         # Accumulator
         self._acc = 0
@@ -113,8 +114,7 @@ class Digirule:
     @interactive_callback.setter
     def interactive_callback(self, new_callback):
         if type(new_callback) is not types.FunctionType:
-            # TODO: HIGH, Raise exception "Object is not a callback"
-            pass
+            raise TypeError(f"interactive_callback() setter expected a function, received {type(new_callback)}")
         self._interactive_callback = new_callback
     
     @property
@@ -128,11 +128,10 @@ class Digirule:
     @speed.setter
     def speed(self, new_value):
         if type(new_value) is not int:
-            # TODO: HIGH, Raise exception "new_value is not int"
-            pass
+            raise TypeError(f".speed() setter expects int, received {type(new_value)}")
         self._speed_setting = new_value & 0xFF
                 
-    def load_program(self, a_program, offset=0):
+    def load_program(self, a_program):
         """
         Loads a program starting from the specified address.
         
@@ -141,14 +140,14 @@ class Digirule:
             * Offset is the offset within the Digirule memory where the first
               byte of the program would reside.
         """
-        if type(offset) is not int:
-            # TODO: HIGH, Raise exception "offset is not int"
-            pass
-        if len(a_program)+offset>256:
-            # TODO: HIGH, Raise exception "Memory range missmatch"
-            pass
+        if type(a_program) is not list:
+            raise TypeError(f"Expected a_program as list received {type(a_program)}")
+            
+        if len(a_program) > 256:
+            raise ValueError(f"Expected length of program to be at most 256, received {len(a_program)}")
+            
         for k in enumerate(a_program):
-            self._mem[k[0]+offset] = k[1]            
+            self._mem[k[0]] = k[1]            
         return self
         
     def set_button_register(self, new_value):
@@ -156,9 +155,9 @@ class Digirule:
         Sets the values of the button register to simulate key-presses.
         """
         if type(new_value) is not int:
-            # TODO: HIGH, Raise exception "new_value is not int"
-            pass
-        self._wr_mem(self._bt_reg_ptr, new_value & 255)
+            raise TypeError(f"Expected new_value as int, received {type(new_value)}")
+            
+        self._wr_mem(self._bt_reg_ptr, new_value & 0xFF)
         return self
         
     def _read_next(self):
@@ -248,14 +247,12 @@ class Digirule:
         cmd = self._read_next()
         
         if cmd>32:
-            # TODO: HIGH, Raise exception "opcode not supported"
-            # TODO: LOW, These can be intercepted and re-interpreted. Package state along.
-            pass
+            # TODO: LOW, Unsupported opcodes could be intercepted and re-interpreted?
+            raise DgtoolsErrorOpcodeNotSupported(f"Opcode {cmd} not supported.")
             
         # ...Execute    
         # HALT
         if cmd == 0:
-            # TODO: HIGH, Raise exception HALT
             return 0 
         
         # NOP
@@ -393,8 +390,7 @@ class Digirule:
                     
         # SBR
         if cmd == 25:
-            # TODO: MED, In CBR and SBR, if the bit is zero, it should raise an error either at compilation time or 
-            #       runtime. 
+            # TODO: MED, In CBR and SBR, if the bit is zero, it should raise an error at compile time.
             bit_to_clear = self._read_next()
             addr = self._read_next()
             new_value = self._rd_mem(addr) | (1<<bit_to_clear)
@@ -426,7 +422,7 @@ class Digirule:
         # RETLA
         if cmd == 30:
             self._acc = self._read_next()
-            # But if you get a RETLA without first having called CALL, then it should throw an exception.
+            # TODO: MED, If you get a RETLA without first having called CALL, it should raise an exception at compile time.
             self._pc = self._ppc.pop()
         
         # RETURN
@@ -441,21 +437,20 @@ class Digirule:
         
     def goto(self, offset):
         if type(offset) is not int:
-            # TODO: HIGH, Raise exception "offset is not int"
-            pass
+            raise TypeError(f"Expected offset as int, received {type(offset)}")
+            
         if offset<0 or offset>255:
-            # TODO: HIGH, Raise exception "offset out of range"
-            pass
+            raise ValueError(f"Expected 0<=offset<256, received {offset}")
+            
         self._pc = offset
     
-    def run(self, offset=0):
+    def run(self):
         """
         Executes commands from the current program counter until a HALT opcode.
         
         :param offset: The offset within `_mem` to start executing from.
         :type offset: int
         """
-        self._pc = offset
         cnt = self._exec_next()
         while cnt:
             cnt = self._exec_next()
@@ -588,7 +583,6 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
     :type max_n:int
     """
     # TODO: HIGH, trace_symbol needs further validation
-    # TODO: HIGH, The .dgb should also contain the machine state itself.
     if output_trace_file is None:
         output_trace_file = f"{os.path.splitext(input_file)[0]}_trace.md"
     
@@ -597,7 +591,13 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
         
     with open(input_file, "rb") as fd:
         compiled_program = pickle.load(fd)
-    # TODO, HIGH: Check (at least) if the compiled_program is a dictionary with three known attributes.
+        
+    if type(compiled_program) is not dict:
+        raise DgtoolsErrorDgbarchiveCorrupted(f"Archive corrupted.")
+    
+    if len(set(compiled_program) - {"program", "labels", "symbols"}) != 0:
+        raise DgtoolsErrorDgbarchiveCorrupted(f"Archive corrupted.")        
+    
     machine_after_execution = trace_program(compiled_program["program"], output_trace_file, max_n = max_n, trace_title = title, in_interactive_mode=interactive_mode, with_mem_dump=with_dump, extra_symbols=trace_symbol)
     compiled_program["program"] = machine_after_execution._mem
     with open(output_memdump_file, "wb") as fd:
