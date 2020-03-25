@@ -53,10 +53,6 @@ import os
 import types
 from exceptions import DgtoolsErrorOpcodeNotSupported, DgtoolsErrorDgbarchiveCorrupted, DgtoolsErrorSymbolUndefined
 
-
-import pdb
-
-
 class Digirule:
     """
     Abstracts the Digirule 2 hardware.

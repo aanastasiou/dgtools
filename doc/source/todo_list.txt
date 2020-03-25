@@ -1,15 +1,14 @@
-TODO List as of Wed Mar 25 23:04:05 GMT 2020
+TODO List as of Wed Mar 25 23:51:56 GMT 2020
 ../src/dgasm.py:34 TODO: HIGH, This grammar can parse comments as well but they are not yet enabled. Enable them.
 ../src/dgasm.py:117 TODO: HIGH, The parser needs to be flagging parse errors along with the locations where these happened.
 ../src/dgasm.py:127 TODO: HIGH, To enable comments, modify how the AST is interpreted here.
-../src/dginspect.py:84 TODO: HIGH, get_mem, set_mem, set_sym needs further validation
-../src/dginspect.py:85 TODO: MID, DGBArchive can become a separate entity and reduce duplication of checks.
-../src/dginspect.py:96 TODO: MID, Reduce code duplication by packaging this validation in a function
-../src/dgsim.py:75 TODO: MED, There might be constraints in the depth of this stack. Not yet implemented.
-../src/dgsim.py:91 TODO: LOW, Make the speed setting functional
-../src/dgsim.py:237 TODO: MED, addr cannot go higher than 252 or it will overwrite peripherals. It should generate a warning.
-../src/dgsim.py:261 TODO: LOW, Obviously, each command can be abstracted in its own callback so that the VM becomes easily 
-../src/dgsim.py:268 TODO: LOW, Unsupported opcodes could be intercepted and re-interpreted?
-../src/dgsim.py:411 TODO: MED, In CBR and SBR, if the bit is zero, it should raise an error at compile time.
-../src/dgsim.py:443 TODO: MED, If you get a RETLA without first having called CALL, it should raise an exception at compile time.
-../src/dgsim.py:516 TODO: MED, The character translation table can be improved here to get rid of the >9 and clarify depictions.
+../src/dginspect.py:111 TODO: MID, DGBArchive can become a separate entity and reduce duplication of checks.
+../src/dginspect.py:125 TODO: MID, Reduce code duplication by packaging this validation in a function
+../src/dgsim.py:71 TODO: MED, There might be constraints in the depth of this stack. Not yet implemented.
+../src/dgsim.py:87 TODO: LOW, Make the speed setting functional
+../src/dgsim.py:233 TODO: MED, addr cannot go higher than 252 or it will overwrite peripherals. It should generate a warning.
+../src/dgsim.py:257 TODO: LOW, Obviously, each command can be abstracted in its own callback so that the VM becomes easily 
+../src/dgsim.py:264 TODO: LOW, Unsupported opcodes could be intercepted and re-interpreted?
+../src/dgsim.py:407 TODO: MED, In CBR and SBR, if the bit is zero, it should raise an error at compile time.
+../src/dgsim.py:439 TODO: MED, If you get a RETLA without first having called CALL, it should raise an exception at compile time.
+../src/dgsim.py:512 TODO: MED, The character translation table can be improved here to get rid of the >9 and clarify depictions.
