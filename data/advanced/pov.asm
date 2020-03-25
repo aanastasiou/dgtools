@@ -1,7 +1,7 @@
 .EQU status_reg=252
 .EQU led_reg=255
 .EQU delay_count=255
-.EQY speed_setting=55
+.EQU speed_setting=55
 SPEED speed_setting
 CBR 2 status_reg
 COPYLR led_reg f_to

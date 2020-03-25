@@ -12,7 +12,7 @@ class DgtoolsError(Exception):
     """
     pass
     
-class DgtoolsErrorSymbolNotFound(DgtoolsError):
+class DgtoolsErrorSymbolUndefined(DgtoolsError):
     """
     Raised during the second pass of assembly if a label or symbol is requested that has not even been defined.
     """

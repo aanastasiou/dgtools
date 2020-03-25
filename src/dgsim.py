@@ -19,8 +19,22 @@ Options:
   -I, --interactive-mode          Whether to execute the program in
                                   interactive mode.
 
-  -ts, --trace-symbol <TEXT INTEGER INTEGER>...
-                                  Adds a symbol to be traced explicitly.
+  -ts, --trace-symbol TEXT        Adds a symbol to be traced in every
+                                  execution step. The format of TEXT
+                                  is<Symbol>[:Length[:Offset]].  If only
+                                  Symbol is provided, it must have been
+                                  defined in the program for its offset to be
+                                  automatically determined. In this case,
+                                  Length will be 1 by default. If
+                                  Symbol:Length is provided, it must have been
+                                  defined in the program for its offset to be
+                                  automatically determined. If
+                                  Symbol:Length:Offset is provided, Symbol
+                                  does not have to have beendefined in the ASM
+                                  program. In this case, Symbol is just a name
+                                  for a region of memory of Length bytes that
+                                  starts at Offset.
+
   -mn, --max-n INTEGER            Maximum number of time steps to allow the
                                   sim to run for.
 
@@ -37,7 +51,11 @@ import pickle
 import click
 import os
 import types
-from exceptions import DgtoolsErrorOpcodeNotSupported, DgtoolsErrorDgbarchiveCorrupted
+from exceptions import DgtoolsErrorOpcodeNotSupported, DgtoolsErrorDgbarchiveCorrupted, DgtoolsErrorSymbolUndefined
+
+
+import pdb
+
 
 class Digirule:
     """
@@ -551,15 +569,61 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
             
     return machine
 
+def validate_trace_symbol(ctx, param, value):
+    """
+    Validates the Symbol[:Length[:Offset]] form of parameter ``trace_symbol``.
+    """
+    for a_value in value:
+        value_params = a_value.split(":")
+        if len(value_params)>3:
+            raise click.BadParameter(f"format is <Symbol>[:Length[:Offset]], received {a_value}")
+            
+        if len(value_params)>=2:
+            try:
+                length = int(value_params[1]) & 0xFF
+            except ValueError:
+                raise click.BadParameter(f"When using the format Symbol:Length, Length must be an integer. "
+                                         f"Received {a_value}")
+            if length>255:
+                raise click.BadParameter(f"When using the format Symbol:Length, it should be Length<=255. "
+                                         f"Received {a_value}")
+
+            if len(value_params)==3:
+                try:
+                    offset = int(value_params[2])
+                except ValueError:
+                    raise click.BadParameter(f"When using the format Symbol:Length:Offset, Offset must be an integer."
+                                             f"Received {a_value}")
+                if offset>255:
+                    raise click.BadParameter(f"When using the format Symbol:Length:Offset, it should be Offset<=255. "
+                                             f"Received {a_value}")
+                
+                if (offset+length)>255:
+                    raise click.BadParameter(f"It should be Offset+Length<=255, received {a_value}")
+    return value
+
 @click.command()
 @click.argument("input-file", type=click.Path(exists=True))
-@click.option("--output-trace_file","-otf", type=click.Path(), help="Filename containing trace information in Markdown.")
-@click.option("--output-memdump_file", "-omf", type=click.Path(), help="Filename containing final memory space.")
-@click.option("--title","-t", type=str, help="An optional title for the produced trace.", default="")
-@click.option("--with-dump", "-wd", is_flag=True, help="Whether to include a complete dump of memory at every time step.")
-@click.option("--interactive-mode", "-I", is_flag=True, help="Whether to execute the program in interactive mode.")
-@click.option("--trace-symbol", "-ts", multiple=True, nargs=3, type=(str,int,int), help="Adds a symbol to be traced explicitly.")    
-@click.option("--max-n","-mn", type=int, default=200, help="Maximum number of time steps to allow the sim to run for.")
+@click.option("--output-trace_file","-otf", type=click.Path(), 
+              help="Filename containing trace information in Markdown.")
+@click.option("--output-memdump_file", "-omf", type=click.Path(), 
+              help="Filename containing final memory space.")
+@click.option("--title","-t", type=str, 
+              help="An optional title for the produced trace.", default="")
+@click.option("--with-dump", "-wd", is_flag=True, 
+              help="Whether to include a complete dump of memory at every time step.")
+@click.option("--interactive-mode", "-I", is_flag=True, 
+              help="Whether to execute the program in interactive mode.")
+@click.option("--trace-symbol", "-ts", multiple=True, nargs=1, type=str, callback=validate_trace_symbol, 
+              help="Adds a symbol to be traced in every execution step. The format of TEXT is"
+                   "<Symbol>[:Length[:Offset]]. \nIf only Symbol is provided, it must have been defined in the program "
+                   "for its offset to be automatically determined. In this case, Length will be 1 by default.\nIf "
+                   "Symbol:Length is provided, it must have been defined in the program for its offset to be " 
+                   "automatically determined.\nIf Symbol:Length:Offset is provided, Symbol does not have to have been"
+                   "defined in the ASM program. In this case, Symbol is just a name for a region of memory of Length "
+                   "bytes that starts at Offset.")    
+@click.option("--max-n","-mn", type=int, default=200, 
+              help="Maximum number of time steps to allow the sim to run for.")
 def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, interactive_mode, trace_symbol, max_n):
     """
     Command line program that produces a trace of a Digirule2 binary on simulated hardware.
@@ -582,7 +646,6 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
     :param max_n: The total number of timesteps to allow execution to run for.
     :type max_n:int
     """
-    # TODO: HIGH, trace_symbol needs further validation
     if output_trace_file is None:
         output_trace_file = f"{os.path.splitext(input_file)[0]}_trace.md"
     
@@ -592,13 +655,39 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
     with open(input_file, "rb") as fd:
         compiled_program = pickle.load(fd)
         
+    # Validate the .dgb file
     if type(compiled_program) is not dict:
         raise DgtoolsErrorDgbarchiveCorrupted(f"Archive corrupted.")
     
     if len(set(compiled_program) - {"program", "labels", "symbols"}) != 0:
         raise DgtoolsErrorDgbarchiveCorrupted(f"Archive corrupted.")        
     
-    machine_after_execution = trace_program(compiled_program["program"], output_trace_file, max_n = max_n, trace_title = title, in_interactive_mode=interactive_mode, with_mem_dump=with_dump, extra_symbols=trace_symbol)
+    symbols_to_trace = list(map(lambda x:x.split(":"), trace_symbol))
+    # Validate trace_symbol if any
+    # Create a set of autodiscovery symbols. The symbol is always element 0 and autodiscoverable symbols have a 
+    # length <=2 (i.e. Either Symbol or Symbol:Length)
+    symbols_to_validate = set(map(lambda x:x[0],filter(lambda x:len(x)<=2, symbols_to_trace)))
+    # Check if there are any symbols that are undefined
+    undefined_symbols = symbols_to_validate - set(compiled_program["labels"])
+    if len(undefined_symbols)>0:
+        raise DgtoolsErrorSymbolUndefined(f"Symbol(s) undefined: {undefined_symbols}")
+    # If all is well, format the table of TITLE:OFFSET:LENGTH to be sent to trace_program
+    # Extra symbols is the union of all combinations of forms (just symbol, symbol:len, symbol:len:offset)
+    # This is further "decoded" here, because extra_symbols only understands name,start_addr,stop_addr.
+    # The resolution of symbols takes place externally.
+    extra_symbols = list(map(lambda x:(x[0],compiled_program["labels"][x[0]],1),
+                             filter(lambda x:len(x)==1, symbols_to_trace))) + \
+                    list(map(lambda x:(x[0],compiled_program["labels"][x[0]], int(x[1])), 
+                             filter(lambda x:len(x)==2, symbols_to_trace))) + \
+                    list(map(lambda x:(x[0],compiled_program["labels"][x[0]], int(x[1])), 
+                             filter(lambda x:len(x)==3, symbols_to_trace)))
+    machine_after_execution = trace_program(compiled_program["program"], 
+                                            output_trace_file, 
+                                            max_n = max_n, 
+                                            trace_title = title, 
+                                            in_interactive_mode=interactive_mode, 
+                                            with_mem_dump=with_dump, 
+                                            extra_symbols=extra_symbols)
     compiled_program["program"] = machine_after_execution._mem
     with open(output_memdump_file, "wb") as fd:
         pickle.dump(compiled_program, fd)

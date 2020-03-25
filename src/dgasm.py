@@ -21,7 +21,7 @@ import os
 import pyparsing
 import pickle
 import click
-from exceptions import DgtoolsErrorSymbolAlreadyDefined, DgtoolsErrorSymbolNotFound
+from exceptions import DgtoolsErrorSymbolAlreadyDefined, DgtoolsErrorSymbolUndefined
 
 def get_asm_parser():
     """
@@ -174,7 +174,7 @@ def asm2obj(asm):
             # Make the substitution
             mem[an_entry[0]] = symbols[an_entry[1]]
         else:
-            raise DgtoolsErrorSymbolNotFound(f"Symbol {an_entry[1]} not found.")
+            raise DgtoolsErrorSymbolUndefined(f"Symbol {an_entry[1]} not found.")
             
     return {"program":mem, "labels":labels, "symbols":symbol_offsets}
     

@@ -10,9 +10,20 @@ Usage: dginspect.py [OPTIONS] INPUT_FILE
   functionality off, see option `--no-backup`
 
 Options:
-  -g, --get-mem <TEXT INTEGER INTEGER>...
-                                  Get a memory range (defined as ADDR(INT)
-                                  LENGTH(INT) in bytes and label it by TEXT.
+  -g, --get-mem TEXT              Gets the values of a memory range. The
+                                  format of TEXT is <Symbol>[:Length[:Offset]].
+                                  If only Symbol is provided, it must have
+                                  been defined in the program for its offset
+                                  to be automatically determined. In this
+                                  case, Length will be 1 by default. If
+                                  Symbol:Length is provided, it must have been
+                                  defined in the program for its offset to be
+                                  automatically determined. If
+                                  Symbol:Length:Offset is provided, Symbol
+                                  does not have to have beendefined in the ASM
+                                  program. In this case, Symbol is just a name
+                                  for a region of memory of Length bytes that
+                                  starts at Offset.
 
   -s, --set-mem <INTEGER INTEGER>...
                                   Set a memory value (as Address, Value).
@@ -32,12 +43,19 @@ import sys
 import os
 import pickle
 import click
-from dgsim import mem_dump
+from dgsim import mem_dump, validate_trace_symbol
+from exceptions import DgtoolsErrorSymbolUndefined
 
 @click.command()
 @click.argument("input-file", type=click.Path(exists=True))
-@click.option("--get-mem","-g", multiple=True, type=(str, int, int), nargs=3, 
-              help="Get a memory range (defined as ADDR(INT) LENGTH(INT) in bytes and label it by TEXT.")
+@click.option("--get-mem","-g", multiple=True, type=str, callback=validate_trace_symbol, 
+              help="Gets the values of a memory range. The format of TEXT is "
+                   "<Symbol>[:Length[:Offset]]. \nIf only Symbol is provided, it must have been defined in the program "
+                   "for its offset to be automatically determined. In this case, Length will be 1 by default.\nIf "
+                   "Symbol:Length is provided, it must have been defined in the program for its offset to be " 
+                   "automatically determined.\nIf Symbol:Length:Offset is provided, Symbol does not have to have been"
+                   "defined in the ASM program. In this case, Symbol is just a name for a region of memory of Length "
+                   "bytes that starts at Offset.")
 @click.option("--set-mem","-s",multiple=True, type=(int, int), nargs=2, 
               help="Set a memory value (as Address, Value).")
 @click.option("--set-sym","-sy", multiple=True, type=(str, int), nargs=2, 
@@ -64,16 +82,39 @@ def dginspect(input_file, get_mem, set_mem, set_sym, no_backup):
                      backups off.
     """
     # TODO: HIGH, get_mem, set_mem, set_sym needs further validation
-    # TODO: LOW, DGBArchive can become a separate entity and reduce duplication of checks.
+    # TODO: MID, DGBArchive can become a separate entity and reduce duplication of checks.
     with open(input_file, "rb") as fd:
         compiled_program = pickle.load(fd)
         
+    # Validate the format of the .dgb archive
     if type(compiled_program) is not dict:
         raise DgtoolsErrorDgbarchiveCorrupted(f"Archive corrupted.")
     
     if len(set(compiled_program) - {"program", "labels", "symbols"}) != 0:
         raise DgtoolsErrorDgbarchiveCorrupted(f"Archive corrupted.")        
-
+    
+    # TODO: MID, Reduce code duplication by packaging this validation in a function
+    # Validate any extra memory areas to "get"
+    symbols_to_trace = list(map(lambda x:x.split(":"), get_mem))
+    # Validate trace_symbol if any
+    # Create a set of autodiscovery symbols. The symbol is always element 0 and autodiscoverable symbols have a 
+    # length <=2 (i.e. Either Symbol or Symbol:Length)
+    symbols_to_validate = set(map(lambda x:x[0],filter(lambda x:len(x)<=2, symbols_to_trace)))
+    # Check if there are any symbols that are undefined
+    undefined_symbols = symbols_to_validate - set(compiled_program["labels"])
+    if len(undefined_symbols)>0:
+        raise DgtoolsErrorSymbolUndefined(f"Symbol(s) undefined: {undefined_symbols}")
+    # If all is well, format the table of TITLE:OFFSET:LENGTH to be sent to trace_program
+    # Extra symbols is the union of all combinations of forms (just symbol, symbol:len, symbol:len:offset)
+    # This is further "decoded" here, because extra_symbols only understands name,start_addr,stop_addr.
+    # The resolution of symbols takes place externally.
+    extra_symbols = list(map(lambda x:(x[0],compiled_program["labels"][x[0]],1),
+                             filter(lambda x:len(x)==1, symbols_to_trace))) + \
+                    list(map(lambda x:(x[0],compiled_program["labels"][x[0]], int(x[1])), 
+                             filter(lambda x:len(x)==2, symbols_to_trace))) + \
+                    list(map(lambda x:(x[0],compiled_program["labels"][x[0]], int(x[1])), 
+                             filter(lambda x:len(x)==3, symbols_to_trace)))
+                                 
     sys.stdout.write(f"Inspecting {input_file}\n")
     sys.stdout.write(f"Program:\n{compiled_program['program']}\n\n")
     sys.stdout.write(f"Label offsets:\n{compiled_program['labels']}\n\n")
@@ -82,7 +123,7 @@ def dginspect(input_file, get_mem, set_mem, set_sym, no_backup):
     if len(get_mem)>0:
         # Build the get mem symbols here
         mem_vals = ""
-        for a_symbol in get_mem:
+        for a_symbol in extra_symbols:
             mem_vals+=f"{a_symbol[0]}: {compiled_program['program'][a_symbol[1]:(a_symbol[1]+a_symbol[2])]}\n"
         sys.stdout.write(f"Specific memory areas:\n{mem_vals}\n\n")
     

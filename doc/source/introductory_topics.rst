@@ -1,8 +1,7 @@
 Introducing ``dgtools``
 =======================
 
-The objective of this introductory section is to demontrate the key use cases of ``dgtools`` via a walkthrough 
-by example.
+The objective of this introductory section is to demonstrate the key use cases of ``dgtools`` by example.
 
 Digirule 2 ASM knowledge is not essential, but definitely favourable. This walkthrough is based on the very simple 
 example of adding two numbers which goes through 5 revisions here, each one introducing one new feature or capability 
@@ -40,8 +39,8 @@ Followed optionally by:
     > pandoc ../data/intro/simpleadd_1_trace.md>../data/intro/simpleadd_1_trace.html
 
 
-If you now open that trace on a browser and scroll all the way down to the last command, you can confirm the value that 
-the accumulator holds.
+If you now open that trace on a browser and scroll all the way down to the last time step, you can confirm the value 
+that the accumulator holds.
  
 
 .. _simple_add_with_mem:
@@ -69,8 +68,9 @@ Our new listing is now:
     
 This listing is available in :download:`../../data/intro/simpleadd_2.asm`
 
-Here, there are three labels that simply "tag" three locations in memory that hold initial literal values.
-These are "hard coded" into the program but to get a full dump of the memory space along with **every** time step 
+Here, there are three labels (``r0, r1, r2``) that simply "tag" three locations in memory that hold initial literal 
+values (``1, 1 ,0`` respectively).
+These are *hard coded* into the program here. To get a full dump of the memory space at **every** time step 
 of execution, we will need to run ``dgsim`` with an extra parameter. The complete workflow is as follows:
 
 .. code::
@@ -86,16 +86,15 @@ involves the use of ``dginspect`` as follows:
 
 1. Compile the program: 
     * ``> ./dgasm.py ../data/intro/simpleadd_2.asm``
-2. Use ``dginspect`` to obtain the address that ``r3`` points to:
+2. Use ``dginspect`` to obtain all defined symbols and their addresses:
     * ``> ./dginspect.py ../data/intro/simpleadd_2.dgb``
-    * Simply note the number next to ``r3``.
 3. Run ``dgsim`` telling it to "track" ``r3``:
-    * ``> ./dgsim.py ../data/intro/simpleadd_2.dgb -ts r3 9 1``
+    * ``> ./dgsim.py ../data/intro/simpleadd_2.dgb -ts r3``
 
 Adding multiple ``-ts`` options, keeps adding named references for ``dgsim`` to track. For example, suppose we wanted 
 to track all three memory locations, then step 3 would become: 
 
-``> ./dgsim.py ../data/intro/simpleadd_2.dgb -ts r0 7 1 -ts r1 8 1 -ts r3 9 1``
+``> ./dgsim.py ../data/intro/simpleadd_2.dgb -ts r0 -ts r1 -ts r3``
 
 For an example of the sort of output produced by ``dgsim``, you can see 
 `this Markdown file (simpleadd_2_trace.md) <_static/simpleadd_2_trace.md>`_ or, the same file having passed 
@@ -105,9 +104,11 @@ Adding two literals, sending the output to the Data LEDs
 --------------------------------------------------------
 
 Certain registers of the Digirule 2 are memory mapped. For example, the Data LEDs are accessible at address 255.
-``dgasm`` allows the definition of "symbols" that point to specific expressions. In the future, these symbols might 
-expand to whole expressions but for the moment they are used to define constants. These constants do not take up 
-memory space. When the assembler comes across a "symbol" it simply substitutes what it points to.
+``dgasm`` allows the definition of "symbols" that resolve to specific expressions. At the moment, "symbols" are used to
+define numeric constants, but in the future, these symbols might expand to whole expressions, akin to C's macros. 
+
+Defining constants in this way does not take up any memory space. When the assembler comes across a "symbol" defined in 
+this way, it simply substitutes its value.
 
 The code now is:
 
@@ -210,15 +211,15 @@ The complete workflow is as follows, notice here *which .dgb file is inspected f
 2. Run the program
     * ``> ./dgsim.py ../data/intro/simpleadd_5.dgb``
 3. Inspect the result as stored in `r3`
-    * ``> ./dginspect.py ../data/intro/simpleadd_5_memdump.dgb -g r3 7 1`` 
+    * ``> ./dginspect.py ../data/intro/simpleadd_5_memdump.dgb -g r3`` 
     * With the program in its original form, this value should be ``2``.
 4. **Change parameter a to 3**
-    * ``> ./dginspect.py ../data/intro/simpleadd_5.dgb -g a 3``
+    * ``> ./dginspect.py ../data/intro/simpleadd_5.dgb -sy a 3``
     * Don't worry about overwriting ``simpleadd_5.dgb``, its original form is still maintained in a ``.bak`` file.
 5. Run the program again
     * ``> ./dgsim.py ../data/intro/simpleadd_5.dgb``
 6. Inspect the final result now
-    * ``> ./dginspect.py ../data/intro/simpleadd_5_memdump.dgb -g r3 7 1`` 
+    * ``> ./dginspect.py ../data/intro/simpleadd_5_memdump.dgb -g r3`` 
     * With the parameters given here, this value should be ``4``
     
 
