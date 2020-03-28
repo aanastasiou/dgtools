@@ -1,7 +1,5 @@
-TODO List as of Wed Mar 25 23:51:56 GMT 2020
-../src/dgasm.py:34 TODO: HIGH, This grammar can parse comments as well but they are not yet enabled. Enable them.
+TODO List as of Sat Mar 28 11:09:34 GMT 2020
 ../src/dgasm.py:117 TODO: HIGH, The parser needs to be flagging parse errors along with the locations where these happened.
-../src/dgasm.py:127 TODO: HIGH, To enable comments, modify how the AST is interpreted here.
 ../src/dginspect.py:111 TODO: MID, DGBArchive can become a separate entity and reduce duplication of checks.
 ../src/dginspect.py:125 TODO: MID, Reduce code duplication by packaging this validation in a function
 ../src/dgsim.py:71 TODO: MED, There might be constraints in the depth of this stack. Not yet implemented.

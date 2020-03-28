@@ -1,6 +1,11 @@
-.EQU status_reg=252
-.EQU rnd_state=42
-.EQU gen_n_numbers=10
+# Implements a very simple random number generator using 
+# an 8bit Linear Feedback Shift Register (LFSR)
+
+.EQU status_reg=252    # Status register on the Digirule2
+.EQU rnd_state=42      # Initial state for the random number generator
+.EQU gen_n_numbers=10  # Number of random numbers to generate
+
+# Put `array_idx` at the start of `array`
 COPYLR array array_idx
 start:
 COPYRA state

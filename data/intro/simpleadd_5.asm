@@ -1,3 +1,5 @@
+# Implements `r3 = a + b`
+
 .EQU a=1
 .EQU b=1
 COPYLA a

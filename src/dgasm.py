@@ -31,7 +31,6 @@ def get_asm_parser():
         
         * See inline comments for specification of the grammar
     """
-    # TODO: HIGH, This grammar can parse comments as well but they are not yet enabled. Enable them.
     # Action functions to convert valid string literals to numbers
     uchar2num = lambda toks:int(toks[0])
     buchar2num = lambda toks:int(toks[0],2)
@@ -97,13 +96,14 @@ def get_asm_parser():
     dir_equ = pyparsing.Group(pyparsing.Regex(".EQU")("cmd") + identifier("idf") + pyparsing.Suppress("=") + literal("value"))("def_equ")
     # Comments
     # A line of ASM code is either a comment or code with an optional inline comment
-    #dir_comment = pyparsing.Group(pyparsing.Suppress("#") + pyparsing.Regex(r".*?\n")("text"))("def_comment")
-    #program_statement = pyparsing.Group((asm_statement ^ pyparsing.Group(dir_label ^ dir_db ^ dir_equ ^ dir_comment)) + pyparsing.Optional(dir_comment))
-    program = pyparsing.OneOrMore(asm_statement ^ pyparsing.Group(dir_label ^ dir_db ^ dir_equ))
-    #program = pyparsing.OneOrMore(program_statement)
-    # program.ignore(dir_comment)
-    return program    
-    
+    prog_or_dir_statement = pyparsing.Group(asm_statement ^ pyparsing.Group(dir_label ^ dir_db ^ dir_equ))("prog_dir_statement")
+    dir_comment = pyparsing.Group(pyparsing.Suppress("#") + pyparsing.Regex(r".*?\n")("text"))("def_comment")
+    dir_code_comment = pyparsing.Group(dir_comment ^ (prog_or_dir_statement + pyparsing.Optional(dir_comment)))
+    program = pyparsing.OneOrMore(dir_code_comment)
+    # In the end, ignore the comments.
+    program.ignore(dir_comment)
+    return program 
+       
 def asm2obj(asm):
     """
     Assembles a binary for the Digirule target architecture from an "asm" definition.
@@ -124,8 +124,7 @@ def asm2obj(asm):
     # While doing that, keep track of where labels and symbols appear. These will be substituted
     # in the second pass.
     for a_line in parsed_code:
-        # TODO: HIGH, To enable comments, modify how the AST is interpreted here.
-        command, arguments = list(a_line.items())[0]
+        command, arguments = list(a_line["prog_dir_statement"][0].items())[0]
         if command == "def_label":
             # Tie the label to where it points to
             if arguments["idf"] not in labels:

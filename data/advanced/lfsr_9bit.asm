@@ -1,7 +1,16 @@
-.EQU status_reg=252
-.EQU data_led=255
-.EQU rnd_state=42
-.EQU gen_n_numbers=10
+# Implements a very simple random number generator 
+# using a 9bit LFSR. The one extra bit is coming from the 
+# carry flag on the Digirule2, because its `SHIFTRR, SHIFTRL` 
+# commands perform shift THROUGH the carry.
+
+# To make this random number generator re-usable, we would have 
+# to store the carry bit as well between calls, consuming two 
+# bytes of memory.
+
+.EQU status_reg=252      # Status register on the Digirule2
+.EQU data_led=255        # LED register
+.EQU rnd_state=42        # Initial state for the random number generator
+.EQU gen_n_numbers=10    # How many numbers to generate
 COPYLR array array_idx
 start:
 BCRSS 0 state

@@ -1,3 +1,10 @@
+# Demonstrates the use of the stack to perform function calls
+# Positional arguments to a function are pushed on to the stack prior to calling the function
+# The function reads arguments in (poping them from the stack) and when it is done, pushes the 
+# result back on to the stack.
+#
+# The function that is implemented is `a + b` and the result is also sent to the display.
+
 .EQU a=1
 .EQU b=2
 
@@ -12,6 +19,12 @@ COPYRR r0 255
 HALT
 
 q_add_ab:
+# A very simple function to add two numbers
+# This is equivalent to
+#
+# def q_add_ab(a,b):
+#    return a+b
+#
 CALL f_pop
 COPYRR r0 t0
 CALL f_pop

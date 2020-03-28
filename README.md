@@ -1,6 +1,6 @@
-# DGTOOLS
+# dgtools
 
-DGTools is a set of tools for developing software for a...ruler.
+dgtools is a set of tools for developing software for a...ruler.
 
 Not just any ruler, but the [Digirule2](https://bradsprojects.com/digirule2/) by bradsprojects.
 

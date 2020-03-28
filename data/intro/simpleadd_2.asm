@@ -1,3 +1,6 @@
+# Implements the addition of two variables.
+# This is equivalent to the statement `r3 = r0 + r1`.
+
 COPYRA r0
 ADDRA r1
 COPYAR r3

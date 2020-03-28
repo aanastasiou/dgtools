@@ -1,7 +1,10 @@
-.EQU status_reg=252
-.EQU led_reg=255
-.EQU delay_count=255
-.EQU speed_setting=55
+# Implements a very simple Persistence of Vision (POV) light stick 
+# in the Digirule2
+ 
+.EQU status_reg=252    # Status register on the Digirule2
+.EQU led_reg=255       # Display register
+.EQU delay_count=255   # Time between LED flashes   
+.EQU speed_setting=55  # Speed setting for the whole CPU
 SPEED speed_setting
 CBR 2 status_reg
 COPYLR led_reg f_to
