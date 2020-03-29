@@ -50,8 +50,8 @@ Throughout those:
 Memory Operations
 -----------------
 
-Copy by reference
-^^^^^^^^^^^^^^^^^
+Indirect Copy
+^^^^^^^^^^^^^
 
 As demonstrated in section :ref:`advanced-topics`, there is a clear need for an indirect copy command. That is, a copy
 command that can copy between memory offsets stored in memory.
@@ -118,23 +118,25 @@ One practical example is provided in the Pseudorandom Number Generator (PRNG) th
 Register. In this technique, it is required to shift and XOR the current state of the PRNG to calculate the value of the
 bit at its input. 
 
-Therefore, in cases like these, where only a shift is required, offering a plain ``SHR`` command would help in
+Therefore, in cases like these, where only a shift is required, offering a plain ``SH*`` command would help in
 conserving memory.
 
 
 Flow control commands
 ---------------------
 
-Indirect ``JUMP``
-^^^^^^^^^^^^^^^^^
+Indirect ``JUMP`` and ``CALL``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Similarly to the reasoning of the indirect version of ``COPYRR``, an indirect version of ``JUMP addr`` would simply 
-jump to memory location ``mem[mem[addr]]``.
+Similarly to the reasoning of the indirect version of ``COPYRR``, an indirect version of ``JUMP addr, CALL addr`` would 
+simply jump to memory location ``mem[mem[addr]]``.
 
-This is already implemented currently through ``ADDRPC`` but requires an addition and it also does not hint at a 
-``JUMP`` operation.
+To an extent, this is already implemented currently through ``ADDRPC`` but requires an addition and it also does not 
+hint at a ``JUMP`` operation.
 
-The suggestion here is for ``ADDRPC`` to be dropped and become the indirect version of ``JUMP``.
+Being able to transfer execution in such a way would also enable functions to be passed as parameters to other
+functions.
 
+Therefore, the suggestion here is to add indirect versions of these two commands.
 
 

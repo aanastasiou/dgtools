@@ -1,3 +1,5 @@
+.. _pov_light_stick:
+
 POV Light Stick
 ===============
 
@@ -180,3 +182,13 @@ This is part of :download:`../../data/advanced/pov.asm`
 One thing to notice here is that whenever a variable was required it was simply allocated. It is however possible to 
 write a more optimised version of this code that uses less memory. However, even at this sloppy level the program 
 ends up being very very small, leaving as much memory free as possible for......user defined bitmaps.
+
+
+Conclusion
+----------
+
+This example, shows a way of "drawing" images using one row of LEDs on the Digirule2. However, the "output device", 
+the "screen", of the Digirule2 has two rows of 8 pixels.
+
+Therefore, it would be possible to reduce the flickering rate by display two rows at the time or even create a 
+"scrolling image" through a "window" that is just 2x7 wide. 

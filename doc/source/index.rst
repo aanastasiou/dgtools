@@ -8,11 +8,13 @@ Welcome to dgtools's documentation!
 
 .. image:: _static/my_digirule2.jpeg
 
-``dgtools`` is composed of an assembler (``dgasm``), a binary file "inspector" (``dginspect``) and a simulator
-(``dgsim``) that can be used together to develop code for the `Digirule 2 <https://bradsprojects.com/digirule2/>`_
-hardware.
+``dgtools`` is a mini-toolchain for compiling and testing ASM programs for the 
+`Digirule 2 <https://bradsprojects.com/digirule2/>`_. 
 
-For an example of the level of detail of program execution, please see 
+It is composed of an assembler (``dgasm``), a binary file "inspector" (``dginspect``) and a simulator
+(``dgsim``) that can be used together to develop and test code and also assist in "keying" it in, to .
+
+For an example of the level of detail in terms of simulating program execution, please see 
 `this sample output file <_static/simpleadd_2_trace.html>`_ and keep reading through the introductory section to 
 generate traces of your own code.
 

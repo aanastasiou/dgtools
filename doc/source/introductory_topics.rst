@@ -43,7 +43,7 @@ Followed optionally by:
 
 If you now open that trace on a browser and scroll all the way down to the last time step, you can confirm the value 
 that the accumulator holds.
- 
+
 
 .. _simple_add_with_mem:
 
@@ -138,14 +138,62 @@ If we now run ``dginspect`` with ``> ./dginspect.py ../data/intro/simpleadd_3.dg
 separate sections of offsets, the "Label" and "Static Symbol". Both of these show offsets within the program memory 
 where **a label points to** and where **a literal value would be substituted at**.
 
+Since this program now produces some sort of output we can try to "key it in" to the Digirule 2. To make this process 
+easier, ``dginspect`` includes the ``-b`` option that "dumps" the complete assembled memory region as pairs of 
+``ADDR:VALUE`` values *formatted in binary*. To key the program in, just make sure that a given memory address on 
+the Digirule2 (indicated by the A0-7 LEDs) maps to the corresponding ``VALUE`` (indicated by the D0-7 LEDs).
+
+To see what this looks like:
+
+.. code::
+
+    > ./dginspect.py ../data/intro/simpleadd_3.dgb -b
+    
+This will simply dump everything to ``stdout``, which means that it can be stored to be reviewed later with:
+
+.. code::
+
+    > ./dginspect.py ../data/intro/simpleadd_3.dgb -b>add3_bin_output.txt
+    
+Or, if you are in Linux, simply send it to `less <https://en.wikipedia.org/wiki/Less_(Unix)>`_ with:
+
+.. code::
+
+    > ./dginspect.py ../data/intro/simpleadd_3.dgb|less
+
+In either cae, the binary dump for ``simpleadd_3.dgb`` would look like this:
+
+.. code::
+    
+        ADDR:VALUE   
+    00000000:00000100
+    00000001:00000001
+    00000010:00001000
+    00000011:00000001
+    00000100:00000101
+    00000101:00001001
+    00000110:00000101
+    00000111:11111111
+    00001000:00000000
+    00001001:00000000
+    00001010:00000000
+    00001011:00000000
+    ...
+    ...
+    ...
+    ...
+    ...
+
+
+
 Adding a literal and a user supplied input
 ------------------------------------------
 
-The Digirule 2 has an elementary input device attached to the CPU at address ``253``. Reading that "register" allows 
-the program to read user input in the form of a binary number. 
+The Digirule 2 has an elementary input device, a keyboard, attached to the CPU at address ``253``. Reading that 
+"register" allows the program to read user input in the form of a binary number. 
 
 The Digirule 2 Virtual Machine includes a flexible mechanism that is called *interactive mode* that allows the 
-simulation to take user input into account. This is specified to ``dgsim`` with ``-I``.
+simulation to take user input into account. This is specified to ``dgsim`` with option ``-I``.
 
 The code listing for this example is as follows:
 
@@ -223,6 +271,9 @@ The complete workflow is as follows, notice here *which .dgb file is inspected f
 6. Inspect the final result now
     * ``> ./dginspect.py ../data/intro/simpleadd_5_memdump.dgb -g r3`` 
     * With the parameters given here, this value should be ``4``
+    
+7. Start keying the final result in with:
+    * ``> ./dginspect.py ../data/intro/simpleadd_5_memdump.dgb -b``
     
 
 This is probably the most involved workflow using ``dgtools`` to take full control of program execution.

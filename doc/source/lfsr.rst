@@ -4,15 +4,16 @@ Pseudorandom Number Generator (PRNG)
 The availability of random numbers in modern computers is taken for granted. We always assume that it will be possible
 to simulate the throw of a dice by calling a function that "magically" returns a random number.
 
+
 But, where do random numbers come from and how can we use the Digirule2 to generate a few?
 
 The Linear Feedback Shift Register (LFSR)
 -----------------------------------------
 
 This section demonstrates a very simple, but effective technique of producing a series of random numbers using 
-Digirule2 ASM. This technique is based on a "shift register" and it does not really require a "program" to be implemented
-since it is possible to build it on a breadboard out of discrete components or even program it on a Field Programmable 
-Gate Array (FPGA).
+Digirule2 ASM. This technique is based on a "shift register" and it does not really have to be implemented in 
+software since it is possible to build it on a breadboard out of discrete components or even program it on a 
+Field Programmable Gate Array (FPGA).
 
 Its operation is very simple, an exclusive OR (XOR) function over the current binary number stored in the register is 
 used to produce a 0/1 result. Then, the bits in the register are shifted to the right and the XOR result is sent to 
@@ -201,3 +202,15 @@ produces these numbers: ``149, 202, 229, 114, 185, 220, 238, 119, 187, 221``
 
 The complete listing adds parameters for the initial state of the register and how many numbers to generate and is 
 available in :download:`../../data/advanced/lfsr_9bit.asm`
+
+Conclusion
+----------
+
+Providing the ability to generate random numbers on the Digirule2 means that we can now set new "random" objectives in 
+games.
+
+For example, one of the Digirule2 demos is a game of "Guess the number", where the player tries to guess a hidden number
+in as few guesses as possible. 
+
+With a random number generator, it is now possible to make the game restart, with a new unknown number challenge 
+for the player, or have the :ref:`pov_light_stick` display random "images".

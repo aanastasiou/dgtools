@@ -1,7 +1,8 @@
-TODO List as of Sat Mar 28 11:09:34 GMT 2020
+TODO List as of Sun Mar 29 16:30:52 BST 2020
 ../src/dgasm.py:117 TODO: HIGH, The parser needs to be flagging parse errors along with the locations where these happened.
-../src/dginspect.py:111 TODO: MID, DGBArchive can become a separate entity and reduce duplication of checks.
-../src/dginspect.py:125 TODO: MID, Reduce code duplication by packaging this validation in a function
+../src/dginspect.py:111 TODO: HIGH, Add a mode that only generates an update of the VM state when the state of one of the tracked symbols changes
+../src/dginspect.py:112 TODO: MID, DGBArchive can become a separate entity and reduce duplication of checks.
+../src/dginspect.py:126 TODO: MID, Reduce code duplication by packaging this validation in a function
 ../src/dgsim.py:71 TODO: MED, There might be constraints in the depth of this stack. Not yet implemented.
 ../src/dgsim.py:87 TODO: LOW, Make the speed setting functional
 ../src/dgsim.py:233 TODO: MED, addr cannot go higher than 252 or it will overwrite peripherals. It should generate a warning.

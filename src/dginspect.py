@@ -108,6 +108,7 @@ def dginspect(input_file, list_binary, get_mem, set_mem, set_sym, no_backup):
     :param no_backup: By default, this function creates a backup file if it were to modify memory. This option turns 
                      backups off.
     """
+    # TODO: HIGH, Add a mode that only generates an update of the VM state when the state of one of the tracked symbols changes
     # TODO: MID, DGBArchive can become a separate entity and reduce duplication of checks.
     with open(input_file, "rb") as fd:
         compiled_program = pickle.load(fd)

@@ -3,7 +3,7 @@
 Advanced Digirule 2 Programming
 ===============================
 
-``dgtools`` provides an assembler that can manage labels as memory addresses and this makes it possible to start 
+``dgtools`` provides an assembler that can interpret labels as memory addresses and this makes it possible to start 
 creating more involved programs. 
 
 However, one thing that the Digirule hardware itself does not specify is a stack which is an important part of 
@@ -23,6 +23,7 @@ at the "head" of the stack.
 The only problem here is that the Digirule 2 instruction set does not support **indirect memory access**. The command 
 `COPYRR` copies memory **content** from one address to another address but (out of the box) it cannot copy memory from 
 the **value** of a memory address (i.e. where a memory location is pointing to), to the **value** of another address. 
+
 
 Implementing indirect memory access
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
