@@ -21,7 +21,7 @@ Adding two literals is a matter of three commands in Digirule 2 ASM:
     HALT
 
 
-(This listing is available in :download:`data/intro/simpleadd_1.asm <../../data/intro/simpleadd_1.asm>`)
+(This listing is available in :download:`data/intro/simpleadd_1.dsf <../../data/intro/simpleadd_1.dsf>`)
 
 Copy literal 1 to the accumulator, add literal 1 to the accumulator and stop.
 At the end of this program, we expect the accumulator to have the value ``2``.
@@ -30,7 +30,7 @@ To verify this using ``dgtools``, run the following (from within the ``src`` dir
 
 .. code::
 
-    > ./dgasm.py ../data/intro/simpleadd_1.asm
+    > ./dgasm.py ../data/intro/simpleadd_1.dsf
     > ./dgsim.py ../data/intro/simpleadd_1.dgb
 
 
@@ -68,7 +68,7 @@ Our new listing is now:
     r3:
     .DB 0
     
-This listing is available in :download:`../../data/intro/simpleadd_2.asm`
+This listing is available in :download:`../../data/intro/simpleadd_2.dsf`
 
 Here, there are three labels (``r0, r1, r2``) that simply "tag" three locations in memory that hold initial literal 
 values (``1, 1 ,0`` respectively).
@@ -77,7 +77,7 @@ of execution, we will need to run ``dgsim`` with an extra parameter. The complet
 
 .. code::
 
-    > ./dgasm.py ../data/intro/simpleadd_2.asm
+    > ./dgasm.py ../data/intro/simpleadd_2.dsf
     > ./dgsim.py ../data/intro/simpleadd_2.dgb --with-dump
 
 Compiling and running this program will result in a slightly longer ``_trace.md`` file, but again, scrolling all the 
@@ -87,7 +87,7 @@ A more convenient way to monitor specifically the value of ``r3`` is to tell ``d
 involves the use of ``dginspect`` as follows:
 
 1. Compile the program: 
-    * ``> ./dgasm.py ../data/intro/simpleadd_2.asm``
+    * ``> ./dgasm.py ../data/intro/simpleadd_2.dsf``
 2. Use ``dginspect`` to obtain all defined symbols and their addresses:
     * ``> ./dginspect.py ../data/intro/simpleadd_2.dgb``
 3. Run ``dgsim`` telling it to "track" ``r3``:
@@ -125,7 +125,7 @@ The code now is:
     r3:
     .DB 0
 
-This listing is available in :download:`../../data/intro/simpleadd_3.asm`
+This listing is available in :download:`../../data/intro/simpleadd_3.dsf`
 
 This program can be tried out in one of the ways that were explained previously. 
 
@@ -207,7 +207,7 @@ The code listing for this example is as follows:
     r3:
     .DB 0
 
-This listing is available in :download:`../../data/intro/simpleadd_4.asm`
+This listing is available in :download:`../../data/intro/simpleadd_4.dsf`
 
 The compilation process is the same as previously, but since this program attempts to read from address `253`, 
 we might want to try the code over real user input. To achieve this, we modify the call to `dgsim` as follows:
@@ -215,7 +215,7 @@ we might want to try the code over real user input. To achieve this, we modify t
 
 .. code::
 
-    > ./dgasm.py ../data/intro/simpleadd_4.asm
+    > ./dgasm.py ../data/intro/simpleadd_4.dsf
     > ./dgsim.py ../data/intro/simpleadd_4.dgb -I
 
 This time around, once the CPU tries to read from ``253``, the user will be prompted to provide a **binary** input 
@@ -246,7 +246,7 @@ space as follows:
     r3:
     .DB 0
 
-This listing is available in :download:`../../data/intro/simpleadd_5.asm`
+This listing is available in :download:`../../data/intro/simpleadd_5.dsf`
 
 This program specifies two "symbols" ``a,b`` which hold literals that participate in addition and one label ``r3`` that 
 points to a one byte memory location that receives the result of the addition.
@@ -257,7 +257,7 @@ and ``r3`` will be the memory location that holds the final result.
 The complete workflow is as follows, notice here *which .dgb file is inspected for the results of the calculation*:
 
 1. Compile the program
-    * ``> ./dgasm.py ../data/intro/simpleadd_5.asm``
+    * ``> ./dgasm.py ../data/intro/simpleadd_5.dsf``
 2. Run the program
     * ``> ./dgsim.py ../data/intro/simpleadd_5.dgb``
 3. Inspect the result as stored in `r3`

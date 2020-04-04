@@ -61,7 +61,7 @@ Here for example is the letter ``A``:
     pov_data_len:
     .DB 8
     
-This is part of :download:`../../data/advanced/pov.asm`
+This is part of :download:`../../data/advanced/pov.dsf`
 
 There is no reason for this bitmap to strictly be an 8x8 bitmap but to let the code know of its length we also define 
 the variable ``pov_data_len`` with a static value of 8, for this bitmap.
@@ -114,7 +114,7 @@ The delay routine is as simmple as:
     RETURN
 
 
-This is part of :download:`../../data/advanced/pov.asm`
+This is part of :download:`../../data/advanced/pov.dsf`
 
 
 Putting it all together
@@ -176,7 +176,7 @@ The main loop for the light stick is available below:
     r1:
     .DB 0
 
-This is part of :download:`../../data/advanced/pov.asm`
+This is part of :download:`../../data/advanced/pov.dsf`
 
 
 One thing to notice here is that whenever a variable was required it was simply allocated. It is however possible to 

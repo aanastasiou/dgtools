@@ -104,18 +104,15 @@ def get_asm_parser():
     program.ignore(dir_comment)
     return program 
        
-def asm2obj(asm):
+def asm_ast_to_obj(parsed_code):
     """
-    Assembles a binary for the Digirule target architecture from an "asm" definition.
+    Transforms the parsed AST to a binary for the Digirule target architecture
     
-    :param asm: A string of ASM commands, just as it would be read from a text file.
-    :type asm: str
-    :returns: A dictionary of compiled code, symbols and variable offsets
-    :rtype: dict<"program":list<uint8>, "labels":dict<str, int>>, "symbols":dict<str,int>>
+    :param asm: Parsed ASM text, EXCLUDING COMMENT tags.
+    :type asm: list<pyparsing.ParseElement>
+    :returns: A dictionary of compiled code, symbols and variable offsets or the parsexception at failure
+    :rtype: dict<"program":list<uint8>, "labels":dict<str, int>>, "symbols":dict<str,int>>, pyparsing.ParseException
     """
-    parser = get_asm_parser()
-    # TODO: HIGH, The parser needs to be flagging parse errors along with the locations where these happened.
-    parsed_code = parser.parseString(asm)
     mem = [0 for k in range(0,256)]
     mem_ptr = 0
     labels = {}
@@ -195,11 +192,24 @@ def dgasm(input_file, output_file):
     """
     if output_file is None:
         output_file = f"{os.path.splitext(input_file)[0]}.dgb"
+    
     with open(input_file, "rt") as fd:
         asm_code_text = fd.read()
-    asm_code_compiled = asm2obj(asm_code_text)
+    
+    parser = get_asm_parser()
+    
+    try:
+        parsed_code = parser.parseString(asm_code_text, parseAll=True)
+    except pyparsing.ParseException as e:
+        print(f"  File \"{input_file}\", line {e.lineno}, col {e.col}")
+        print(f"    {e.line}")
+        print(f"Syntax Error: {e.args[2]}")
+        sys.exit(1)
+        
+    asm_code_compiled = asm_ast_to_obj(parsed_code)
+    
     with open(output_file, "wb") as fd:
         pickle.dump(asm_code_compiled, fd)
-
+        
 if __name__ == "__main__":
     dgasm()

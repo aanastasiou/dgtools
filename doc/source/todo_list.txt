@@ -1,5 +1,4 @@
-TODO List as of Sun Mar 29 16:30:52 BST 2020
-../src/dgasm.py:117 TODO: HIGH, The parser needs to be flagging parse errors along with the locations where these happened.
+TODO List as of Sat Apr 4 15:08:09 BST 2020
 ../src/dginspect.py:111 TODO: HIGH, Add a mode that only generates an update of the VM state when the state of one of the tracked symbols changes
 ../src/dginspect.py:112 TODO: MID, DGBArchive can become a separate entity and reduce duplication of checks.
 ../src/dginspect.py:126 TODO: MID, Reduce code duplication by packaging this validation in a function
