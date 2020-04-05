@@ -1,4 +1,4 @@
-# dgtools/extra
+# dgtools/extras
 
 Peripheral files to aid development in Digirule ASM.
 
