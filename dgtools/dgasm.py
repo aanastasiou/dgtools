@@ -21,7 +21,7 @@ import os
 import pyparsing
 import pickle
 import click
-from exceptions import DgtoolsErrorSymbolAlreadyDefined, DgtoolsErrorSymbolUndefined
+from dgtools.exceptions import DgtoolsErrorSymbolAlreadyDefined, DgtoolsErrorSymbolUndefined
 
 def get_asm_parser():
     """

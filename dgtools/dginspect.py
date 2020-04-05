@@ -50,7 +50,7 @@ import os
 import pickle
 import click
 from dgsim import mem_dump, validate_trace_symbol
-from exceptions import DgtoolsErrorSymbolUndefined
+from dgtools.exceptions import DgtoolsErrorSymbolUndefined
 
 def binary_listing(a_program):
     """

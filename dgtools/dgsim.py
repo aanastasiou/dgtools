@@ -51,7 +51,7 @@ import pickle
 import click
 import os
 import types
-from exceptions import DgtoolsErrorOpcodeNotSupported, DgtoolsErrorDgbarchiveCorrupted, DgtoolsErrorSymbolUndefined
+from dgtools.exceptions import DgtoolsErrorOpcodeNotSupported, DgtoolsErrorDgbarchiveCorrupted, DgtoolsErrorSymbolUndefined
 
 class Digirule:
     """
