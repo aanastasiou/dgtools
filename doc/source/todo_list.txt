@@ -1,12 +1,12 @@
-TODO List as of Sat Apr 4 15:08:09 BST 2020
-../src/dginspect.py:111 TODO: HIGH, Add a mode that only generates an update of the VM state when the state of one of the tracked symbols changes
-../src/dginspect.py:112 TODO: MID, DGBArchive can become a separate entity and reduce duplication of checks.
-../src/dginspect.py:126 TODO: MID, Reduce code duplication by packaging this validation in a function
-../src/dgsim.py:71 TODO: MED, There might be constraints in the depth of this stack. Not yet implemented.
-../src/dgsim.py:87 TODO: LOW, Make the speed setting functional
-../src/dgsim.py:233 TODO: MED, addr cannot go higher than 252 or it will overwrite peripherals. It should generate a warning.
-../src/dgsim.py:257 TODO: LOW, Obviously, each command can be abstracted in its own callback so that the VM becomes easily 
-../src/dgsim.py:264 TODO: LOW, Unsupported opcodes could be intercepted and re-interpreted?
-../src/dgsim.py:407 TODO: MED, In CBR and SBR, if the bit is zero, it should raise an error at compile time.
-../src/dgsim.py:439 TODO: MED, If you get a RETLA without first having called CALL, it should raise an exception at compile time.
-../src/dgsim.py:512 TODO: MED, The character translation table can be improved here to get rid of the >9 and clarify depictions.
+TODO List as of Sun Apr 5 18:52:13 BST 2020
+../dgtools/dginspect.py:111 TODO: HIGH, Add a mode that only generates an update of the VM state when the state of one of the tracked symbols changes
+../dgtools/dginspect.py:112 TODO: MID, DGBArchive can become a separate entity and reduce duplication of checks.
+../dgtools/dginspect.py:126 TODO: MID, Reduce code duplication by packaging this validation in a function
+../dgtools/dgsim.py:71 TODO: MED, There might be constraints in the depth of this stack. Not yet implemented.
+../dgtools/dgsim.py:87 TODO: LOW, Make the speed setting functional
+../dgtools/dgsim.py:233 TODO: MED, addr cannot go higher than 252 or it will overwrite peripherals. It should generate a warning.
+../dgtools/dgsim.py:257 TODO: LOW, Obviously, each command can be abstracted in its own callback so that the VM becomes easily 
+../dgtools/dgsim.py:264 TODO: LOW, Unsupported opcodes could be intercepted and re-interpreted?
+../dgtools/dgsim.py:407 TODO: MED, In CBR and SBR, if the bit is zero, it should raise an error at compile time.
+../dgtools/dgsim.py:439 TODO: MED, If you get a RETLA without first having called CALL, it should raise an exception at compile time.
+../dgtools/dgsim.py:512 TODO: MED, The character translation table can be improved here to get rid of the >9 and clarify depictions.

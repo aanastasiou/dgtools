@@ -6,8 +6,8 @@ Since the Digirule2 has limited memory, it does pay off to implement slightly mo
 this is what is meant here by "efficiency". *Saving bytes of memory while achieving the same end result*.
 
 For example, the Digirule2 instruction set contains both a ``SUBLA`` and an ``ADDLA`` commands when it could only have
-offered an ``ADDLA`` and let the user perform subtractions in `two's complement <https://en.wikipedia.org/wiki/Two%27s_complement>`_
-by inverting the second operand.
+offered an ``ADDLA`` and let the user perform subtractions in 
+`two's complement <https://en.wikipedia.org/wiki/Two%27s_complement>`_ by inverting the second operand.
 
 Here is what this looks like when trying to calculate ``4-2``:
 

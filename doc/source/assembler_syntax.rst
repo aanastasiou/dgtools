@@ -1,7 +1,7 @@
 Assembler Syntax
 ================
 
-``dgasm``, the ``dgtools`` assember understands three types of "input":
+``dgasm.py``, the ``dgtools`` assember understands three types of "input":
 
 1. Assembler Directives
     * Commands that target the assembler and do not necessarily lead to 

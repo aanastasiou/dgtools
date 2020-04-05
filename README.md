@@ -2,7 +2,8 @@
 
 dgtools is a set of tools for developing software for a...ruler.
 
-Not just any ruler, but the [Digirule2](https://bradsprojects.com/digirule2/) by bradsprojects.
+Not just any ruler, but the [Digirule2](https://bradsprojects.com/digirule2/) by 
+[bradsprojects](https://bradsprojects.com).
 
 ## Tool Overview
 
@@ -31,9 +32,9 @@ actual hardware.
 The most common workflow is:
 
 1. Use a text editor to write human readable assembly code.
-2. Call `dgasm` to compile the binary
-3. Call `dgsim` to run and debug the binary
-4. Use `dginspect` to get/set values from the virtual machine.
+2. Call `dgasm.py` to compile the binary
+3. Call `dgsim.py` to run and debug the binary
+4. Use `dginspect.py` to get/set values from the virtual machine.
 
 
 ## Installation
@@ -52,7 +53,12 @@ The most common workflow is:
 1. Download the code from the repository
 2. `> virtualenv -p python3.6 pyenv`
 3. `> source pyenv/bin/activate`
-4. `pip install -r requirements.txt`
+4. To start using `dgtools`:
+     * `pip install -e ./` (From within the `dgtools/` directory that contains the `setup.py` file)
+     * This will make the `dgtools` scripts callable from any position in the filesystem, as long as the 
+       virtual environment is activated.
+5. If you are interested in developing `dgtools` further: 
+     * `pip install -r requirements.txt`
 
 
 ## Where to from here?

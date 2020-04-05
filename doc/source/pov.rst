@@ -42,8 +42,8 @@ For the Digirule2 POV light stick, we take the simplest approach (for the moment
 Defining the bitmap
 ------------------- 
 
-The "bitmap" can be defined as a set of 8 bytes but since ``dgasm`` understands binary number literal values, defining 
-that memory area in the editor also provides a sort of preview for it. 
+The "bitmap" can be defined as a set of 8 bytes but since the assembler (``dgasm.py``) understands binary number 
+literal values, defining that memory area in the editor also provides a sort of preview for it. 
 
 Here for example is the letter ``A``:
 

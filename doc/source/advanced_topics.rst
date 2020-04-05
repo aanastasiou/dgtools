@@ -44,7 +44,7 @@ This is achieved by writing a "template" function:
     RETURN
 
 
-This is part of :download:`../../data/advanced/stack.dsf`
+This is part of :download:`data/advanced/stack.dsf <../../data/advanced/stack.dsf>`
 
 The first byte (``7``) is the opcode of ``COPYRR``, the second byte is labeled ``f_from`` and the third byte is 
 labeld ``f_to``.
@@ -115,7 +115,7 @@ This is achieved with:
     RETURN
 
 
-This is part of :download:`../../data/advanced/stack.dsf`
+This is part of :download:`data/advanced/stack.dsf <../../data/advanced/stack.dsf>`
 
 
 .. note::
@@ -205,7 +205,7 @@ The complete example below pushes values `0,1,2,3,2,1,0,1,2` to the stack and te
     .DB 0xF0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0x0F
 
 
-This listing is available in :download:`../../data/advanced/stack.dsf`
+This listing is available in :download:`data/advanced/stack.dsf <../../data/advanced/stack.dsf>`
 
 
 Function calls using a stack
@@ -231,7 +231,7 @@ In this section, the addition of two numbers is performed within the following t
     RETURN
 
 
-This is part of :download:`../../data/advanced/funcall.dsf`
+This is part of :download:`data/advanced/funcall.dsf <../../data/advanced/funcall.dsf>`
 
 Here, ``q_add_ab`` first pops the numbers from the stack to "temporary registers", performs the addition, pushes the 
 result back on to the stack and returns. All that the caller has to do now is to pop the stack on the "other side of 
@@ -335,10 +335,10 @@ The complete listing is now:
     .DB 0xF0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0x0F
 
 
-This is listing :download:`../../data/advanced/stack.dsf`.
+This is listing :download:`data/advanced/stack.dsf <../../data/advanced/stack.dsf>`.
 
-It is basically a continuation of listing :download:`../../data/intro/simpleadd_5.dsf` and it could be called 
-externally as per :ref:`this example from the introductory section <cplx_intro_example_5>`.
+It is basically a continuation of listing :download:`data/intro/simpleadd_5.dsf <../../data/intro/simpleadd_5.dsf>` 
+and it could be called externally as per :ref:`this example from the introductory section <cplx_intro_example_5>`.
 
 
 Conclusion
