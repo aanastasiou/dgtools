@@ -1,4 +1,4 @@
-TODO List as of Sun Apr 5 18:52:13 BST 2020
+TODO List as of Fri Apr 10 01:37:50 BST 2020
 ../dgtools/dginspect.py:111 TODO: HIGH, Add a mode that only generates an update of the VM state when the state of one of the tracked symbols changes
 ../dgtools/dginspect.py:112 TODO: MID, DGBArchive can become a separate entity and reduce duplication of checks.
 ../dgtools/dginspect.py:126 TODO: MID, Reduce code duplication by packaging this validation in a function
@@ -10,3 +10,4 @@ TODO List as of Sun Apr 5 18:52:13 BST 2020
 ../dgtools/dgsim.py:407 TODO: MED, In CBR and SBR, if the bit is zero, it should raise an error at compile time.
 ../dgtools/dgsim.py:439 TODO: MED, If you get a RETLA without first having called CALL, it should raise an exception at compile time.
 ../dgtools/dgsim.py:512 TODO: MED, The character translation table can be improved here to get rid of the >9 and clarify depictions.
+../dgtools/dgsim.py:538 TODO: LOW, Reduce code duplication of the string translation table here.
