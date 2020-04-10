@@ -515,7 +515,7 @@ def mem_dump(mem, offset_from=0, offset_to=256, line_length=16):
     return to_ret
     
     
-def trace_program(program, output_file, max_n=200, trace_title="", in_interactive_mode=False, extra_symbols=None, with_mem_dump=True):
+def trace_program(program, output_file, max_n=200, trace_title="", in_interactive_mode=False, extra_symbols=[], with_mem_dump=True):
     """
     Produces a detailed trace of program execution in Markdown format.
     
@@ -535,6 +535,14 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
     :returns: A Digirule2 object at its final state when the last command was executed.
     :rtype: Digirule
     """
+    # TODO: LOW, Reduce code duplication of the string translation table here.
+    #       The reason this was copied verbatim from the mem dump code was because in either places, the translation 
+    #       table is not yet fixed.
+    char_map_from = "\n\a\t\r"
+    char_map_to = "...."
+    trans_tab = str.maketrans(char_map_from, char_map_to)
+    
+    # Setup the VM
     machine = Digirule()
     machine.load_program(program)
     if in_interactive_mode:
@@ -543,20 +551,36 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
     n=0
     # This function could simply be returning a string with the Markdown format but for long programs, that might 
     # become too big too quickly. This is why the file is created on the fly right here.
+    # Find the longest extra symbol 'name' provided to right align all symbol names
+    if len(extra_symbols):
+        longest_symbol_len = max(map(lambda x:len(x[0]),extra_symbols))
     with open(output_file, "wt") as fd:
         fd.write(f"# Program Trace {trace_title} \n\n")
         while not done and n<max_n:
             fd.write(f"## Machine Registers at n={n} \n\n")
+            
             fd.write(f"```\nProgram Counter:{machine._pc}\nAccumulator:{machine._acc}\nStatus Reg:{machine._mem[machine._status_reg_ptr]}\n"
                      f"Button Register:{machine._mem[machine._bt_reg_ptr]}\nAddr.Led Register:{machine._mem[machine._addrled_reg_ptr]}\n"
                      f"Data Led Register:{machine._mem[machine._dataled_reg_ptr]}\nSpeed setting:{machine._speed_setting} \n")
+            
             fd.write(f"Program counter stack:{machine._ppc}\n```\n\n")
+            
             if with_mem_dump:
                 fd.write(f"## Full memory dump:\n```\n{mem_dump(machine._mem)}\n```\n\n")
-            if extra_symbols is not None:
+            
+            if len(extra_symbols):
                 fd.write(f"### Specific Symbols\n\n")
-                symbols_paragraph = "\n".join(map(lambda x:f"{x[0]} {machine._mem[x[1]:(x[1]+x[2])]}",extra_symbols))
+                symbols_dump = []
+                for a_symbol in extra_symbols:
+                    raw_bytes = machine._mem[a_symbol[1]:(a_symbol[1]+a_symbol[2])]
+                    if len(raw_bytes)>1:
+                        chr_bytes = "".join(map(lambda x:chr(x), raw_bytes))
+                    else:
+                        chr_bytes = ""
+                    symbols_dump.append(f"{a_symbol[0]:>{longest_symbol_len}s} {raw_bytes} {chr_bytes}".translate(trans_tab))
+                symbols_paragraph = "\n".join(symbols_dump)
                 fd.write(f"```\n{symbols_paragraph}\n```\n\n")
+            
             fd.write(f"## Onboard I/O\n\n")
             fd.write(f"```\n{str(machine)}\n```\n\n")
             fd.write("-------------\n\n")
