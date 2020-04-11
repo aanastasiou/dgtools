@@ -26,9 +26,12 @@ generate traces of your own code.
    introductory_topics
    advanced_topics
    assembler_syntax
+   
    lfsr
    pov
    instruction_set_notes
+   int2str
+   
    script_detail
    current_todos
 

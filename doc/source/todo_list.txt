@@ -1,4 +1,5 @@
-TODO List as of Fri Apr 10 01:37:50 BST 2020
+TODO List as of Sat Apr 11 16:42:01 BST 2020
+=======
 ../dgtools/dginspect.py:111 TODO: HIGH, Add a mode that only generates an update of the VM state when the state of one of the tracked symbols changes
 ../dgtools/dginspect.py:112 TODO: MID, DGBArchive can become a separate entity and reduce duplication of checks.
 ../dgtools/dginspect.py:126 TODO: MID, Reduce code duplication by packaging this validation in a function
