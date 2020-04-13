@@ -5,6 +5,7 @@ certifi==2019.11.28
 chardet==3.0.4
 click==7.1.1
 decorator==4.4.2
+-e git+https://github.com/aanastasiou/dgtools.git@144a4ef4a8b2d8fa76595b1e8563d47945a3b400#egg=dgtools
 docutils==0.16
 fancycompleter==0.9.1
 idna==2.9
@@ -37,5 +38,6 @@ sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.4
 traitlets==4.3.3
 urllib3==1.25.8
+urwid==2.1.0
 wcwidth==0.1.8
 wmctrl==0.3

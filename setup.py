@@ -13,5 +13,5 @@ setup(
     url='https://github.com/aanastasiou/dgtools',
     license='Apache2.0',
     packages=find_packages(),
-    scripts=['dgtools/dgasm.py', 'dgtools/dgsim.py', 'dgtools/dginspect.py'],
+    scripts=['dgtools/dgasm.py', 'dgtools/dgsim.py', 'dgtools/dginspect.py', 'dgtools/dgui.py'],
     install_requires=['click', 'pyparsing'])

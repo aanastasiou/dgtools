@@ -26,6 +26,7 @@ generate traces of your own code.
    introductory_topics
    advanced_topics
    assembler_syntax
+   dgui.rst
    
    lfsr
    pov
