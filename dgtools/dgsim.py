@@ -574,18 +574,17 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
             
             if len(extra_symbols):
                 dgen.heading(f"Specific Symbols",2)
+                symbol_names = list(map(lambda x:x[0],extra_symbols))
                 
-                symbols_dump = []
+                symbol_values = []
                 for a_symbol in extra_symbols:
                     raw_bytes = machine._mem[a_symbol[1]:(a_symbol[1]+a_symbol[2])]
                     if len(raw_bytes)>1:
                         chr_bytes = "".join(map(lambda x:chr(x), raw_bytes))
                     else:
                         chr_bytes = ""
-                    symbols_dump.append(f"{a_symbol[0]:>{longest_symbol_len}s} {raw_bytes} {chr_bytes}".translate(trans_tab))
-                symbols_paragraph = "\n".join(symbols_dump)
-                
-                fd.write(f"```\n{symbols_paragraph}\n```\n\n")
+                    symbol_values.append([str(raw_bytes),chr_bytes])
+                dgen.table_h(symbol_names,symbol_values)
             
             dgen.heading("Onboard I/O",2)
             dgen.code(str(machine))
