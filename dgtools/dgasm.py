@@ -22,6 +22,7 @@ import pyparsing
 import pickle
 import click
 from dgtools.exceptions import DgtoolsErrorSymbolAlreadyDefined, DgtoolsErrorSymbolUndefined
+from dgtools.dgb_archive import DGB_Archive
 
 def get_asm_parser():
     """
@@ -210,6 +211,9 @@ def dgasm(input_file, output_file):
     
     with open(output_file, "wb") as fd:
         pickle.dump(asm_code_compiled, fd)
+        
+    # dgb_archive = DGB_Archive(asm_code_compiled["program"], asm_code_compiled["labels"], asm_code_compiled["symbols"])
+    # dgb_archive.save("test.dgb")
         
 if __name__ == "__main__":
     dgasm()
