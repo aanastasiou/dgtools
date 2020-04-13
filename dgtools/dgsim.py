@@ -51,7 +51,10 @@ import pickle
 import click
 import os
 import types
-from dgtools.exceptions import DgtoolsErrorOpcodeNotSupported, DgtoolsErrorDgbarchiveCorrupted, DgtoolsErrorSymbolUndefined
+from dgtools.exceptions import (DgtoolsErrorOpcodeNotSupported, DgtoolsErrorDgbarchiveCorrupted, 
+                                DgtoolsErrorSymbolUndefined)
+
+from dgtools.output_render_html import Output_Render_HTML
 
 class Digirule:
     """
@@ -554,22 +557,24 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
     # Find the longest extra symbol 'name' provided to right align all symbol names
     if len(extra_symbols):
         longest_symbol_len = max(map(lambda x:len(x[0]),extra_symbols))
-    with open(output_file, "wt") as fd:
-        fd.write(f"# Program Trace {trace_title} \n\n")
+    with Output_Render_HTML(output_file) as dgen:
+        dgen.heading(f"Program Trace {trace_title}", 1)
         while not done and n<max_n:
-            fd.write(f"## Machine Registers at n={n} \n\n")
+            dgen.heading(f"Machine Registers at n={n}",2)
             
-            fd.write(f"```\nProgram Counter:{machine._pc}\nAccumulator:{machine._acc}\nStatus Reg:{machine._mem[machine._status_reg_ptr]}\n"
-                     f"Button Register:{machine._mem[machine._bt_reg_ptr]}\nAddr.Led Register:{machine._mem[machine._addrled_reg_ptr]}\n"
-                     f"Data Led Register:{machine._mem[machine._dataled_reg_ptr]}\nSpeed setting:{machine._speed_setting} \n")
-            
-            fd.write(f"Program counter stack:{machine._ppc}\n```\n\n")
-            
+            dgen.table_h(["Program Counter:","Accumulator:", "Status Reg:","Button Register", "Addr.Led Register",
+                          "Data Led Register:", "Speed setting:", "Program counter stack:"],
+                         [[machine._pc], [machine._acc],[machine._mem[machine._status_reg_ptr]], 
+                          [machine._mem[machine._bt_reg_ptr]], [machine._mem[machine._addrled_reg_ptr]], 
+                          [machine._mem[machine._dataled_reg_ptr]], [machine._speed_setting], [machine._ppc]])
+                          
             if with_mem_dump:
-                fd.write(f"## Full memory dump:\n```\n{mem_dump(machine._mem)}\n```\n\n")
+                dgen.heading(f"Full memory dump:",2)
+                dgen.code(mem_dump(machine._mem))
             
             if len(extra_symbols):
-                fd.write(f"### Specific Symbols\n\n")
+                dgen.heading(f"Specific Symbols",2)
+                
                 symbols_dump = []
                 for a_symbol in extra_symbols:
                     raw_bytes = machine._mem[a_symbol[1]:(a_symbol[1]+a_symbol[2])]
@@ -579,14 +584,14 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
                         chr_bytes = ""
                     symbols_dump.append(f"{a_symbol[0]:>{longest_symbol_len}s} {raw_bytes} {chr_bytes}".translate(trans_tab))
                 symbols_paragraph = "\n".join(symbols_dump)
+                
                 fd.write(f"```\n{symbols_paragraph}\n```\n\n")
             
-            fd.write(f"## Onboard I/O\n\n")
-            fd.write(f"```\n{str(machine)}\n```\n\n")
-            fd.write("-------------\n\n")
+            dgen.heading("Onboard I/O",2)
+            dgen.code(str(machine))
+            dgen.ruler()
             done = not machine._exec_next()
-            n+=1
-            
+            n+=1            
     return machine
 
 def validate_trace_symbol(ctx, param, value):
@@ -667,7 +672,7 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
     :type max_n:int
     """
     if output_trace_file is None:
-        output_trace_file = f"{os.path.splitext(input_file)[0]}_trace.md"
+        output_trace_file = f"{os.path.splitext(input_file)[0]}_trace.html"
     
     if output_memdump_file is None:
         output_memdump_file = f"{os.path.splitext(input_file)[0]}_memdump.dgb"
