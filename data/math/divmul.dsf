@@ -120,6 +120,13 @@ cpy_to:
 .DB 0
 RETURN
 
+cpylwacc:
+COPYRR r0 wacc_h
+COPYRR r1 wacc_l
+RETURN
+
+ 
+
 # General Registers
 r0:
 .DB 0
@@ -131,5 +138,12 @@ t1:
 .DB 0
 t2:
 .DB 0
+
+wacc:
+wacc_h:
+.DB 0
+wacc_l:
+.DB 0
+
 ascii_str:
 .DB 0,0,0
