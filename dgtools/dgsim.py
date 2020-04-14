@@ -117,6 +117,18 @@ class Digirule:
         return user_input_numeric
         
     @property
+    def addr_led(self):
+        return f"{self._pc:08b}"
+        
+    @property
+    def data_led(self):
+        return f"{self._rd_mem(self._dataled_reg_ptr):08b}"
+        
+    @property
+    def button_sw(self):
+        return f"{self._mem[self._bt_reg_ptr]:08b}\n"
+
+    @property
     def interactive_mode(self):
         return self._interactive_mode
         
@@ -502,7 +514,7 @@ def mem_dump(mem, offset_from=0, offset_to=256, line_length=16):
     char_map_from = "\n\a\t\r"
     char_map_to = "...."
     trans_tab = str.maketrans(char_map_from, char_map_to)
-    to_ret = f"Offset (h)\t" + " ".join([format(k, "02X") for k in range(0,line_length)])+"\n"
+    to_ret = f"Offset (h) " + " ".join([format(k, "02X") for k in range(0,line_length)])+"\n"
     total_length = offset_to - offset_from
     n_lines = total_length // line_length
     remaining_chars = total_length % line_length
@@ -514,7 +526,7 @@ def mem_dump(mem, offset_from=0, offset_to=256, line_length=16):
         # The same memory page in chr depictions.
         # TODO: MED, The character translation table can be improved here to get rid of the >9 and clarify depictions.
         mem_page_char = "".join([chr(q) if q>9 else "." for q in mem_page]).translate(trans_tab)
-        to_ret += f"\t\t{(offset_from+k*8):02X}\t{mem_page_hex} {mem_page_char}\n"        
+        to_ret += f"\t{(offset_from+k*8):02X} {mem_page_hex} {mem_page_char}\n"        
     return to_ret
     
     
@@ -570,7 +582,7 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
                           
             if with_mem_dump:
                 dgen.heading(f"Full memory dump:",2)
-                dgen.code(mem_dump(machine._mem))
+                dgen.preformatted(mem_dump(machine._mem))
             
             if len(extra_symbols):
                 dgen.heading(f"Specific Symbols",2)
@@ -587,7 +599,8 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
                 dgen.table_h(symbol_names,symbol_values)
             
             dgen.heading("Onboard I/O",2)
-            dgen.code(str(machine))
+            dgen.table_h(["Address LEDs","Data LEDs","Button Switches"],
+                         [machine.addr_led, machine.data_led, machine.button_sw])
             dgen.ruler()
             done = not machine._exec_next()
             n+=1            

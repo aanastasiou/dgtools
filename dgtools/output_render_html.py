@@ -41,10 +41,9 @@ class Output_Render_HTML():
         else:        
             is_multiline = payload.count("\n")>0
             if is_multiline:
-                fmtd_payload = '<br>'.join(payload.split('\n'))
                 self._write_raw(f"<{tag}>\n")
                 self._inc_indent()
-                list(map(lambda x:self._write_raw(f"{x}<br>\n"),fmtd_payload.split("<br>")))
+                list(map(lambda x:self._write_raw(f"{x}\n"),payload.split("\n")))
                 self._dec_indent()
                 self._write_raw(f"</{tag}>\n")
             else:
@@ -55,6 +54,7 @@ class Output_Render_HTML():
         self._fd.write("<!DOCTYPE html>\n"
                        "<html>\n"
                        "\t<head>\n"
+                       "\t<link rel=\"stylesheet\" type=\"text/css\" href=\"dgtheme.css\">"
                        "\t\t<meta charset=\"utf-8\" />\n"
                        "\t\t<title></title>\n"
                        "\t</head>\n"
@@ -71,8 +71,8 @@ class Output_Render_HTML():
         self._write_tag(f"h{level}",text)
         return self
         
-    def code(self,text):
-        self._write_tag("code", text)
+    def preformatted(self,text):
+        self._write_tag("pre", text)
         return self
         
     def ruler(self):
