@@ -65,6 +65,16 @@ class Output_Render_HTML():
         self._fd.write("</body>\n"
                        "</html>\n")
         return self
+        
+    def open_tag(self, tag):
+        self._write_indented(f"<{tag}>\n")
+        self._inc_indent()
+        return self
+        
+    def close_tag(self, tag):
+        self._dec_indent()
+        self._write_indented(f"</{tag}>\n")
+        return self
 
         
     def heading(self, text, level=1):

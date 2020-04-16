@@ -564,28 +564,45 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
         machine.interactive_mode = True
     done = False
     n=0
-    # This function could simply be returning a string with the Markdown format but for long programs, that might 
-    # become too big too quickly. This is why the file is created on the fly right here.
-    # Find the longest extra symbol 'name' provided to right align all symbol names
-    if len(extra_symbols):
-        longest_symbol_len = max(map(lambda x:len(x[0]),extra_symbols))
+    # This function could simply be returning a data structure with all data required by a template to produce the 
+    # actual output. But that would increase dependencies and possibly required memory too. This is why the file is 
+    # created here on the fly.
     with Output_Render_HTML(output_file) as dgen:
+        dgen.open_tag("article")
+        dgen.open_tag("section")
+        dgen.open_tag("header")
         dgen.heading(f"Program Trace {trace_title}", 1)
+        dgen.close_tag("header")
         while not done and n<max_n:
+            # Machine registers
+            dgen.open_tag("section")
+            dgen.open_tag("header")
             dgen.heading(f"Machine Registers at n={n}",2)
+            dgen.close_tag("header")
             
             dgen.table_h(["Program Counter:","Accumulator:", "Status Reg:","Button Register", "Addr.Led Register",
                           "Data Led Register:", "Speed setting:", "Program counter stack:"],
                          [[machine._pc], [machine._acc],[machine._mem[machine._status_reg_ptr]], 
                           [machine._mem[machine._bt_reg_ptr]], [machine._mem[machine._addrled_reg_ptr]], 
                           [machine._mem[machine._dataled_reg_ptr]], [machine._speed_setting], [machine._ppc]])
-                          
-            if with_mem_dump:
-                dgen.heading(f"Full memory dump:",2)
-                dgen.preformatted(mem_dump(machine._mem))
+            dgen.close_tag("section")
             
+            # Memory space
+            if with_mem_dump:
+                dgen.open_tag("section")
+                dgen.open_tag("header")
+                dgen.heading(f"Full memory dump:",2)
+                dgen.close_tag("header")
+                dgen.preformatted(mem_dump(machine._mem))
+                dgen.close_tag("section")
+            
+            # Extra symbols
             if len(extra_symbols):
+                dgen.open_tag("section")
+                dgen.open_tag("header")
                 dgen.heading(f"Specific Symbols",2)
+                dgen.close_tag("header")
+                
                 symbol_names = list(map(lambda x:x[0],extra_symbols))
                 
                 symbol_values = []
@@ -597,13 +614,21 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
                         chr_bytes = ""
                     symbol_values.append([str(raw_bytes),chr_bytes])
                 dgen.table_h(symbol_names,symbol_values)
+                dgen.close_tag("section")
             
+            # Onboard IO
+            dgen.open_tag("section")
+            dgen.open_tag("header")
             dgen.heading("Onboard I/O",2)
+            dgen.close_tag("header")
             dgen.table_h(["Address LEDs","Data LEDs","Button Switches"],
                          [machine.addr_led, machine.data_led, machine.button_sw])
+            dgen.close_tag("section")
             dgen.ruler()
             done = not machine._exec_next()
-            n+=1            
+            n+=1
+        dgen.close_tag("section")
+        dgen.close_tag("article")
     return machine
 
 def validate_trace_symbol(ctx, param, value):
