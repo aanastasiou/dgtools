@@ -1,14 +1,14 @@
-TODO List as of Sat Apr 11 16:42:01 BST 2020
-=======
-../dgtools/dginspect.py:111 TODO: HIGH, Add a mode that only generates an update of the VM state when the state of one of the tracked symbols changes
-../dgtools/dginspect.py:112 TODO: MID, DGBArchive can become a separate entity and reduce duplication of checks.
-../dgtools/dginspect.py:126 TODO: MID, Reduce code duplication by packaging this validation in a function
-../dgtools/dgsim.py:71 TODO: MED, There might be constraints in the depth of this stack. Not yet implemented.
-../dgtools/dgsim.py:87 TODO: LOW, Make the speed setting functional
-../dgtools/dgsim.py:233 TODO: MED, addr cannot go higher than 252 or it will overwrite peripherals. It should generate a warning.
-../dgtools/dgsim.py:257 TODO: LOW, Obviously, each command can be abstracted in its own callback so that the VM becomes easily 
-../dgtools/dgsim.py:264 TODO: LOW, Unsupported opcodes could be intercepted and re-interpreted?
-../dgtools/dgsim.py:407 TODO: MED, In CBR and SBR, if the bit is zero, it should raise an error at compile time.
-../dgtools/dgsim.py:439 TODO: MED, If you get a RETLA without first having called CALL, it should raise an exception at compile time.
-../dgtools/dgsim.py:512 TODO: MED, The character translation table can be improved here to get rid of the >9 and clarify depictions.
-../dgtools/dgsim.py:538 TODO: LOW, Reduce code duplication of the string translation table here.
+TODO List as of Fri Apr 17 01:40:42 BST 2020
+../dgtools/dgb_archive.py:30 TODO: HIGH, Incorporate the following validations
+../dgtools/dginspect.py:112 TODO: HIGH, Add a mode that only generates an update of the VM state when the state of one of the tracked symbols changes
+../dgtools/dginspect.py:118 TODO: MID, Reduce code duplication by packaging this validation in a function
+../dgtools/dginspect.py:164 TODO: HIGH, the following operations can be "absorbed" into the DGB_Archive with appropriate validations too
+../dgtools/dgsim.py:72 TODO: MED, There might be constraints in the depth of this stack. Not yet implemented.
+../dgtools/dgsim.py:88 TODO: LOW, Make the speed setting functional
+../dgtools/dgsim.py:234 TODO: MED, addr cannot go higher than 252 or it will overwrite peripherals. It should generate a warning.
+../dgtools/dgsim.py:258 TODO: LOW, Obviously, each command can be abstracted in its own callback so that the VM becomes easily 
+../dgtools/dgsim.py:265 TODO: LOW, Unsupported opcodes could be intercepted and re-interpreted?
+../dgtools/dgsim.py:408 TODO: MED, In CBR and SBR, if the bit is zero, it should raise an error at compile time.
+../dgtools/dgsim.py:440 TODO: MED, If you get a RETLA without first having called CALL, it should raise an exception at compile time.
+../dgtools/dgsim.py:513 TODO: MED, The character translation table can be improved here to get rid of the >9 and clarify depictions.
+../dgtools/dgsim.py:539 TODO: LOW, Reduce code duplication of the string translation table here.

@@ -208,12 +208,9 @@ def dgasm(input_file, output_file):
         sys.exit(1)
         
     asm_code_compiled = asm_ast_to_obj(parsed_code)
-    
-    with open(output_file, "wb") as fd:
-        pickle.dump(asm_code_compiled, fd)
-        
-    # dgb_archive = DGB_Archive(asm_code_compiled["program"], asm_code_compiled["labels"], asm_code_compiled["symbols"])
-    # dgb_archive.save("test.dgb")
+            
+    dgb_archive = DGB_Archive(asm_code_compiled["program"], asm_code_compiled["labels"], asm_code_compiled["symbols"])
+    dgb_archive.save(output_file)
         
 if __name__ == "__main__":
     dgasm()

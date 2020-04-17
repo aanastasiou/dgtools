@@ -7,7 +7,6 @@ Archive to store Digirule2 binaries
 """
 
 import json
-import base64
 import copy
 
 class DGB_Archive:
@@ -15,20 +14,29 @@ class DGB_Archive:
         self._sections = {"program":compiled_program,"labels":labels,"symbols":symbols, "version":version}
         
     def save(self, filename):
-        sections_to_save = copy.deepcopy(self._sections)
-        # Does this really need to be base64 encoded?
-        sections_to_save["program"] = base64.b64encode(bytearray(sections_to_save["program"])).decode("ascii")
         with open(filename, "wt") as fd:
-            json.dump(sections_to_save, fd)
+            json.dump(self._sections, fd)
         return self
 
+    @classmethod
+    def from_archive(cls, other_archive):
+        self._sections = copy.deepcopy(other_archive._sections)
+        return self
+        
     @classmethod    
     def load(cls,filename):
         with open(filename, "rt") as fd:
             archive_sections = json.load(fd)
+        # TODO: HIGH, Incorporate the following validations
+        # # Validate the .dgb file
+        # if type(compiled_program) is not dict:
+            # raise DgtoolsErrorDgbarchiveCorrupted(f"Archive corrupted.")
+        
+        # if len(set(compiled_program) - {"program", "labels", "symbols"}) != 0:
+            # raise DgtoolsErrorDgbarchiveCorrupted(f"Archive corrupted.")        
+
         if "version" not in archive_sections:
             archive_sections.update({"version":"1.0.0"})
-        archive_sections["program"] = list(base64.b64decode(archive_sections["program"]))
         return cls(archive_sections["program"], archive_sections["labels"], archive_sections["symbols"], archive_sections["version"]) 
         
     @property
