@@ -10,7 +10,7 @@ Not just any ruler, but the [Digirule2](https://bradsprojects.com/digirule2/) by
 1. `dgasm`
 
    * The assembler, accepts a human readable `.asm` text file with Digirule2 ASM and 
-     produces a `.dgb` binary file with compiled code ready to be executed on the hardware
+     produces a `.dgb` binary file with compiled code ready to be executed on the hardware.
    
 2. `dginspect`
 
@@ -21,7 +21,7 @@ Not just any ruler, but the [Digirule2](https://bradsprojects.com/digirule2/) by
 3. `dgsim`
 
    * The Digirule2 Virtual Machine, accepts a `.dgb` binary file and produces:
-       1. A human readable (Markdown) trace of every state change the CPU goes through at each 
+       1. A human readable (HTML) trace of every state change the CPU goes through at each 
           timestep of execution.
        2. The final `.dgb` file that contains the final state of the memory space at the end of 
           execution.
@@ -34,7 +34,7 @@ The most common workflow is:
 1. Use a text editor to write human readable assembly code.
 2. Call `dgasm.py` to compile the binary
 3. Call `dgsim.py` to run and debug the binary
-4. Use `dginspect.py` to get/set values from the virtual machine.
+4. Use `dginspect.py` to check a binary file, get/set values from the virtual machine or key the code in.
 
 
 ## Installation
@@ -44,9 +44,6 @@ The most common workflow is:
 1. Linux
 2. Python >3.6
 3. [`virtualenv`](https://pypi.org/project/virtualenv/)
-4. [Pandoc](https://pandoc.org/)
-    * Pandoc is optional. Parts of `dgtools` generate Markdown and Pandoc can convert Markdown to many other formats
-      such as HTML which is easily viewable through a browser.
 
 ### Process
 

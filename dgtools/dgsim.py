@@ -54,7 +54,7 @@ import types
 from dgtools.exceptions import (DgtoolsErrorOpcodeNotSupported, 
                                 DgtoolsErrorDgbarchiveCorrupted, 
                                 DgtoolsErrorSymbolUndefined)
-                                
+from dgtools.output_render_html import Output_Render_HTML
 from dgtools.dgb_archive import DGB_Archive
 
 class Digirule:
@@ -117,6 +117,18 @@ class Digirule:
                 
         return user_input_numeric
         
+    @property
+    def addr_led(self):
+        return f"{self._pc:08b}"
+        
+    @property
+    def data_led(self):
+        return f"{self._rd_mem(self._dataled_reg_ptr):08b}"
+        
+    @property
+    def button_sw(self):
+        return f"{self._mem[self._bt_reg_ptr]:08b}\n"
+
     @property
     def interactive_mode(self):
         return self._interactive_mode
@@ -503,7 +515,7 @@ def mem_dump(mem, offset_from=0, offset_to=256, line_length=16):
     char_map_from = "\n\a\t\r"
     char_map_to = "...."
     trans_tab = str.maketrans(char_map_from, char_map_to)
-    to_ret = f"Offset (h)\t" + " ".join([format(k, "02X") for k in range(0,line_length)])+"\n"
+    to_ret = f"Offset (h) " + " ".join([format(k, "02X") for k in range(0,line_length)])+"\n"
     total_length = offset_to - offset_from
     n_lines = total_length // line_length
     remaining_chars = total_length % line_length
@@ -515,7 +527,7 @@ def mem_dump(mem, offset_from=0, offset_to=256, line_length=16):
         # The same memory page in chr depictions.
         # TODO: MED, The character translation table can be improved here to get rid of the >9 and clarify depictions.
         mem_page_char = "".join([chr(q) if q>9 else "." for q in mem_page]).translate(trans_tab)
-        to_ret += f"\t\t{(offset_from+k*8):02X}\t{mem_page_hex} {mem_page_char}\n"        
+        to_ret += f"\t{(offset_from+k*8):02X} {mem_page_hex} {mem_page_char}\n"        
     return to_ret
     
     
@@ -553,44 +565,71 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
         machine.interactive_mode = True
     done = False
     n=0
-    # This function could simply be returning a string with the Markdown format but for long programs, that might 
-    # become too big too quickly. This is why the file is created on the fly right here.
-    # Find the longest extra symbol 'name' provided to right align all symbol names
-    if len(extra_symbols):
-        longest_symbol_len = max(map(lambda x:len(x[0]),extra_symbols))
-    with open(output_file, "wt") as fd:
-        fd.write(f"# Program Trace {trace_title} \n\n")
+    # This function could simply be returning a data structure with all data required by a template to produce the 
+    # actual output. But that would increase dependencies and possibly required memory too. This is why the file is 
+    # created here on the fly.
+    with Output_Render_HTML(output_file) as dgen:
+        dgen.open_tag("article")
+        dgen.open_tag("section")
+        dgen.open_tag("header")
+        dgen.heading(f"Program Trace {trace_title}", 1)
+        dgen.close_tag("header")
         while not done and n<max_n:
-            fd.write(f"## Machine Registers at n={n} \n\n")
+            # Machine registers
+            dgen.open_tag("section")
+            dgen.open_tag("header")
+            dgen.heading(f"Machine Registers at n={n}",2)
+            dgen.close_tag("header")
             
-            fd.write(f"```\nProgram Counter:{machine._pc}\nAccumulator:{machine._acc}\nStatus Reg:{machine._mem[machine._status_reg_ptr]}\n"
-                     f"Button Register:{machine._mem[machine._bt_reg_ptr]}\nAddr.Led Register:{machine._mem[machine._addrled_reg_ptr]}\n"
-                     f"Data Led Register:{machine._mem[machine._dataled_reg_ptr]}\nSpeed setting:{machine._speed_setting} \n")
+            dgen.table_h(["Program Counter:","Accumulator:", "Status Reg:","Button Register", "Addr.Led Register",
+                          "Data Led Register:", "Speed setting:", "Program counter stack:"],
+                         [[machine._pc], [machine._acc],[machine._mem[machine._status_reg_ptr]], 
+                          [machine._mem[machine._bt_reg_ptr]], [machine._mem[machine._addrled_reg_ptr]], 
+                          [machine._mem[machine._dataled_reg_ptr]], [machine._speed_setting], [machine._ppc]])
+            dgen.close_tag("section")
             
-            fd.write(f"Program counter stack:{machine._ppc}\n```\n\n")
-            
+            # Memory space
             if with_mem_dump:
-                fd.write(f"## Full memory dump:\n```\n{mem_dump(machine._mem)}\n```\n\n")
+                dgen.open_tag("section")
+                dgen.open_tag("header")
+                dgen.heading(f"Full memory dump:",2)
+                dgen.close_tag("header")
+                dgen.preformatted(mem_dump(machine._mem))
+                dgen.close_tag("section")
             
+            # Extra symbols
             if len(extra_symbols):
-                fd.write(f"### Specific Symbols\n\n")
-                symbols_dump = []
+                dgen.open_tag("section")
+                dgen.open_tag("header")
+                dgen.heading(f"Specific Symbols",2)
+                dgen.close_tag("header")
+                
+                symbol_names = list(map(lambda x:x[0],extra_symbols))
+                
+                symbol_values = []
                 for a_symbol in extra_symbols:
                     raw_bytes = machine._mem[a_symbol[1]:(a_symbol[1]+a_symbol[2])]
                     if len(raw_bytes)>1:
                         chr_bytes = "".join(map(lambda x:chr(x), raw_bytes))
                     else:
                         chr_bytes = ""
-                    symbols_dump.append(f"{a_symbol[0]:>{longest_symbol_len}s} {raw_bytes} {chr_bytes}".translate(trans_tab))
-                symbols_paragraph = "\n".join(symbols_dump)
-                fd.write(f"```\n{symbols_paragraph}\n```\n\n")
+                    symbol_values.append([str(raw_bytes),chr_bytes])
+                dgen.table_h(symbol_names,symbol_values)
+                dgen.close_tag("section")
             
-            fd.write(f"## Onboard I/O\n\n")
-            fd.write(f"```\n{str(machine)}\n```\n\n")
-            fd.write("-------------\n\n")
+            # Onboard IO
+            dgen.open_tag("section")
+            dgen.open_tag("header")
+            dgen.heading("Onboard I/O",2)
+            dgen.close_tag("header")
+            dgen.table_h(["Address LEDs","Data LEDs","Button Switches"],
+                         [machine.addr_led, machine.data_led, machine.button_sw])
+            dgen.close_tag("section")
+            dgen.ruler()
             done = not machine._exec_next()
             n+=1
-            
+        dgen.close_tag("section")
+        dgen.close_tag("article")
     return machine
 
 def validate_trace_symbol(ctx, param, value):
@@ -671,7 +710,7 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
     :type max_n:int
     """
     if output_trace_file is None:
-        output_trace_file = f"{os.path.splitext(input_file)[0]}_trace.md"
+        output_trace_file = f"{os.path.splitext(input_file)[0]}_trace.html"
     
     if output_memdump_file is None:
         output_memdump_file = f"{os.path.splitext(input_file)[0]}_memdump.dgb"

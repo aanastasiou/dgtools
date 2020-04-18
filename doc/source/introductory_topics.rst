@@ -37,15 +37,8 @@ To verify this using ``dgtools``, run the following (from within the ``src`` dir
     > dgsim.py simpleadd_1.dgb
 
 
-Followed optionally by:
-
-.. code::
-
-    > pandoc simpleadd_1_trace.md>simpleadd_1_trace.html
-
-
-If you now open that trace on a browser and scroll all the way down to the last time step, you can confirm the value 
-that the accumulator holds.
+If you now open the generated trace file (``simpleadd_1_trace.html``) via a browser and scroll all the way down to 
+the last time step, you can confirm the value that the accumulator holds.
 
 
 .. _simple_add_with_mem:
@@ -102,8 +95,7 @@ to track all three memory locations, then step 3 would become:
 ``> dgsim.py simpleadd_2.dgb -ts r0 -ts r1 -ts r3``
 
 For an example of the sort of output produced by ``dgsim``, you can see 
-`this Markdown file (simpleadd_2_trace.md) <_static/simpleadd_2_trace.md>`_ or, the same file having passed 
-it through pandoc, available in `this file <_static/simpleadd_2_trace.html>`_.
+`this file <_static/simpleadd_2_trace.html>`_.
 
 Adding two literals, sending the output to the Data LEDs
 --------------------------------------------------------
