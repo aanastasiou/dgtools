@@ -1,11 +1,13 @@
 # Implements `r3 = a + b`
 
-.EQU a=1
-.EQU b=1
-COPYLA a
-ADDLA b
+COPYRA a
+ADDRA b
 COPYAR r3
 HALT
 r3:
 .DB 0
 
+a:
+.DB 2
+b:
+.DB 6

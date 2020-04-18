@@ -164,7 +164,7 @@ Or, if you are in Linux, simply send it to `less <https://en.wikipedia.org/wiki/
 
     > dginspect.py simpleadd_3.dgb|less
 
-In either cae, the binary dump for ``simpleadd_3.dgb`` would look like this:
+In either case, the binary dump for ``simpleadd_3.dgb`` would look like this:
 
 .. code::
     
@@ -240,18 +240,22 @@ space as follows:
 
 .. code::
 
-    .EQU a=1
-    .EQU b=1
-    COPYLA a
-    ADDLA b
+    COPYRA a
+    ADDRA b
     COPYAR r3
     HALT
+
     r3:
     .DB 0
 
+    a:
+    .DB 2
+    b:
+    .DB 6
+
 This listing is available in :download:`data/intro/simpleadd_5.dsf <../../data/intro/simpleadd_5.dsf>`
 
-This program specifies two "symbols" ``a,b`` which hold literals that participate in addition and one label ``r3`` that 
+This program specifies 1 byte ``a,b`` which hold literals that participate in addition and ``r3`` that 
 points to a one byte memory location that receives the result of the addition.
 
 Very briefly, ``a,b`` will become the **parameters** (two numbers that can be reset **without recompiling the program**) 
@@ -265,15 +269,16 @@ The complete workflow is as follows, notice here *which .dgb file is inspected f
     * ``> dgsim.py simpleadd_5.dgb``
 3. Inspect the result as stored in `r3`
     * ``> dginspect.py simpleadd_5_memdump.dgb -g r3`` 
-    * With the program in its original form, this value should be ``2``.
+    * With the program in its original form, this value should be ``8``.
 4. **Change parameter a to 3**
-    * ``> dginspect.py simpleadd_5.dgb -sy a 3``
+    * ``> dginspect.py simpleadd_5.dgb -s 8 3``
     * Don't worry about overwriting ``simpleadd_5.dgb``, its original form is still maintained in a ``.bak`` file.
+    * Notice here that `8` is the offset of variable `a`
 5. Run the program again
     * ``> dgsim.py simpleadd_5.dgb``
 6. Inspect the final result now
     * ``> dginspect.py simpleadd_5_memdump.dgb -g r3`` 
-    * With the parameters given here, this value should be ``4``
+    * With the parameters given here, this value should be ``9``
     
 7. Start keying the final result in with:
     * ``> dginspect.py simpleadd_5_memdump.dgb -b``

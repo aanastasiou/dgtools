@@ -33,9 +33,6 @@ Options:
 
   -s, --set-mem <INTEGER INTEGER>...
                                   Set a memory value (as Address, Value).
-  -sy, --set-sym <TEXT INTEGER>...
-                                  Set a symbol (Defined with .EQU) to a new
-                                  value.
 
   -nb, --no-backup                If set then no backup file is created.
   --help                          Show this message and exit.
@@ -78,11 +75,9 @@ def binary_listing(a_program):
                    "bytes that starts at Offset.")
 @click.option("--set-mem","-s",multiple=True, type=(int, int), nargs=2, 
               help="Set a memory value (as Address, Value).")
-@click.option("--set-sym","-sy", multiple=True, type=(str, int), nargs=2, 
-              help="Set a symbol (Defined with .EQU) to a new value.")
 @click.option("--no-backup", "-nb", is_flag=True, 
               help="If set then no backup file is created.")
-def dginspect(input_file, list_binary, get_mem, set_mem, set_sym, no_backup):
+def dginspect(input_file, list_binary, get_mem, set_mem, no_backup):
     """
     Command line tool to inspect and modify .dgb files.
     
@@ -98,8 +93,6 @@ def dginspect(input_file, list_binary, get_mem, set_mem, set_sym, no_backup):
     :type get_mem: tuple<str>
     :param set_mem: Iterable of memory offset:value to modify in memory.
     :type set_mem: tuple<tuple<int,int>>
-    :param set_sym: Iterable of symbol:value to modify in memory.
-    :type set_sym: tuple<tuple<str,int>>
     :param no_backup: By default, this function creates a backup file if it were to modify memory. This option turns 
                      backups off.
     """
@@ -138,7 +131,6 @@ def dginspect(input_file, list_binary, get_mem, set_mem, set_sym, no_backup):
         sys.stdout.write(f"Inspecting {input_file}\n")
         sys.stdout.write(f"Program:\n{compiled_program.program}\n\n")
         sys.stdout.write(f"Label offsets:\n{compiled_program.labels}\n\n")
-        sys.stdout.write(f"Static symbol offsets:\n{compiled_program.symbols}\n\n")
         
         if len(get_mem)>0:
             # Build the get mem symbols here
@@ -147,7 +139,7 @@ def dginspect(input_file, list_binary, get_mem, set_mem, set_sym, no_backup):
                 mem_vals+=f"{a_symbol[0]}: {compiled_program.program[a_symbol[1]:(a_symbol[1]+a_symbol[2])]}\n"
             sys.stdout.write(f"Specific memory areas:\n{mem_vals}\n\n")
         
-        if (len(set_mem) or len(set_sym)) > 0:
+        if (len(set_mem)) > 0:
             if not no_backup:
                 bak_file = f"{os.path.splitext(input_file)[0]}.bak"
                 # First create a backup
@@ -166,13 +158,7 @@ def dginspect(input_file, list_binary, get_mem, set_mem, set_sym, no_backup):
                     modified_program.program[a_set_mem[0] & 0xFF] = a_set_mem[1] & 0xFF
                     sys.stdout.write(f"Modifying address {a_set_mem[0]} from {previous_value} to {a_set_mem[1]}\n")
                 sys.stdout.write("\n")
-                
-            if set_sym is not None:
-                for a_set_sym in set_sym:
-                    previous_value = modified_program.program[modified_program.symbols[a_set_sym[0]][0]]
-                    sys.stdout.write(f"Modifying symbol {set_sym[0]} from {previous_value} to {a_set_sym[1]}\n")
-                    modified_program.program[modified_program.symbols[a_set_sym[0]][0]] = a_set_sym[1] & 0xFF
-                    
+
             # Save the new dgb
             modified_program.save(input_file)
             sys.stdout.write(f"Saving changes to {input_file}\n\n")

@@ -711,8 +711,7 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
                                             extra_symbols=extra_symbols)
                                             
     machine_after_execution_archive = DGB_Archive(machine_after_execution._mem, 
-                                                  compiled_program.labels, 
-                                                  compiled_program.symbols)
+                                                  compiled_program.labels)
     
     machine_after_execution_archive.save(output_memdump_file)
         

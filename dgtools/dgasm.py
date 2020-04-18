@@ -173,7 +173,7 @@ def asm_ast_to_obj(parsed_code):
         else:
             raise DgtoolsErrorSymbolUndefined(f"Symbol {an_entry[1]} not found.")
             
-    return {"program":mem, "labels":labels, "symbols":symbol_offsets}
+    return {"program":mem, "labels":labels}
     
 @click.command()
 @click.argument("input-file",type=click.Path(exists=True))
@@ -209,7 +209,7 @@ def dgasm(input_file, output_file):
         
     asm_code_compiled = asm_ast_to_obj(parsed_code)
             
-    dgb_archive = DGB_Archive(asm_code_compiled["program"], asm_code_compiled["labels"], asm_code_compiled["symbols"])
+    dgb_archive = DGB_Archive(asm_code_compiled["program"], asm_code_compiled["labels"])
     dgb_archive.save(output_file)
         
 if __name__ == "__main__":
