@@ -50,19 +50,13 @@ import os
 import pickle
 import click
 from dgsim import mem_dump, validate_trace_symbol
-from dgtools.exceptions import DgtoolsErrorSymbolUndefined
+from dgtools.exceptions import DgtoolsErrorSymbolUndefined, DgtoolsErrorDgbarchiveCorrupted
 from dgtools.dgb_archive import DGB_Archive
 
 def binary_listing(a_program):
     """
     Produces the binary listing output.
     """
-    #to_ret = " ".join([f"{(v*32):08b}:********" for v in range(0,8)]) + "\n"
-    #to_ret+= "".join(["-"]*len(to_ret)) + "\n"
-    #for u in range(0,32):
-        #listing_line = " ".join([f"{(v*32+u):08b}:{a_program[v*32+u]:08b}" for v in range(0,8)])
-        #to_ret+=f"{listing_line}\n"
-    #return to_ret
     to_ret="    ADDR:VALUE   \n"
     for addr, value in enumerate(a_program):
         to_ret+=f"{addr:08b}:{value:08b}\n"
@@ -110,7 +104,11 @@ def dginspect(input_file, list_binary, get_mem, set_mem, set_sym, no_backup):
                      backups off.
     """
     # TODO: HIGH, Add a mode that only generates an update of the VM state when the state of one of the tracked symbols changes
-    compiled_program = DGB_Archive.load(input_file)       
+    try:
+        compiled_program = DGB_Archive.load(input_file)       
+    except DgtoolsErrorDgbarchiveCorrupted as e:
+        print(e.args[0])
+        sys.exit(1)
     
     if list_binary:
         sys.stdout.write(f"\n{binary_listing(compiled_program.program)}\n")

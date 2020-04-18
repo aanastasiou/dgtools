@@ -51,7 +51,10 @@ import pickle
 import click
 import os
 import types
-from dgtools.exceptions import DgtoolsErrorOpcodeNotSupported, DgtoolsErrorDgbarchiveCorrupted, DgtoolsErrorSymbolUndefined
+from dgtools.exceptions import (DgtoolsErrorOpcodeNotSupported, 
+                                DgtoolsErrorDgbarchiveCorrupted, 
+                                DgtoolsErrorSymbolUndefined)
+                                
 from dgtools.dgb_archive import DGB_Archive
 
 class Digirule:
@@ -673,7 +676,11 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
     if output_memdump_file is None:
         output_memdump_file = f"{os.path.splitext(input_file)[0]}_memdump.dgb"
         
-    compiled_program = DGB_Archive.load(input_file)
+    try:
+        compiled_program = DGB_Archive.load(input_file)       
+    except DgtoolsErrorDgbarchiveCorrupted as e:
+        print(e.args[0])
+        sys.exit(1)
 
     symbols_to_trace = list(map(lambda x:x.split(":"), trace_symbol))
     # Validate trace_symbol if any
