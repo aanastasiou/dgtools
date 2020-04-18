@@ -4,13 +4,21 @@
 #    2. Synthesize a "string"
 
 .EQU status_reg=252
+# Initialise
+COPYLR stack stack_ptr
 
 # Program Entry Point
-COPYLR 129 r0
+# COPYLR 129 r0
+# COPYLR 0 r1
+# COPYLR 2 r2
+# COPYLR 0 r3
+# CALL mul_wacc
+
+COPYLR 0 wacc_l
+COPYLR 2 wacc_h
+COPYLR 1 r0
 COPYLR 0 r1
-COPYLR 2 r2
-COPYLR 0 r3
-CALL mul_wacc
+CALL sublwacc
 HALT
 
 wdiv:
@@ -18,10 +26,12 @@ wdiv:
 # Returns r1r0:Ratio, r3r2:Remainder
 CBR 0 status_reg # Zero bit
 CBR 1 status_reg # Carry bit
-COPYLR 0 r1
+COPYLR 0 r3
+COPYLR 0 r2
 sub_again:
-INCR r1
-SUBRA r0
+# Save the wide accumulator
+CALL incr_r3r2 # Increase by one
+CALL sublwacc # Subtract the dividend
 # Check if the last SUB hit zero 
 BCRSS 0 status_reg
 JUMP check_carry
@@ -36,10 +46,32 @@ DECR r1
 COPYAR r0
 RETURN
 
+incr_r3r2:
+# Increases r3r2 by 1
+# Save the accumulator and r1r0
+COPYRR wacc_l t4
+COPYRR wacc_h t5
+COPYRR r0 t2
+COPYRR r1 t3
+# Load the wide accumulator
+COPYRR r3 wacc_h
+COPYRR r2 wacc_l
+COPYLR 0 r1
+COPYLR 1 r0
+CALL addlwacc
+COPYRR wacc_l r2
+COPYRR wacc_h r3
+# Restore
+COPYRR t3 r1
+COPYRR t2 r0
+COPYRR t5 wacc_h
+COPYRR t4 wacc_l
+RETURN
 
 mul_wacc:
 # Performs r1r0*r3r2 using the wide accumulator
-# NOTE: This is still 8bit multiplication
+# NOTE: This is still 8bit multiplication but the function
+# might potentially use the full length of both registers.
 # Returns the product in the wide accumulator
 CBR 0 status_reg # Zero bit
 CBR 1 status_reg # Carry bit
@@ -87,18 +119,32 @@ COPYRA wacc_h
 ADDRA r1
 RETURN
 
+sublwacc:
+# Subtracts r1r0 from the wide accumulator
+COPYRA wacc_l
+SUBRA r0
+BCRSS 1 status_reg
+JUMP sublwacc_no_carry
+CALL sublwacc_high
+SUBLA 1
+COPYAR wacc_h
+RETURN
+sublwacc_no_carry:
+CALL sublwacc_high
+COPYAR wacc_h
+RETURN 
+sublwacc_high:
+COPYAR wacc_l
+COPYRA wacc_h
+SUBRA r1
+RETURN
+
+
 shlr1r0:
 # Shift r1r0 left by 1
 CBR 1 status_reg
 SHIFTRL r0
 SHIFTRL r1
-RETURN
-
-shrr1r0:
-# Shift r1r0 right by 1
-CBR 1 status_reg
-SHIFTRR r1
-SHIFTRR r0
 RETURN
 
 shlr3r2:
@@ -108,21 +154,33 @@ SHIFTRL r2
 SHIFTRL r3
 RETURN
 
-shrr3r2:
-# Shift r3r2 right by 1
-CBR 1 status_reg
-SHIFTRR r3
-SHIFTRR r2
+f_push:
+# Pushes `r0` to the top of the stack
+COPYRR stack_ptr f_to
+COPYLR r0 f_from
+CALL f_copy_ind
+INCR stack_ptr
 RETURN
 
-cpy_ind:
-# Indirect copy
-.DB 7     # Digirule2 ASM COPYRR opcode
-cpy_from:
+f_pop:
+# Pops the top of the stack on to `r0`
+DECR stack_ptr
+COPYRR stack_ptr f_from
+COPYLR r0 f_to
+CALL f_copy_ind
+RETURN
+
+f_copy_ind:
+# Performs an indirect copy between the addresses pointed to by `f_from, f_to`.
+# This also shows a "template" function. It is constructed and parametrised in 
+# memory prior to being called from the main program.
+.DB 7   # COPYRR opcode
+f_from:
 .DB 0
-cpy_to:
+f_to:
 .DB 0
 RETURN
+
 
 # General Registers
 r1:
@@ -133,13 +191,17 @@ r3:
 .DB 0
 r2:
 .DB 0
+t1:
+.DB 0
 t0:
 .DB 0
-t1:
+t3:
 .DB 0
 t2:
 .DB 0
-t3:
+t5:
+.DB 0
+t4:
 .DB 0
 
 wacc:
@@ -149,4 +211,9 @@ wacc_l:
 .DB 0
 
 ascii_str:
-.DB 0,0,0
+.DB 0,0,0,0,0,0
+
+stack_ptr:
+.DB 0
+stack:
+.DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0

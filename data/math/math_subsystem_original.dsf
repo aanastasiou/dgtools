@@ -1,0 +1,198 @@
+# Establishes a parallel math subsystem over a 16bit wide accumulator
+.EQU status_reg=252
+
+# Begin of main program
+COPYLR b f_from
+COPYLR b f_to
+CALL wtwos_comp_mem_range
+COPYLR a f_from
+COPYLR b f_to
+CALL wadd_mem_range
+HALT
+
+a:
+.DB 2,0x00,0x01
+b:
+.DB 2,0x00,0x01
+
+wshl:
+# Shift left
+CBR 1 status_reg # Clear carry bit
+COPYLR 0 v_sr
+# This proceeds from LSB to MSB and we need to adjust f_from and f_to because initially they would simply point
+# to the beginning (MSB)of the two memory ranges
+COPYRR f_to t4 # Save where f_to points 
+COPYLR t0 f_to # Put the address of t0 to f_to so that we fetch the length of the range
+CALL f_copy_ind # This does t0<-[f_from]
+COPYRR t4 f_to # Restore the f_to to the beginning of the second mem range
+# Add the length of the memory ranges to both f_from,f_to so that now they both point to the LSB.
+COPYRA f_from
+ADDRA t0
+COPYAR f_from
+COPYRA f_to
+ADDRA t0
+COPYAR f_to
+# Save f_from and f_to because we are going to alternate between them as we fetch and push things to memory
+COPYRR f_to t1
+COPYRR f_from t2
+wshl_start:
+COPYLR t3 f_to
+CALL f_copy_ind
+COPYRR v_sr status_reg
+SHIFTRL t3
+COPYRR status_reg v_sr
+COPYLR t3 f_from
+COPYRR t1 f_to
+CALL f_copy_ind
+INCR t1
+INCR t2
+COPYRR t2 f_from
+DECRJZ t0
+JUMP wtwos_comp_mem_range_start
+RETURN
+
+wtwos_comp_mem_range:
+# Calculates the two's complement of a mem range at f_from and sends the result to f_to
+COPYRR f_to t4 # Save where f_to points 
+COPYLR t0 f_to # Put the address of t0 to f_to so that we fetch the length of the range
+CALL f_copy_ind # This does t0<-[f_from]
+COPYRR t4 f_to # Restore the f_to to the beginning of the second mem range
+INCR f_from
+INCR f_to
+# Save f_from and f_to because we are going to alternate between them as we fetch and push things to memory
+COPYRR f_to t1
+COPYRR f_from t2
+wtwos_comp_mem_range_start:
+# Fetch from f_from
+COPYLR t3 f_to
+CALL f_copy_ind
+# Twos complement kernel
+COPYRA t3
+XORLA 0xFF
+ADDLA 1
+# Ends
+COPYAR t3
+COPYLR t3 f_from
+COPYRR t1 f_to
+CALL f_copy_ind
+INCR t1
+INCR t2
+COPYRR t2 f_from
+DECRJZ t0
+JUMP wtwos_comp_mem_range_start
+RETURN
+
+
+
+
+wadd_mem_range:
+# Adds two numbers expressed as memory ranges
+# The numbers are little endian
+# Sends the result to the first memory range
+# Set initial conditions
+CBR 0 status_reg # Clear zero bit
+CBR 1 status_reg # Clear carry bit
+# Addition proceeds from LSB to MSB and we need to adjust f_from and f_to because initially they would simply point
+# to the beginning (MSB)of the two memory ranges
+COPYRR f_to t4 # Save where f_to points 
+COPYLR t0 f_to # Put the address of t0 to f_to so that we fetch the length of the range
+CALL f_copy_ind # This does t0<-[f_from]
+COPYRR t4 f_to # Restore the f_to to the beginning of the second mem range
+# Add the length of the memory ranges to both f_from,f_to so that now they both point to the LSB.
+COPYRA f_from
+ADDRA t0
+COPYAR f_from
+COPYRA f_to
+ADDRA t0
+COPYAR f_to
+# Save f_from and f_to because we are going to alternate between them as we fetch and push things to memory
+COPYRR f_to t1
+COPYRR f_from t2
+wadd_mem_range_start:
+# Fetch the next LSB of the first number to t3
+COPYLR t3 f_to
+CALL f_copy_ind
+# Load the accumulator
+COPYRA t3
+# Fetch the same LSB of the second number to t3
+COPYRR t1 f_from
+CALL f_copy_ind
+# If the previous operation had a carry, add one
+BCRSC 1 status_reg
+ADDLA 1
+ADDRA t3
+# Now send the result to the current LSB of the first number
+COPYAR t3
+COPYLR t3 f_from
+COPYRR t2 f_to
+CALL f_copy_ind
+# Decrease the f_to and f_from
+DECR t1
+DECR t2
+COPYRR t1 f_from
+DECRJZ t0
+JUMP wadd_mem_range_start
+RETURN
+
+
+f_copy_mem_range:
+# A memory range is a region of memory that starts with its length followed by length bytes.
+# It can contain anything
+# Copies f_from --> f_to for a length of t0 bytes
+# Load t0 with the length of the range
+# save f_to to t4
+COPYRR f_to t4
+COPYLR t0 f_to
+CALL f_copy_ind
+COPYRR t4 f_to
+# Set f_from, f_to to the beginning of the values
+INCR f_from
+INCR f_to
+f_copy_ind_again:
+CALL f_copy_ind
+INCR f_from
+INCR f_to
+DECRJZ t0
+JUMP f_copy_ind_again
+RETURN
+
+f_copy_ind:
+# Performs an indirect copy between the addresses pointed to by `f_from, f_to`.
+# This also shows a "template" function. It is constructed and parametrised in 
+# memory prior to being called from the main program.
+.DB 7   # COPYRR opcode
+f_from:
+.DB 0
+f_to:
+.DB 0
+RETURN
+
+# General Purpose Registers
+r1:
+.DB 0
+r0:
+.DB 0
+r3:
+.DB 0
+r2:
+.DB 0
+r5:
+.DB 0
+r4:
+.DB 0
+# Temporary registers
+t1:
+.DB 0
+t0:
+.DB 0
+t3:
+.DB 0
+t2:
+.DB 0
+t5:
+.DB 0
+t4:
+.DB 0
+v_sr:
+# Virtual status register
+.DB 0
