@@ -28,16 +28,18 @@ class ModalDialogBox(urwid.WidgetWrap):
         self._extra_syms = urwid.Edit("Extra symbols to track:")
         ok_cancel = urwid.GridFlow([urwid.Button("OK".center(15),on_press = self._on_ok), 
                                     urwid.Button("Cancel".center(15), on_press = self._on_cancel)],20,4,1,"center")
-        final_widget = urwid.ListBox([urwid.Text("Input/Output"),
-                                       self._in_file,
-                                       self._out_file,
-                                       text,     
-                                       self._trace_title, 
-                                       self._with_mem_dump, 
-                                       self._in_interactive_mode, 
-                                       self._maximum_cycles_to_run, 
-                                       self._extra_syms,
-                                       ok_cancel])
+        final_widget = urwid.LineBox(urwid.ListBox([urwid.Text(("dialog_plain","Arrow keys navigate the menu")),
+                                                    urwid.Text("Input/Output"),
+                                                    self._in_file,
+                                                    self._out_file,
+                                                    text,     
+                                                    self._trace_title, 
+                                                    self._with_mem_dump, 
+                                                    self._in_interactive_mode, 
+                                                    self._maximum_cycles_to_run, 
+                                                    self._extra_syms,
+                                                    urwid.Divider("\u2015"),
+                                                    ok_cancel]), title="Dgtools Compilation Parameters")
         self._was_ok = False
         super().__init__(final_widget)
         
@@ -91,12 +93,12 @@ def main(input_file, output_file):
     """
     palette = [
     ('banner', 'black', 'light gray'),
-    ('streak', 'black', 'dark red'),
+    ('dialog_plain', 'black', 'light gray'),
     ('bg', 'black', 'dark blue'),]
     
     params_dialog_box = ModalDialogBox(input_file, output_file)
     
-    loop = urwid.MainLoop(urwid.AttrMap(params_dialog_box, "default"), palette)
+    loop = urwid.MainLoop(urwid.AttrMap(params_dialog_box, "bg"), palette)
     loop.run()
     # Format and produce output here
     if params_dialog_box.closed_ok:
