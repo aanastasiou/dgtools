@@ -26,8 +26,6 @@ class ModalDialogBox(urwid.WidgetWrap):
         self._in_interactive_mode = urwid.CheckBox("Interactive mode")
         self._maximum_cycles_to_run = urwid.IntEdit("Maximum cycles to run:",200)
         self._extra_syms = urwid.Edit("Extra symbols to track:")
-        self._pandoc_css = urwid.Edit("pandoc css:")
-        self._run_pandoc = urwid.CheckBox("Run pandoc")
         ok_cancel = urwid.GridFlow([urwid.Button("OK".center(15),on_press = self._on_ok), 
                                     urwid.Button("Cancel".center(15), on_press = self._on_cancel)],20,4,1,"center")
         final_widget = urwid.ListBox([urwid.Text("Input/Output"),
@@ -39,9 +37,6 @@ class ModalDialogBox(urwid.WidgetWrap):
                                        self._in_interactive_mode, 
                                        self._maximum_cycles_to_run, 
                                        self._extra_syms,
-                                       urwid.Text("Output formatting"),
-                                       self._pandoc_css,
-                                       self._run_pandoc,
                                        ok_cancel])
         self._was_ok = False
         super().__init__(final_widget)
@@ -83,15 +78,9 @@ class ModalDialogBox(urwid.WidgetWrap):
 
     @property        
     def extra_symbols(self):
-        return self._extra_syms.edit_text.replace(" ","").split(",")
-        
-    @property
-    def run_pandoc(self):
-        return self._run_pandoc.state
-        
-    @property
-    def pandoc_css(self):
-        return self._pandoc_css.edit_text
+        entries_to_return = list(filter(lambda x:len(x)>0,self._extra_syms.edit_text.replace(" ","").split(",")))
+        return entries_to_return
+
 
 @click.command()
 @click.argument("input_file",type=click.Path(exists=True))
@@ -111,21 +100,17 @@ def main(input_file, output_file):
     loop.run()
     # Format and produce output here
     if params_dialog_box.closed_ok:
-        add_params = f"-n {params_dialog_box.maximum_cycles_to_run}"
+        add_params = f"-mn {params_dialog_box.maximum_cycles_to_run} "
         if params_dialog_box.in_interactive_mode:
             add_params+="-I "
         if len(params_dialog_box.trace_title):
             add_params+=f"-t {params_dialog_box.trace_title} "
         if params_dialog_box.with_mem_dump:
             add_params+=f"--with-dump "
-        if len(params_dialog_box.extra_symbols):
+        if len(params_dialog_box.extra_symbols)>0:
             add_params+=" ".join(map(lambda x:f"-ts {x}",params_dialog_box.extra_symbols))
-        pandoc_part = ""
-        if (params_dialog_box.run_pandoc):
-            pandoc_part = f" && pandoc --from markdown --to html -i {os.path.splitext(params_dialog_box.input_file)[0]}_trace.md -o {os.path.splitext(params_dialog_box.input_file)[0]}_trace.html"
-        if len(params_dialog_box.pandoc_css):
-            pandoc_part+=f" --css {params_dialog_box.pandoc_css}"
-        sys.stdout.write(f"dgasm.py {params_dialog_box.input_file} && dgsim.py {params_dialog_box.output_file} {add_params} {pandoc_part}")
+        sys.stdout.write(f"dgasm.py {params_dialog_box.input_file} && \
+                           dgsim.py {params_dialog_box.output_file} {add_params}")
     else:
         sys.exit(1)
 
