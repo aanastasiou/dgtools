@@ -35,7 +35,7 @@ At the moment this section includes the help sections of each script as it would
 ``dgui.py``
 -----------
 
-.. automodules:: dgui
+.. automodule:: dgui
 
 .. note::
 
