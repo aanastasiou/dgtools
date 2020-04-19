@@ -218,11 +218,8 @@ class Digirule:
         :param new_value: The value to set the Accumulator to.
         :type new_value: uint8
         """
-        self._acc = new_value & 255
-        if new_value == 0:
-            self._set_status_reg(self._ZERO_FLAG_BIT, 1)
-        else:
-            self._set_status_reg(self._ZERO_FLAG_BIT, 0)
+        self._acc = new_value & 0xFF
+        self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
             
         if new_value > 255 or new_value < 0:
             self._set_status_reg(self._CARRY_FLAG_BIT, 1)
@@ -314,13 +311,10 @@ class Digirule:
         # COPYRR
         if cmd == 7:
             addr1 = self._read_next()
-            value_addr1 = self._rd_mem(addr1)
+            value_addr1 = self._rd_mem(addr1) & 0xFF
             addr2 = self._read_next()
             self._wr_mem(addr2, value_addr1)
-            if value_addr1==0:
-                self._set_status_reg(self._ZERO_FLAG_BIT, 1)
-            else:
-                self._set_status_reg(self._ZERO_FLAG_BIT, 0)
+            self._set_status_reg(self._ZERO_FLAG_BIT,value_addr1==0)
             
         # ADDLA
         if cmd == 8:
@@ -366,34 +360,34 @@ class Digirule:
         # DECR
         if cmd == 18:
             addr = self._read_next()
-            value = self._rd_mem(addr)
-            self._wr_mem(addr, value - 1)
-        
+            value = (self._rd_mem(addr) - 1) & 0xFF
+            self._wr_mem(addr, value)
+            self._set_status_reg(self._ZERO_FLAG_BIT,value==0)
+                
         # INCR
         if cmd == 19:
             addr = self._read_next()
-            value = self._rd_mem(addr)
-            self._wr_mem(addr, value + 1)
+            value = (self._rd_mem(addr) + 1) & 0xFF
+            self._wr_mem(addr, value)
+            self._set_status_reg(self._ZERO_FLAG_BIT,value==0)
             
         # DECRJZ
         if cmd == 20:
             addr = self._read_next()
-            value = self._rd_mem(addr) - 1
-            self._wr_mem(addr, value & 0xFF)
+            value = (self._rd_mem(addr) - 1) & 0xFF
+            self._wr_mem(addr, value)
+            self._set_status_reg(self._ZERO_FLAG_BIT,value==0)
             if value == 0:
-                self._set_status_reg(self._ZERO_FLAG_BIT,0)
                 self._pc+=2
                 
         # INCRJZ
         if cmd == 21:
             addr = self._read_next()
-            value = self._rd_mem(addr) + 1
-            self._wr_mem(addr, value & 0xFF)
+            value = (self._rd_mem(addr) + 1) & 0xFF
+            self._wr_mem(addr, value)
+            self._set_status_reg(self._ZERO_FLAG_BIT,value==0)
             if value == 0:
-                self._set_status_reg(self._ZERO_FLAG_BIT,1)
                 self._pc += 2
-            else:
-                self._set_status_reg(self._ZERO_FLAG_BIT,0)
 
         # SHIFTRL
         if cmd == 22:
