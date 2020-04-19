@@ -1,3 +1,5 @@
+.. _prng:
+
 Pseudorandom Number Generator (PRNG)
 ====================================
 

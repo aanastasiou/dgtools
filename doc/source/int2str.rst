@@ -1,3 +1,5 @@
+.. _itoa:
+
 Converting numbers to strings
 =============================
 

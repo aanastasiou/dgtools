@@ -26,15 +26,15 @@ generate traces of your own code.
    introductory_topics
    advanced_topics
    assembler_syntax
-   dgui.rst
-   
-   lfsr
-   pov
-   instruction_set_notes
-   int2str
-   
+      
    script_detail
+   extras
    current_todos
+   
+   instruction_set_notes
+   
+   code_projects
+
 
 
 Indices and tables
