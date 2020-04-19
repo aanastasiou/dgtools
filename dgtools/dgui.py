@@ -172,8 +172,9 @@ def main(input_file, output_file):
         if params_dialog_box.with_mem_dump:
             dgsim_params.extend(["--with-dump"])
         if len(params_dialog_box.extra_symbols)>0:
-            dgsim_params.extend(map(lambda x:f"-ts {x}",params_dialog_box.extra_symbols))
-            
+            for a_symbol in params_dialog_box.extra_symbols:
+                dgsim_params.extend(["-ts", f"{a_symbol}"])
+        
         dgasm_process = subprocess.Popen(dgasm_params, stdout=subprocess.PIPE, text=True)
         if dgasm_process.wait()!=0:
             sys.stdout.write(dgasm_process.stdout.read())
