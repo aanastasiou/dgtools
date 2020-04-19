@@ -219,13 +219,8 @@ class Digirule:
         :type new_value: uint8
         """
         self._acc = new_value & 0xFF
-        self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
-            
-        if new_value > 255 or new_value < 0:
-            self._set_status_reg(self._CARRY_FLAG_BIT, 1)
-        else:
-            self._set_status_reg(self._CARRY_FLAG_BIT, 0)
-        
+        # self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
+        # self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
         return self
         
     def _get_acc_value(self):
@@ -306,7 +301,9 @@ class Digirule:
             
         # COPYRA
         if cmd == 6:
-            self._set_acc_value(self._rd_mem(self._read_next()))
+            new_value = self._rd_mem(self._read_next())
+            self._set_acc_value(new_value)
+            self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
         
         # COPYRR
         if cmd == 7:
@@ -319,43 +316,66 @@ class Digirule:
         # ADDLA
         if cmd == 8:
             new_value = self._get_acc_value()+self._read_next()
-            self._set_acc_value(new_value)           
-            
+            self._set_acc_value(new_value)
+            self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
+            self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
+
         # ADDRA
         if cmd == 9:
-            self._set_acc_value(self._get_acc_value() + self._rd_mem(self._read_next()))
-            
+            new_value = self._get_acc_value() + self._rd_mem(self._read_next())
+            self._set_acc_value(new_value)
+            self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
+            self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
+
         # SUBLA
         if cmd == 10:
-            self._set_acc_value(self._get_acc_value() - self._read_next())
-            
+            new_value = self._get_acc_value() - self._read_next()
+            self._set_acc_value(new_value)
+            self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
+            self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
+
         # SUBRA
         if cmd == 11:
-            self._set_acc_value(self._get_acc_value() - self._rd_mem(self._read_next()))
+            new_value = self._get_acc_value() - self._rd_mem(self._read_next())
+            self._set_acc_value(new_value)
+            self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
+            self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
             
         # ANDLA
         if cmd == 12:
-            self._set_acc_value(self._get_acc_value() & self._read_next())
+            new_value = self._get_acc_value() & self._read_next()
+            self._set_acc_value(new_value)
+            self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
             
         # ANDRA
         if cmd == 13:
-            self._set_acc_value(self._get_acc_value() & self._rd_mem(self._read_next()))
+            new_value = self._get_acc_value() & self._rd_mem(self._read_next())
+            self._set_acc_value(new_value)
+            self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
             
         # ORLA
         if cmd == 14:
-            self._set_acc_value(self._get_acc_value() | self._read_next())
+            new_value = self._get_acc_value() | self._read_next()
+            self._set_acc_value(new_value)
+            self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
             
         # ORRA
         if cmd == 15:
-            self._set_acc_value(self._get_acc_value() | self._rd_mem(self._read_next()))
+            new_value = self._get_acc_value() | self._rd_mem(self._read_next())
+            self._set_acc_value(new_value)
+            self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
         
         # XORLA
         if cmd == 16:
-            self._set_acc_value(self._get_acc_value() ^ self._read_next())
+            new_value = self._get_acc_value() ^ self._read_next()
+            self._set_acc_value(new_value)
+            self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
             
         # XORRA
         if cmd == 17:
-            self._set_acc_value(self._get_acc_value() ^ self._rd_mem(self._read_next()))
+            new_value = self._get_acc_value() ^ self._rd_mem(self._read_next())
+            self._set_acc_value(new_value)
+            self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
         
         # DECR
         if cmd == 18:
@@ -521,7 +541,7 @@ def mem_dump(mem, offset_from=0, offset_to=256, line_length=16):
         # The same memory page in chr depictions.
         # TODO: MED, The character translation table can be improved here to get rid of the >9 and clarify depictions.
         mem_page_char = "".join([chr(q) if q>9 else "." for q in mem_page]).translate(trans_tab)
-        to_ret += f"\t{(offset_from+k*8):02X} {mem_page_hex} {mem_page_char}\n"        
+        to_ret += f"\t{(offset_from+k*line_length):02X} {mem_page_hex} {mem_page_char}\n"        
     return to_ret
     
     
@@ -577,7 +597,7 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
             
             dgen.table_h(["Program Counter:","Accumulator:", "Status Reg:","Button Register", "Addr.Led Register",
                           "Data Led Register:", "Speed setting:", "Program counter stack:"],
-                         [[machine._pc], [machine._acc],[machine._mem[machine._status_reg_ptr]], 
+                         [[f"0x{machine._pc:02X}"], [machine._acc],[machine._mem[machine._status_reg_ptr]], 
                           [machine._mem[machine._bt_reg_ptr]], [machine._mem[machine._addrled_reg_ptr]], 
                           [machine._mem[machine._dataled_reg_ptr]], [machine._speed_setting], [machine._ppc]])
             dgen.close_tag("section")
