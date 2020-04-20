@@ -12,7 +12,7 @@ Welcome to dgtools's documentation!
 `Digirule 2 <https://bradsprojects.com/digirule2/>`_. 
 
 It is composed of an assembler (``dgasm.py``), a binary file "inspector" (``dginspect.py``) and a simulator
-(``dgsim.py``) that can be used together to develop and test code and also assist in "keying" it in, to .
+(``dgsim.py``) that are used to develop and test code and also assist in "keying" it in, to the ruler itself.
 
 For an example of the level of detail in terms of simulating program execution, please see 
 `this sample output file <_static/simpleadd_2_trace.html>`_ and keep reading through the introductory section to 
