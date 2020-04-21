@@ -584,7 +584,6 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
     # created here on the fly.
     with Output_Render_HTML(output_file) as dgen:
         dgen.open_tag("article")
-        dgen.open_tag("section")
         dgen.open_tag("header")
         dgen.heading(f"Program Trace {trace_title}", 1)
         dgen.close_tag("header")
@@ -642,7 +641,6 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
             dgen.ruler()
             done = not machine._exec_next()
             n+=1
-        dgen.close_tag("section")
         dgen.close_tag("article")
     return machine
 
