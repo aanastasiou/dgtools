@@ -13,5 +13,5 @@ its only limit seems to be its tiny memory space.
 #. :ref:`Persistence of Vision Light Srick <pov_light_stick>`
 #. :ref:`Generating pseudo random numbers <prng>`
 #. :ref:`Converting integers to strings <itoa>`
-
+#. :ref:`One huge counter <long_counter>`
 
