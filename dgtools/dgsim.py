@@ -317,65 +317,65 @@ class Digirule:
         if cmd == 8:
             new_value = self._get_acc_value()+self._read_next()
             self._set_acc_value(new_value)
-            self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
+            self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
             self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
 
         # ADDRA
         if cmd == 9:
             new_value = self._get_acc_value() + self._rd_mem(self._read_next())
             self._set_acc_value(new_value)
-            self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
+            self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
             self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
 
         # SUBLA
         if cmd == 10:
             new_value = self._get_acc_value() - self._read_next()
             self._set_acc_value(new_value)
-            self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
+            self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
             self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
 
         # SUBRA
         if cmd == 11:
             new_value = self._get_acc_value() - self._rd_mem(self._read_next())
             self._set_acc_value(new_value)
-            self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
+            self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
             self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
             
         # ANDLA
         if cmd == 12:
             new_value = self._get_acc_value() & self._read_next()
             self._set_acc_value(new_value)
-            self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
+            self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
             
         # ANDRA
         if cmd == 13:
             new_value = self._get_acc_value() & self._rd_mem(self._read_next())
             self._set_acc_value(new_value)
-            self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
+            self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
             
         # ORLA
         if cmd == 14:
             new_value = self._get_acc_value() | self._read_next()
             self._set_acc_value(new_value)
-            self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
+            self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
             
         # ORRA
         if cmd == 15:
             new_value = self._get_acc_value() | self._rd_mem(self._read_next())
             self._set_acc_value(new_value)
-            self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
+            self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
         
         # XORLA
         if cmd == 16:
             new_value = self._get_acc_value() ^ self._read_next()
             self._set_acc_value(new_value)
-            self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
+            self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
             
         # XORRA
         if cmd == 17:
             new_value = self._get_acc_value() ^ self._rd_mem(self._read_next())
             self._set_acc_value(new_value)
-            self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
+            self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
         
         # DECR
         if cmd == 18:
