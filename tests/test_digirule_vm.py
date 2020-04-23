@@ -201,7 +201,7 @@ def test_SUBLA():
     vm = Digirule()
     vm.load_program([10, 1])
     vm._acc = 0x01
-    vm._mem[252] = 0
+    vm._mem[252] = 3
     vm.goto(0)
     
     run_res = vm._exec_next()
@@ -210,3 +210,39 @@ def test_SUBLA():
     assert vm._acc == 0
     assert vm._mem[252] & 0x01 == 1
     assert vm._mem[252] & 0x02 == 0
+
+
+def test_SUBRA():
+    """
+    SUBRA subtracts a memory location from the accumulator affecting the zero and carry flags
+    """
+    vm = Digirule()
+    vm.load_program([11, 2, 1])
+    vm._acc = 0x01
+    vm._mem[252] = 3
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    
+    assert run_res == 1
+    assert vm._acc == 0
+    assert vm._mem[252] & 0x01 == 1
+    assert vm._mem[252] & 0x02 == 0
+
+
+def test_ANDLA():
+    """
+    ANDLA applies bitwise AND between the Accumulator and a literal and returns the result
+    to the accumulator, affecting the zero flag.
+    """
+    vm = Digirule()
+    vm.load_program([12, 4])
+    vm._acc = 0x03
+    vm._mem[252] = 0
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    
+    assert run_res == 1
+    assert vm._acc == 0
+    assert vm._mem[252] & 0x01 == 1
