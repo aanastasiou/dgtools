@@ -246,3 +246,383 @@ def test_ANDLA():
     assert run_res == 1
     assert vm._acc == 0
     assert vm._mem[252] & 0x01 == 1
+    
+
+def test_ANDRA():
+    """
+    ANDRA applies bitwise AND between the Accumulator and a memory location and returns the result
+    to the accumulator, affecting the zero flag.
+    """
+    vm = Digirule()
+    vm.load_program([13, 2, 4])
+    vm._acc = 0x03
+    vm._mem[252] = 0
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    
+    assert run_res == 1
+    assert vm._acc == 0
+    assert vm._mem[252] & 0x01 == 1
+    
+
+def test_ORLA():
+    """
+    ORLA applies bitwise OR between the Accumulator and a literal and returns the result
+    to the accumulator, affecting the zero flag.
+    """
+    vm = Digirule()
+    vm.load_program([14, 3])
+    vm._acc = 0x04
+    vm._mem[252] = 1
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    
+    assert run_res == 1
+    assert vm._acc == 7
+    assert vm._mem[252] & 0x01 == 0
+
+
+def test_ORRA():
+    """
+    ORRA applies bitwise OR between the Accumulator and a memory location and returns the result
+    to the accumulator, affecting the zero flag.
+    """
+    vm = Digirule()
+    vm.load_program([15, 2, 3])
+    vm._acc = 0x04
+    vm._mem[252] = 1
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    
+    assert run_res == 1
+    assert vm._acc == 7
+    assert vm._mem[252] & 0x01 == 0
+
+
+def test_XORLA():
+    """
+    XORLA applies bitwise XOR between the Accumulator and a memory location and returns the result
+    to the accumulator, affecting the zero flag.
+    """
+    vm = Digirule()
+    vm.load_program([16, 0xFF])
+    vm._acc = 0xFF
+    vm._mem[252] = 0
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    
+    assert run_res == 1
+    assert vm._acc == 0
+    assert vm._mem[252] & 0x01 == 1
+
+
+def test_XORRA():
+    """
+    XORLA applies bitwise XOR between the Accumulator and a memory location and returns the result
+    to the accumulator, affecting the zero flag.
+    """
+    vm = Digirule()
+    vm.load_program([17, 2, 0xFF])
+    vm._acc = 0xFF
+    vm._mem[252] = 0
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    
+    assert run_res == 1
+    assert vm._acc == 0
+    assert vm._mem[252] & 0x01 == 1
+
+
+def test_DECR():
+    """
+    DECR decrements a memory location affecting the zero flag.
+    """
+    vm = Digirule()
+    vm.load_program([18, 2, 0x01])
+    vm._mem[252] = 0
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    
+    assert run_res == 1
+    assert vm._mem[2] == 0
+    assert vm._mem[252] & 0x01 == 1
+
+
+def test_INCR():
+    """
+    INCR increments a memory location affecting the zero flag.
+    """
+    vm = Digirule()
+    vm.load_program([19, 2, 0xFF])
+    vm._mem[252] = 0
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    
+    assert run_res == 1
+    assert vm._mem[2] == 0
+    assert vm._mem[252] & 0x01 == 1
+
+
+def test_DECRJZ():
+    """
+    DECRJZ decrement the content of a memory location and jump if zero affecting the zero flag.
+    """
+    vm = Digirule()
+    vm.load_program([20, 2, 0x01, 0x00,0x00])
+    vm._mem[252] = 0
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    assert run_res == 1
+    assert vm._mem[2] == 0
+    assert vm._mem[252] & 0x01 == 1
+    assert vm._pc == 4
+    
+    vm._mem[2]=0x02
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    assert run_res == 1
+    assert vm._mem[2] == 1
+    assert vm._mem[252] & 0x01 == 0
+    assert vm._pc == 2
+    
+
+def test_INCRJZ():
+    """
+    INCRJZ increment the content of a memory location and jump if zero affecting the zero flag.
+    """
+    vm = Digirule()
+    vm.load_program([21, 2, 0xFF, 0x00,0x00])
+    vm._mem[252] = 0
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    assert run_res == 1
+    assert vm._mem[2] == 0
+    assert vm._mem[252] & 0x01 == 1
+    assert vm._pc == 4
+    
+    vm._mem[2]=0x01
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    assert run_res == 1
+    assert vm._mem[2] == 2
+    assert vm._mem[252] & 0x01 == 0
+    assert vm._pc == 2
+
+
+def test_SHIFTRL():
+    """
+    SHIFTRL Shifts the contents of a memory location left by one through the carry flag.
+    """
+    vm = Digirule()
+    vm.load_program([22, 2, 0x01])
+    vm._mem[252] = 0
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    assert run_res == 1
+    assert vm._mem[2] == 2
+    assert vm._mem[252] & 0x02 == 0
+    
+    vm._mem[2]=0x80
+    vm._mem[252]=0
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    assert run_res == 1
+    assert vm._mem[2] == 0
+    assert vm._mem[252] & 0x02 == 0x02
+
+    vm._mem[2]=0x00
+    vm._mem[252]=2
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    assert run_res == 1
+    assert vm._mem[2] == 1
+    assert vm._mem[252] & 0x02 == 0
+
+def test_SHIFTRR():
+    """
+    SHIFTRR Shifts the contents of a memory location right by one through the carry flag.
+    """
+    vm = Digirule()
+    vm.load_program([23, 2, 0x01])
+    vm._mem[252] = 0
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    assert run_res == 1
+    assert vm._mem[2] == 0
+    assert vm._mem[252] & 0x02 == 0x02
+    
+    vm._mem[2]=0x80
+    vm._mem[252]=0
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    assert run_res == 1
+    assert vm._mem[2] == 0x40
+    assert vm._mem[252] & 0x02 == 0
+
+    vm._mem[2]=0x04
+    vm._mem[252]=2
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    assert run_res == 1
+    assert vm._mem[2] == 0x82
+    assert vm._mem[252] & 0x02 == 0
+
+
+def test_CBR():
+    """
+    CBR clears a specific bit.
+    """
+    vm = Digirule()
+    vm.load_program([24, 0, 3, 0x01])
+    vm._mem[252] = 0
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    assert run_res == 1
+    assert vm._mem[3] == 0
+    assert vm._mem[252] == 0x00
+
+
+def test_SBR():
+    """
+    SBR sets a specific bit.
+    """
+    vm = Digirule()
+    vm.load_program([25, 0, 3, 0x00])
+    vm._mem[252] = 0
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    assert run_res == 1
+    assert vm._mem[3] == 1
+    assert vm._mem[252] == 0x00
+
+
+def test_BCRSC():
+    """
+    BCRSC tests a specific bit and if it is CLEAR it jumps over the next two bytes in mem.
+    """
+    vm = Digirule()
+    vm.load_program([26, 1, 6, 0x00, 0x00, 0x00, 0x00])
+    vm._mem[252] = 0
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    assert run_res == 1
+    assert vm._pc == 0x05
+
+    vm._mem[6]=2
+    vm.goto(0)
+    run_res = vm._exec_next()
+    assert run_res == 1
+    assert vm._pc == 0x03
+
+
+def test_BCRSS():
+    """
+    BCRSS tests a specific bit and if it is SET it jumps over the next two bytes in mem.
+    """
+    vm = Digirule()
+    vm.load_program([27, 1, 6, 0x00, 0x00, 0x00, 0x00])
+    vm._mem[252] = 0
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    assert run_res == 1
+    assert vm._pc == 0x03
+
+    vm._mem[6]=2
+    vm.goto(0)
+    run_res = vm._exec_next()
+    assert run_res == 1
+    assert vm._pc == 0x05
+
+
+def test_JUMP():
+    """
+    JUMP jumps to a specific location in memory.
+    """
+    vm = Digirule()
+    vm.load_program([28, 2, 0x00])
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    assert run_res == 1
+    assert vm._pc == 0x02
+
+
+def test_CALL():
+    """
+    CALL jumps to a specific location in memory until it finds a RETURN.
+    """
+    vm = Digirule()
+    vm.load_program([29, 2, 0x00])
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    assert run_res == 1
+    assert vm._pc == 0x02
+    assert vm._ppc[0] == 0x02
+
+
+def test_RETLA():
+    """
+    CALL jumps to a specific location in memory until it finds a RETURN.
+    """
+    vm = Digirule()
+    vm.load_program([29, 2, 0x01, 30, 42])
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    run_res = vm._exec_next()
+    run_res = vm._exec_next()
+    assert run_res == 1
+    assert vm._pc == 0x02
+    assert len(vm._ppc) == 0
+    assert vm._acc==42
+
+
+def test_RETURN():
+    """
+    RETURN returns from a CALL.
+    """
+    vm = Digirule()
+    vm.load_program([29, 2, 0x01, 31])
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    run_res = vm._exec_next()
+    run_res = vm._exec_next()
+    assert run_res == 1
+    assert vm._pc == 0x02
+    assert len(vm._ppc) == 0
+
+
+def test_ADDRPC():
+    """
+    ADDRPC adds the contents of a ram location to the PC.
+    """
+    vm = Digirule()
+    vm.load_program([32, 2, 0x03, 0x00])
+    vm.goto(0)
+    
+    run_res = vm._exec_next()
+    assert run_res == 1
+    assert vm._pc == 0x03
