@@ -10,12 +10,21 @@ VM simulates.
 from dgtools.dgsim import Digirule
 import types
 
+import pdb
+
+
 def get_vm_hash(dg_vm):
     """
-    Returns a hash of the VM's state.
+    Returns a hash of a VM's state.
+    
+    :param dg_vm: A Digirule object
+    :type: dgtools.Digirule
+    :returns: A hash that is derived by all variables that contribute to the VM's state.
+    :rtype: int
     """
     hash_obj = list(dg_vm._mem)
-    hash_obj.extend([dg_vm._acc, 
+    hash_obj.extend([dg_vm._acc,
+                     dg_vm._pc,
                      dg_vm._interactive_mode, 
                      dg_vm._mem[252], 
                      dg_vm._mem[253], 
@@ -23,6 +32,23 @@ def get_vm_hash(dg_vm):
                      dg_vm._mem[255]])
     hash_obj.extend(dg_vm._ppc)
     return hash(bytearray(hash_obj).decode("utf-8"))
+    
+
+def get_vm_hash_after_exec(a_program):
+    """
+    Executes a_program and returns the hash of the VM at the end of that program.
+    
+    :param a_program: Compiled Digirule program
+    :type a_program: list<int>
+    :returns: The hash of the VM at the end of the program
+    :rtype: int
+    """
+    vm = Digirule()
+    vm.load_program(a_program)
+    vm.goto(0)
+    vm.run()
+    
+    return get_vm_hash(vm)
 
 
 def test_constants():
@@ -30,6 +56,7 @@ def test_constants():
     Ensures that the value of specific constants for this version of the VM are within specification.
     """
     vm = Digirule()
+    
     assert vm._ZERO_FLAG_BIT == 1
     assert vm._CARRY_FLAG_BIT == 2
     assert vm._ADDRLED_FLAG_BIT == 4
@@ -44,69 +71,85 @@ def test_constants():
 def test_HALT():
     """
     HALT stops execution, but other than this, it does not affect the state of the VM.
-    """
-    vm = Digirule()
-    vm.load_program([0])
-    vm.goto(0)
-    hash_before = get_vm_hash(vm)
-    run_res = vm._exec_next()
-    hash_after = get_vm_hash(vm)
     
-    assert run_res == 0
-    assert hash_before == hash_after
+    Program bytes used   : 1
+    Status flags affected: None
+    """
+    test_program = [0]
+    vm_hash = get_vm_hash_after_exec(test_program)
+    
+    vm_expected = Digirule()
+    vm_expected._pc = 1
+    
+    assert get_vm_hash(vm_expected) == vm_hash
 
 
 def test_NOP():
     """
-    NOP does not affect the state of the VM.
+    NOP does not perform ANY operation, does not affect the state of the VM.
+    
+    Program bytes used   : 1
+    Status flags affected: None
     """
-    vm = Digirule()
-    vm.load_program([1])
-    vm.goto(0)
-    hash_before = get_vm_hash(vm)
-    run_res = vm._exec_next()
-    hash_after = get_vm_hash(vm)
+    test_program = [1, 0]
+    vm_hash = get_vm_hash_after_exec(test_program)
     
-    assert run_res == 1
-    assert hash_before == hash_after
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._pc = 2
+    assert get_vm_hash(vm_expected) == vm_hash
     
+
 def test_SPEED():
     """
     SPEED simply sets an internal variable, it does not affect the state of the VM.
+    
+    Program bytes used   : 2
+    Status flags affected: None
     """
-    vm = Digirule()
-    vm.load_program([2, 3])
-    vm.goto(0)
-    hash_before = get_vm_hash(vm)
-    run_res = vm._exec_next()
-    hash_after = get_vm_hash(vm)
+    test_program = [2, 3, 0]
+    vm_hash = get_vm_hash_after_exec(test_program)
     
-    assert run_res == 1
-    assert hash_before == hash_after
-    assert vm._speed_setting == 3
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._pc = 3
+    vm_expected._speed_setting = 3
     
+    assert get_vm_hash(vm_expected) == vm_hash
 
+    
 def test_COPYLR():
     """
-    COPYLR copies a literal to a memory location.
-    """
-    vm = Digirule()
-    vm.load_program([3, 42, 3, 0])
-    vm.goto(0)
-    run_res = vm._exec_next()
+    COPYLR copies a literal to the specified RAM location.
     
-    assert run_res == 1
-    assert vm._mem[3] == 42
+    Program bytes used   : 3
+    Status flags affected: None
+    """
+    test_program = [3, 42, 4, 0, 0]
+    vm_hash = get_vm_hash_after_exec(test_program)
+    
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._pc = 4
+    vm_expected._mem[4] = 42
+    
+    assert get_vm_hash(vm_expected) == vm_hash
 
 
 def test_COPYLA():
     """
-    COPYLA copies a literal to the accumulator.
+    COPYLA copies a literal to the Accumulator.
+    
+    Program bytes used   : 2
+    Status flags affected: None
     """
     vm = Digirule()
     vm.load_program([4, 42])
     vm.goto(0)
     run_res = vm._exec_next()
+    
+    vm_expected = Digirule()
+    vm_expected.load_program([4,42])
     
     assert run_res == 1
     assert vm._acc == 42
