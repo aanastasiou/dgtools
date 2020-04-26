@@ -17,8 +17,29 @@ Options:
 import os
 import sys
 import subprocess
+import pyparsing
 import urwid
 import click
+
+
+def get_symbols_parser():
+    """
+    Returns a very simple parser to validate the extra symbols passed to the simulator.
+    """
+    identifier = pyparsing.Regex("[a-zA-Z_][0-9A-Za-z_]*")
+    positive_integer = pyparsing.Regex("[0-9]+")
+    numeric_param = pyparsing.Suppress(":") + positive_integer
+    symbol_record = pyparsing.Group(identifier("id") + pyparsing.Optional(numeric_param("len") + pyparsing.Optional(numeric_param("offset"))))
+    symbol_records = pyparsing.Empty() ^ pyparsing.delimitedList(symbol_record)    
+    return symbol_records
+
+
+class ValidationFeedbackModalBox(urwid.WidgetWrap):
+    def __init__(self, ovr_window, validation_messages):
+        # Build the dialog box
+        # Switch the loop's dialog box
+        # Redraw the screen
+        super().init(urwid.Overlay())
 
     
 class ModalDialogBox(urwid.WidgetWrap):
@@ -70,8 +91,26 @@ class ModalDialogBox(urwid.WidgetWrap):
         super().__init__(final_widget)
         
     def _on_ok(self, a_button):
-        self._was_ok = True
-        raise urwid.ExitMainLoop()
+        validation_messages = []
+        # Check the format of extras
+        try:
+            get_symbols_parser().parseString(self.extra_symbols)
+        except pyparsing.ParseException:
+            validation_messages.append("Please check extra symbols passed.")
+        # Check that output directories exist
+        output_file_dir = os.path.split(self.output_file)[0]
+        if not os.path.isdir(output_file_dir):
+            validation_messages.append(f"Path {output_file_dir} does not exist")
+
+        output_trace_file_dir = os.path.split(self.output_trace_file)[0]
+        if not os.path.isdir(output_trace_file_dir):
+            validation_messages.append(f"Path {output_trace_file_dir} does not exist")
+
+        if len(validation_messages)>0:
+            pass
+        else:
+            self._was_ok = True
+            raise urwid.ExitMainLoop()
                 
     def _on_cancel(self, a_button):
         raise urwid.ExitMainLoop()
