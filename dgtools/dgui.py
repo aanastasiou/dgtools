@@ -34,7 +34,24 @@ def get_symbols_parser():
     return symbol_records
 
 
-class ValidationFeedbackModalBox(urwid.WidgetWrap):
+
+class MessageBox(urwid.WidgetWrap):
+    signals=["close"]
+    def __init__(self, message):
+        ok_cancel = urwid.GridFlow([urwid.Button("OK".center(15), on_press=self.on_ok), 
+                                    urwid.Button("Cancel".center(15), on_press=self.on_cancel)],20,4,1,"center")
+        mb_widget = urwid.LineBox(urwid.ListBox([urwid.Text(message), urwid.Divider(), ok_cancel]))
+        
+        super().__init__(mb_widget)
+        
+    def on_ok(self, a_b):
+        self._emit("close")
+        
+    def on_cancel(self, a_b):
+        self._emit("close")
+
+
+class ValidationFeedbackModalBox(urwid.PopUpLauncher):
     def __init__(self, ovr_window, validation_messages):
         # Build the dialog box
         # Switch the loop's dialog box
@@ -192,7 +209,9 @@ def main(input_file, output_file):
                                                       align="center",
                                                       width=66,
                                                       valign="middle", 
-                                                      height=16), palette, unhandled_input=handle_esc)
+                                                      height=16), palette, 
+                                                      unhandled_input=handle_esc,
+                                                      pop_ups = True)
     loop.run()
     # Format and produce output here
     if params_dialog_box.closed_ok:
