@@ -591,9 +591,13 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
             # Machine registers
             dgen.open_tag("section")
             dgen.open_tag("header")
-            dgen.heading(f"Machine Registers at n={n}",2)
+            dgen.heading(f"Machine State at n={n}",2)
             dgen.close_tag("header")
             
+            dgen.open_tag("section")
+            dgen.open_tag("header")
+            dgen.heading(f"Machine Registers",3)
+            dgen.close_tag("header")
             dgen.table_h(["Program Counter:","Accumulator:", "Status Reg:","Button Register", "Addr.Led Register",
                           "Data Led Register:", "Speed setting:", "Program counter stack:"],
                          [[f"0x{machine._pc:02X}"], [machine._acc],[machine._mem[machine._status_reg_ptr]], 
@@ -605,7 +609,7 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
             if with_mem_dump:
                 dgen.open_tag("section")
                 dgen.open_tag("header")
-                dgen.heading(f"Full memory dump:",2)
+                dgen.heading(f"Full memory dump:",3)
                 dgen.close_tag("header")
                 dgen.preformatted(mem_dump(machine._mem))
                 dgen.close_tag("section")
@@ -614,7 +618,7 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
             if len(extra_symbols):
                 dgen.open_tag("section")
                 dgen.open_tag("header")
-                dgen.heading(f"Specific Symbols",2)
+                dgen.heading(f"Specific Symbols",3)
                 dgen.close_tag("header")
                 
                 symbol_names = list(map(lambda x:x[0],extra_symbols))
@@ -633,10 +637,12 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
             # Onboard IO
             dgen.open_tag("section")
             dgen.open_tag("header")
-            dgen.heading("Onboard I/O",2)
+            dgen.heading("Onboard I/O",3)
             dgen.close_tag("header")
             dgen.table_h(["Address LEDs","Data LEDs","Button Switches"],
                          [machine.addr_led, machine.data_led, machine.button_sw])
+            dgen.close_tag("section")
+            
             dgen.close_tag("section")
             dgen.ruler()
             done = not machine._exec_next()
