@@ -18,7 +18,12 @@ import os
 import sys
 import subprocess
 import pyparsing
-import urwid
+try:
+    import urwid
+except ModuleNotFoundError:
+    print(f"\ndgui.py depends on urwid, a library to build text user interfaces, which was not found on your system.\n"
+          f"If you wish to use dgui.py, please install the urwid library with `pip install urwid` and try again.\n")
+    sys.exit(1)
 import click
 
 
