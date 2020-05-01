@@ -7,10 +7,9 @@ would cause errors not only to the code itself but more importantly, errors in t
 VM simulates.
 """
 
-from dgtools.dgsim import Digirule
+from dgtools.digirule import Digirule
 import types
-
-import pdb
+import base64
 
 
 def get_vm_hash(dg_vm):
@@ -31,21 +30,27 @@ def get_vm_hash(dg_vm):
                      dg_vm._mem[254], 
                      dg_vm._mem[255]])
     hash_obj.extend(dg_vm._ppc)
-    return hash(bytearray(hash_obj).decode("utf-8"))
+    return hash(base64.b64encode(bytearray(hash_obj)))
     
 
-def get_vm_hash_after_exec(a_program):
+def get_vm_hash_after_exec(a_program, use_this_vm=None):
     """
     Executes a_program and returns the hash of the VM at the end of that program.
     
     :param a_program: Compiled Digirule program
     :type a_program: list<int>
+    :param use_this_vm: A pre-configured Digirule object.
+    :type use_this_vm: Digirule
     :returns: The hash of the VM at the end of the program
     :rtype: int
     """
-    vm = Digirule()
-    vm.load_program(a_program)
-    vm.goto(0)
+    if use_this_vm is None:
+        vm = Digirule()
+        vm.load_program(a_program)
+        vm.goto(0)
+    else:
+        vm = use_this_vm
+        
     vm.run()
     
     return get_vm_hash(vm)
@@ -143,529 +148,652 @@ def test_COPYLA():
     Program bytes used   : 2
     Status flags affected: None
     """
-    vm = Digirule()
-    vm.load_program([4, 42])
-    vm.goto(0)
-    run_res = vm._exec_next()
+    test_program = [4, 42, 0]
+    vm_hash = get_vm_hash_after_exec(test_program)
     
     vm_expected = Digirule()
-    vm_expected.load_program([4,42])
+    vm_expected.load_program(test_program)
+    vm_expected._acc = 42
+    vm_expected._pc = 3
     
-    assert run_res == 1
-    assert vm._acc == 42
+    assert get_vm_hash(vm_expected) == vm_hash
 
 
 def test_COPYAR():
     """
-    COPYAR copies the value of the accumulator to a memory position.
-    """
-    vm = Digirule()
-    vm.load_program([5, 2, 0])
-    vm.goto(0)
-    vm._acc = 42
-    run_res = vm._exec_next()
+    COPYAR copies the value of the Accumulator to the specified RAM location.
     
-    assert run_res == 1
-    assert vm._mem[2] == 42
+    Program bytes used   : 2
+    Status flags affected: None 
+    """
+    test_program = [5, 3, 0, 42]
+    vm_hash = get_vm_hash_after_exec(test_program)
+    
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._mem[3] = 0
+    vm_expected._pc = 3
+    
+    assert get_vm_hash(vm_expected) == vm_hash
 
 
 def test_COPYRA():
     """
-    COPYRA copies the value of a memory position to the accumulator.
-    If the accumulator is set to zero, so does the zero flag.
+    COPYRA copies the value of a memory location to the Accumulator.
+
+    Program bytes used:  : 2
+    Status flags affected: Zero
     """
-    vm = Digirule()
-    vm.load_program([6, 2, 42])
-    vm._mem[252] = 1
-    vm.goto(0)
-    run_res = vm._exec_next()
+    test_program = [6, 3, 0, 42]
+    vm_hash = get_vm_hash_after_exec(test_program)
     
-    assert run_res == 1
-    assert vm._acc == 42
-    assert vm._mem[252] & 0x01 == 0
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._acc = 42
+    vm_expected._pc = 3
+    
+    assert get_vm_hash(vm_expected) == vm_hash
 
 
 def test_COPYRR():
     """
-    COPYRR copies the value of one memory position to another affecting the zero flag.
+    COPYRR copies the value of a memory location to another.
+    
+    Program bytes used   : 3
+    Status flags affected: Zero
     """
-    vm = Digirule()
-    vm.load_program([7, 3, 4, 42, 0])
-    vm._mem[252] = 1
-    vm.goto(0)
+    test_program = [7, 4, 5, 0, 42, 0]
+    vm_hash = get_vm_hash_after_exec(test_program)
     
-    run_res = vm._exec_next()
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._mem[5] = 42
+    vm_expected._pc = 4
     
-    assert run_res == 1
-    assert vm._mem[3] == vm._mem[4]
-    assert vm._mem[252] & 0x01 == 0
+    assert get_vm_hash(vm_expected) == vm_hash
 
 
 def test_ADDLA():
     """
-    ADDLA Adds a literal to the accumulator affecting the zero and carry flags
+    ADDLA Adds a literal to the Accumulator.
+    
+    Program bytes used   : 2
+    Status flags affected: Zero, Carry
     """
+    test_program = [8, 1, 0]
     vm = Digirule()
-    vm.load_program([8, 1])
+    vm.load_program(test_program)
     vm._acc = 0xFF
-    vm._mem[252] = 0
-    vm.goto(0)
+    vm_hash = get_vm_hash_after_exec(test_program, vm)
     
-    run_res = vm._exec_next()
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._acc = 0
+    vm_expected._mem[252] = 3
+    vm_expected._pc = 3
     
-    assert run_res == 1
-    assert vm._acc == 0
-    assert vm._mem[252] & 0x01 == 1
-    assert vm._mem[252] & 0x02 == 2
+    assert get_vm_hash(vm_expected) == vm_hash
 
 
 def test_ADDRA():
     """
-    ADDRA Adds a memory location to the accumulator affecting the zero and carry flags
+    ADDRA Adds the value of a memory location to the Accumulator.
+    
+    Program bytes used   : 2
+    Status flags affected: Zero, Carry
     """
+    test_program = [9, 3, 0, 1]
     vm = Digirule()
-    vm.load_program([9, 2, 1])
+    vm.load_program(test_program)
     vm._acc = 0xFF
-    vm._mem[252] = 0
-    vm.goto(0)
+    vm_hash = get_vm_hash_after_exec(test_program, vm)
     
-    run_res = vm._exec_next()
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._acc = 0
+    vm_expected._mem[252] = 3
+    vm_expected._pc = 3
     
-    assert run_res == 1
-    assert vm._acc == 0
-    assert vm._mem[252] & 0x01 == 1
-    assert vm._mem[252] & 0x02 == 2
+    assert get_vm_hash(vm_expected) == vm_hash
+
 
 
 def test_SUBLA():
     """
-    SUBLA subtracts a literal from the accumulator affecting the zero and carry flags
+    SUBLA subtracts a literal from the Accumulator.
+    
+    Program bytes used   : 2
+    Status flags affected: Zero, Carry
     """
+    test_program = [10, 1, 0]
+    
+    # Test setting the zero flag
     vm = Digirule()
-    vm.load_program([10, 1])
-    vm._acc = 0x01
-    vm._mem[252] = 3
+    vm.load_program(test_program)
+    vm._acc = 1
+    vm_hash = get_vm_hash_after_exec(test_program, vm)
+    
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._acc = 0
+    vm_expected._mem[252] = 1
+    vm_expected._pc = 3
+    
+    assert get_vm_hash(vm_expected) == vm_hash, "Failed the zero flag part of the test."
+    
+    # Run the same program once again, it takes the Accumulator to 0xFF and
+    # sets the carry flag
     vm.goto(0)
+    vm_hash = get_vm_hash_after_exec(test_program, vm)
+    vm_expected._acc = 0xFF
+    vm_expected._mem[252] = 2
+
+    assert get_vm_hash(vm_expected) == vm_hash, "Failed the carry flag part of the test."
     
-    run_res = vm._exec_next()
-    
-    assert run_res == 1
-    assert vm._acc == 0
-    assert vm._mem[252] & 0x01 == 1
-    assert vm._mem[252] & 0x02 == 0
 
 
 def test_SUBRA():
     """
-    SUBRA subtracts a memory location from the accumulator affecting the zero and carry flags
+    SUBRA subtracts the value of a memory location from the Accumulator.
+    
+    Program bytes used   : 2
+    Status flags affected: Zero, Carry
     """
+    test_program = [11, 3, 0, 1]
+    
+    # Test setting the zero flag
     vm = Digirule()
-    vm.load_program([11, 2, 1])
-    vm._acc = 0x01
-    vm._mem[252] = 3
+    vm.load_program(test_program)
+    vm._acc = 1
+    vm_hash = get_vm_hash_after_exec(test_program, vm)
+    
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._acc = 0
+    vm_expected._mem[252] = 1
+    vm_expected._pc = 3
+    
+    assert get_vm_hash(vm_expected) == vm_hash, "Failed the zero flag part of the test."
+    
+    # Run the same program once again, it takes the Accumulator to 0xFF and
+    # sets the carry flag
     vm.goto(0)
-    
-    run_res = vm._exec_next()
-    
-    assert run_res == 1
-    assert vm._acc == 0
-    assert vm._mem[252] & 0x01 == 1
-    assert vm._mem[252] & 0x02 == 0
+    vm_hash = get_vm_hash_after_exec(test_program, vm)
+    vm_expected._acc = 0xFF
+    vm_expected._mem[252] = 2
+
+    assert get_vm_hash(vm_expected) == vm_hash, "Failed the carry flag part of the test."
 
 
 def test_ANDLA():
     """
     ANDLA applies bitwise AND between the Accumulator and a literal and returns the result
-    to the accumulator, affecting the zero flag.
+    to the Accumulator.
+    
+    Program bytes used   : 2
+    Status flags affected: Zero
     """
-    vm = Digirule()
-    vm.load_program([12, 4])
-    vm._acc = 0x03
-    vm._mem[252] = 0
-    vm.goto(0)
+    test_program = [12, 0xFF, 0]
     
-    run_res = vm._exec_next()
+    vm_hash = get_vm_hash_after_exec(test_program)
     
-    assert run_res == 1
-    assert vm._acc == 0
-    assert vm._mem[252] & 0x01 == 1
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._acc = 0
+    vm_expected._mem[252] = 1
+    vm_expected._pc = 3
+    
+    assert get_vm_hash(vm_expected) == vm_hash
     
 
 def test_ANDRA():
     """
-    ANDRA applies bitwise AND between the Accumulator and a memory location and returns the result
-    to the accumulator, affecting the zero flag.
+    ANDRA applies bitwise AND between the Accumulator and the value of a memory location and returns the result
+    to the Accumulator.
+
+    Program bytes used   : 2
+    Status flags affected: Zero    
     """
-    vm = Digirule()
-    vm.load_program([13, 2, 4])
-    vm._acc = 0x03
-    vm._mem[252] = 0
-    vm.goto(0)
+    test_program = [13, 3, 0, 0xFF]
     
-    run_res = vm._exec_next()
+    vm_hash = get_vm_hash_after_exec(test_program)
     
-    assert run_res == 1
-    assert vm._acc == 0
-    assert vm._mem[252] & 0x01 == 1
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._acc = 0
+    vm_expected._mem[252] = 1
+    vm_expected._pc = 3
+    
+    assert get_vm_hash(vm_expected) == vm_hash
     
 
 def test_ORLA():
     """
     ORLA applies bitwise OR between the Accumulator and a literal and returns the result
-    to the accumulator, affecting the zero flag.
+    to the Accumulator.
+
+    Program bytes used   : 2
+    Status flags affected: Zero    
     """
-    vm = Digirule()
-    vm.load_program([14, 3])
-    vm._acc = 0x04
-    vm._mem[252] = 1
-    vm.goto(0)
+    test_program = [14, 0, 0]
     
-    run_res = vm._exec_next()
+    vm_hash = get_vm_hash_after_exec(test_program)
     
-    assert run_res == 1
-    assert vm._acc == 7
-    assert vm._mem[252] & 0x01 == 0
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._acc = 0
+    vm_expected._mem[252] = 1
+    vm_expected._pc = 3
+    
+    assert get_vm_hash(vm_expected) == vm_hash
 
 
 def test_ORRA():
     """
-    ORRA applies bitwise OR between the Accumulator and a memory location and returns the result
-    to the accumulator, affecting the zero flag.
+    ORRA applies bitwise OR between the Accumulator and the value of a memory location and returns the result
+    to the Accumulator.
+
+    Program bytes used   : 2
+    Status flags affected: Zero    
     """
-    vm = Digirule()
-    vm.load_program([15, 2, 3])
-    vm._acc = 0x04
-    vm._mem[252] = 1
-    vm.goto(0)
+    test_program = [15, 3, 0, 0]
+    vm_hash = get_vm_hash_after_exec(test_program)
     
-    run_res = vm._exec_next()
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._acc = 0
+    vm_expected._mem[252] = 1
+    vm_expected._pc = 3
     
-    assert run_res == 1
-    assert vm._acc == 7
-    assert vm._mem[252] & 0x01 == 0
+    assert get_vm_hash(vm_expected) == vm_hash
+
 
 
 def test_XORLA():
     """
-    XORLA applies bitwise XOR between the Accumulator and a memory location and returns the result
-    to the accumulator, affecting the zero flag.
+    XORLA applies bitwise XOR between the Accumulator and the value of a memory location and returns the result
+    to the Accumulator.
+
+    Program bytes used   : 2
+    Status flags affected: Zero    
     """
+    test_program = [16, 0xFF, 0]
+    
     vm = Digirule()
-    vm.load_program([16, 0xFF])
+    vm.load_program(test_program)
     vm._acc = 0xFF
-    vm._mem[252] = 0
-    vm.goto(0)
+    vm_hash = get_vm_hash_after_exec(test_program, vm)
     
-    run_res = vm._exec_next()
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._acc = 0
+    vm_expected._mem[252] = 1
+    vm_expected._pc = 3
     
-    assert run_res == 1
-    assert vm._acc == 0
-    assert vm._mem[252] & 0x01 == 1
+    assert get_vm_hash(vm_expected) == vm_hash
+
 
 
 def test_XORRA():
     """
-    XORLA applies bitwise XOR between the Accumulator and a memory location and returns the result
-    to the accumulator, affecting the zero flag.
+    XORRA applies bitwise XOR between the Accumulator and the value of a memory location and returns the result
+    to the Accumulator.
+
+    Program bytes used   : 2
+    Status flags affected: Zero    
     """
+    test_program = [17, 3, 0, 0xFF]
+    
     vm = Digirule()
-    vm.load_program([17, 2, 0xFF])
+    vm.load_program(test_program)
     vm._acc = 0xFF
-    vm._mem[252] = 0
-    vm.goto(0)
+    vm_hash = get_vm_hash_after_exec(test_program, vm)
     
-    run_res = vm._exec_next()
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._acc = 0x00
+    vm_expected._mem[252] = 1
+    vm_expected._pc = 3
     
-    assert run_res == 1
-    assert vm._acc == 0
-    assert vm._mem[252] & 0x01 == 1
+    assert get_vm_hash(vm_expected) == vm_hash
 
 
 def test_DECR():
     """
-    DECR decrements a memory location affecting the zero flag.
+    DECR decrements the value of a memory location.    
+    
+    Program bytes used   : 2
+    Status flags affected: Zero    
     """
-    vm = Digirule()
-    vm.load_program([18, 2, 0x01])
-    vm._mem[252] = 0
-    vm.goto(0)
+    test_program = [18, 3, 0, 0x01]
     
-    run_res = vm._exec_next()
+    vm_hash = get_vm_hash_after_exec(test_program)
     
-    assert run_res == 1
-    assert vm._mem[2] == 0
-    assert vm._mem[252] & 0x01 == 1
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._mem[3] = 0
+    vm_expected._mem[252] = 1
+    vm_expected._pc = 3
+    
+    assert get_vm_hash(vm_expected) == vm_hash
 
 
 def test_INCR():
     """
-    INCR increments a memory location affecting the zero flag.
+    INCR increments the value of a memory location.
+
+    Program bytes used   : 2
+    Status flags affected: Zero    
     """
-    vm = Digirule()
-    vm.load_program([19, 2, 0xFF])
-    vm._mem[252] = 0
-    vm.goto(0)
+    test_program = [19, 3, 0, 0xFF]
     
-    run_res = vm._exec_next()
+    vm_hash = get_vm_hash_after_exec(test_program)
     
-    assert run_res == 1
-    assert vm._mem[2] == 0
-    assert vm._mem[252] & 0x01 == 1
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._mem[3] = 0
+    vm_expected._mem[252] = 1
+    vm_expected._pc = 3
+    
+    assert get_vm_hash(vm_expected) == vm_hash
 
 
 def test_DECRJZ():
     """
-    DECRJZ decrement the content of a memory location and jump if zero affecting the zero flag.
+    DECRJZ decrement the value of a memory location and increase PC by two if zero.     
+    
+    Program bytes used   : 2
+    Status flags affected: Zero    
     """
+    test_program = [20, 3, 0, 0x02, 0x00]
+    
     vm = Digirule()
-    vm.load_program([20, 2, 0x01, 0x00,0x00])
-    vm._mem[252] = 0
-    vm.goto(0)
+    vm.load_program(test_program)
+    vm_hash = get_vm_hash_after_exec(test_program, vm)
     
-    run_res = vm._exec_next()
-    assert run_res == 1
-    assert vm._mem[2] == 0
-    assert vm._mem[252] & 0x01 == 1
-    assert vm._pc == 4
+    # Test normal execution without hitting zero
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._mem[3] = 0x01
+    vm_expected._pc = 3
     
-    vm._mem[2]=0x02
-    vm.goto(0)
-    
-    run_res = vm._exec_next()
-    assert run_res == 1
-    assert vm._mem[2] == 1
-    assert vm._mem[252] & 0x01 == 0
-    assert vm._pc == 2
-    
+    assert get_vm_hash(vm_expected) == vm_hash, "Failed to continue when condition not met."
 
+    # Test execution after hitting zero.
+    # Notice here, we resume execution without reloading the program. That would reset the memory state.
+    
+    vm.goto(0)
+    vm.run()
+    vm_hash = get_vm_hash(vm)
+    vm_expected._mem[3] = 0x00
+    vm_expected._mem[252] = 1
+    vm_expected._pc = 5
+
+    assert get_vm_hash(vm_expected) == vm_hash, "Failed in jumping when condition is met."
+    
+    
 def test_INCRJZ():
     """
-    INCRJZ increment the content of a memory location and jump if zero affecting the zero flag.
+    INCRJZ increment the value of a memory location and increase PC by two if zero.
+
+    Program bytes used   : 2
+    Status flags affected: Zero    
     """
+    test_program = [21, 3, 0, 0xFE, 0x00]
+    
     vm = Digirule()
-    vm.load_program([21, 2, 0xFF, 0x00,0x00])
-    vm._mem[252] = 0
+    vm.load_program(test_program)
+    vm_hash = get_vm_hash_after_exec(test_program, vm)
+    
+    # Test normal execution without hitting zero
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._mem[3] = 0xFF
+    vm_expected._pc = 3
+    
+    assert get_vm_hash(vm_expected) == vm_hash, "Failed to continue when condition not met."
+    
     vm.goto(0)
-    
-    run_res = vm._exec_next()
-    assert run_res == 1
-    assert vm._mem[2] == 0
-    assert vm._mem[252] & 0x01 == 1
-    assert vm._pc == 4
-    
-    vm._mem[2]=0x01
-    vm.goto(0)
-    
-    run_res = vm._exec_next()
-    assert run_res == 1
-    assert vm._mem[2] == 2
-    assert vm._mem[252] & 0x01 == 0
-    assert vm._pc == 2
+    vm.run()
+    vm_hash = get_vm_hash(vm)
+    vm_expected._mem[3] = 0x00
+    vm_expected._mem[252] = 1
+    vm_expected._pc = 5
+
+    assert get_vm_hash(vm_expected) == vm_hash, "Failed in jumping when condition is met."
 
 
 def test_SHIFTRL():
     """
-    SHIFTRL Shifts the contents of a memory location left by one through the carry flag.
+    SHIFTRL Shifts the value of a memory location left by one through the carry flag.
+    
+    Program bytes used   : 2
+    Status flags affected: Carry    
     """
+    test_program = [22, 3, 0, 0x81]
+    
     vm = Digirule()
-    vm.load_program([22, 2, 0x01])
-    vm._mem[252] = 0
-    vm.goto(0)
+    vm.load_program(test_program)
+    vm_hash = get_vm_hash_after_exec(test_program, vm)
     
-    run_res = vm._exec_next()
-    assert run_res == 1
-    assert vm._mem[2] == 2
-    assert vm._mem[252] & 0x02 == 0
+    # Test normal execution without hitting zero
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._mem[3] = 0x02
+    vm_expected._mem[252] = 0x02
+    vm_expected._pc = 3
     
-    vm._mem[2]=0x80
-    vm._mem[252]=0
-    vm.goto(0)
+    assert get_vm_hash(vm_expected) == vm_hash
     
-    run_res = vm._exec_next()
-    assert run_res == 1
-    assert vm._mem[2] == 0
-    assert vm._mem[252] & 0x02 == 0x02
-
-    vm._mem[2]=0x00
-    vm._mem[252]=2
-    vm.goto(0)
-    
-    run_res = vm._exec_next()
-    assert run_res == 1
-    assert vm._mem[2] == 1
-    assert vm._mem[252] & 0x02 == 0
 
 def test_SHIFTRR():
     """
-    SHIFTRR Shifts the contents of a memory location right by one through the carry flag.
+    SHIFTRR Shifts the value of a memory location right by one through the carry flag.
+    
+    Program bytes used   : 2
+    Status flags affected: Carry    
     """
+    test_program = [23, 3, 0, 0x81]
+    
     vm = Digirule()
-    vm.load_program([23, 2, 0x01])
-    vm._mem[252] = 0
-    vm.goto(0)
+    vm.load_program(test_program)
+    vm_hash = get_vm_hash_after_exec(test_program, vm)
     
-    run_res = vm._exec_next()
-    assert run_res == 1
-    assert vm._mem[2] == 0
-    assert vm._mem[252] & 0x02 == 0x02
+    # Test normal execution without hitting zero
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._mem[3] = 0x40
+    vm_expected._mem[252] = 0x02
+    vm_expected._pc = 3
     
-    vm._mem[2]=0x80
-    vm._mem[252]=0
-    vm.goto(0)
-    
-    run_res = vm._exec_next()
-    assert run_res == 1
-    assert vm._mem[2] == 0x40
-    assert vm._mem[252] & 0x02 == 0
-
-    vm._mem[2]=0x04
-    vm._mem[252]=2
-    vm.goto(0)
-    
-    run_res = vm._exec_next()
-    assert run_res == 1
-    assert vm._mem[2] == 0x82
-    assert vm._mem[252] & 0x02 == 0
+    assert get_vm_hash(vm_expected) == vm_hash
 
 
 def test_CBR():
     """
-    CBR clears a specific bit.
-    """
-    vm = Digirule()
-    vm.load_program([24, 0, 3, 0x01])
-    vm._mem[252] = 0
-    vm.goto(0)
+    CBR clears a specific bit in the value of a memory location.
     
-    run_res = vm._exec_next()
-    assert run_res == 1
-    assert vm._mem[3] == 0
-    assert vm._mem[252] == 0x00
+    Program bytes used   : 3
+    Status flags affected: None    
+    """
+    test_program = [24, 5, 4, 0, 0xFF]
+    
+    vm = Digirule()
+    vm.load_program(test_program)
+    vm_hash = get_vm_hash_after_exec(test_program, vm)
+    
+    # Test normal execution without hitting zero
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._mem[4] = 0xDF
+    vm_expected._pc = 4
+    
+    assert get_vm_hash(vm_expected) == vm_hash
 
 
 def test_SBR():
     """
-    SBR sets a specific bit.
-    """
-    vm = Digirule()
-    vm.load_program([25, 0, 3, 0x00])
-    vm._mem[252] = 0
-    vm.goto(0)
+    SBR sets a specific bit in the value of a memory location.
     
-    run_res = vm._exec_next()
-    assert run_res == 1
-    assert vm._mem[3] == 1
-    assert vm._mem[252] == 0x00
+    Program bytes used   : 3
+    Status flags affected: None    
+    """
+    test_program = [25, 5, 4, 0, 0x00]
+    
+    vm = Digirule()
+    vm.load_program(test_program)
+    vm_hash = get_vm_hash_after_exec(test_program, vm)
+    
+    # Test normal execution without hitting zero
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._mem[4] = 32
+    vm_expected._pc = 4
+    
+    assert get_vm_hash(vm_expected) == vm_hash
 
 
 def test_BCRSC():
     """
-    BCRSC tests a specific bit and if it is CLEAR it jumps over the next two bytes in mem.
-    """
-    vm = Digirule()
-    vm.load_program([26, 1, 6, 0x00, 0x00, 0x00, 0x00])
-    vm._mem[252] = 0
-    vm.goto(0)
+    BCRSC tests a specific bit in the value of a memory location and if it is CLEAR it adds 2 to the PC.
     
-    run_res = vm._exec_next()
-    assert run_res == 1
-    assert vm._pc == 0x05
-
-    vm._mem[6]=2
-    vm.goto(0)
-    run_res = vm._exec_next()
-    assert run_res == 1
-    assert vm._pc == 0x03
+    Program bytes used   : 3
+    Status flags affected: None    
+    """
+    test_program_bit_set = [26, 3, 6, 0, 0, 0, 0xFF]
+    test_program_bit_clear = [26, 3, 6, 0, 0, 0, 0x00]
+    
+    vm_hash_when_clear = get_vm_hash_after_exec(test_program_bit_clear)
+    vm_hash_when_set = get_vm_hash_after_exec(test_program_bit_set)
+    
+    vm_expected_clear = Digirule()
+    vm_expected_clear.load_program(test_program_bit_clear)
+    vm_expected_clear._pc = 6
+    
+    vm_expected_set = Digirule()
+    vm_expected_set.load_program(test_program_bit_set)
+    vm_expected_set._pc = 4
+    
+    assert vm_hash_when_clear == get_vm_hash(vm_expected_clear), "Failed when bit is clear."
+    assert vm_hash_when_set == get_vm_hash(vm_expected_set), "Failed when bit is set."
 
 
 def test_BCRSS():
     """
-    BCRSS tests a specific bit and if it is SET it jumps over the next two bytes in mem.
-    """
-    vm = Digirule()
-    vm.load_program([27, 1, 6, 0x00, 0x00, 0x00, 0x00])
-    vm._mem[252] = 0
-    vm.goto(0)
-    
-    run_res = vm._exec_next()
-    assert run_res == 1
-    assert vm._pc == 0x03
+    BCRSS tests a specific bit in the value of a memory location and if it is SET it adds 2 to the PC.
 
-    vm._mem[6]=2
-    vm.goto(0)
-    run_res = vm._exec_next()
-    assert run_res == 1
-    assert vm._pc == 0x05
+    Program bytes used   : 3
+    Status flags affected: None    
+    """
+    test_program_bit_set = [27, 3, 6, 0, 0, 0, 0xFF]
+    test_program_bit_clear = [27, 3, 6, 0, 0, 0, 0x00]
+    
+    vm_hash_when_clear = get_vm_hash_after_exec(test_program_bit_clear)
+    vm_hash_when_set = get_vm_hash_after_exec(test_program_bit_set)
+    
+    vm_expected_clear = Digirule()
+    vm_expected_clear.load_program(test_program_bit_clear)
+    vm_expected_clear._pc = 4
+    
+    vm_expected_set = Digirule()
+    vm_expected_set.load_program(test_program_bit_set)
+    vm_expected_set._pc = 6
+    
+    assert vm_hash_when_clear == get_vm_hash(vm_expected_clear), "Failed when bit is clear."
+    assert vm_hash_when_set == get_vm_hash(vm_expected_set), "Failed when bit is set."
 
 
 def test_JUMP():
     """
     JUMP jumps to a specific location in memory.
+
+    Program bytes used   : 2
+    Status flags affected: None    
     """
-    vm = Digirule()
-    vm.load_program([28, 2, 0x00])
-    vm.goto(0)
+    test_program = [28, 3, 0, 0]
+    vm_hash = get_vm_hash_after_exec(test_program)
     
-    run_res = vm._exec_next()
-    assert run_res == 1
-    assert vm._pc == 0x02
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._pc = 4
+    
+    assert vm_hash == get_vm_hash(vm_expected)
 
 
 def test_CALL():
     """
     CALL jumps to a specific location in memory until it finds a RETURN.
+
+    Program bytes used   : 2
+    Status flags affected: None    
     """
-    vm = Digirule()
-    vm.load_program([29, 2, 0x00])
-    vm.goto(0)
+    test_program = [29,3,0,0]
+    vm_hash = get_vm_hash_after_exec(test_program)
     
-    run_res = vm._exec_next()
-    assert run_res == 1
-    assert vm._pc == 0x02
-    assert vm._ppc[0] == 0x02
+    # Notice here, the test program calls the routine which immediately HALTs
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._ppc = [2]
+    vm_expected._pc = 4
+    
+    assert vm_hash == get_vm_hash(vm_expected)
 
 
 def test_RETLA():
     """
     CALL jumps to a specific location in memory until it finds a RETURN.
+
+    Program bytes used   : 2
+    Status flags affected: None    
     """
+    test_program = [0,0,0,30,42]
     vm = Digirule()
-    vm.load_program([29, 2, 0x01, 30, 42])
-    vm.goto(0)
+    vm.load_program(test_program)
+    vm.goto(3)
+    vm._ppc = [0]
+    vm_hash = get_vm_hash_after_exec(test_program, vm)
     
-    run_res = vm._exec_next()
-    run_res = vm._exec_next()
-    run_res = vm._exec_next()
-    assert run_res == 1
-    assert vm._pc == 0x02
-    assert len(vm._ppc) == 0
-    assert vm._acc==42
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._pc = 1
+    vm_expected._acc = 42
+    
+    assert vm_hash == get_vm_hash(vm_expected)
 
 
 def test_RETURN():
     """
     RETURN returns from a CALL.
+
+    Program bytes used   : 1
+    Status flags affected: None    
     """
+    test_program = [0,0,0,31]
     vm = Digirule()
-    vm.load_program([29, 2, 0x01, 31])
-    vm.goto(0)
+    vm.load_program(test_program)
+    vm.goto(3)
+    vm._ppc = [0]
+    vm_hash = get_vm_hash_after_exec(test_program, vm)
     
-    run_res = vm._exec_next()
-    run_res = vm._exec_next()
-    run_res = vm._exec_next()
-    assert run_res == 1
-    assert vm._pc == 0x02
-    assert len(vm._ppc) == 0
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._pc = 1
+    
+    assert vm_hash == get_vm_hash(vm_expected)
 
 
 def test_ADDRPC():
     """
-    ADDRPC adds the contents of a ram location to the PC.
+    ADDRPC adds the value of a ram location to the PC and jumps to that offset.
+
+    Program bytes used   : 2
+    Status flags affected: None    
     """
-    vm = Digirule()
-    vm.load_program([32, 2, 0x03, 0x00])
-    vm.goto(0)
+    test_program = [32, 2, 0, 0, 0]
+    vm_hash = get_vm_hash_after_exec(test_program)
     
-    run_res = vm._exec_next()
-    assert run_res == 1
-    assert vm._pc == 0x03
+    vm_expected = Digirule()
+    vm_expected.load_program(test_program)
+    vm_expected._pc = 4
+    
+    assert vm_hash == get_vm_hash(vm_expected)

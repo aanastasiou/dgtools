@@ -1,3 +1,11 @@
+"""
+
+A very basic HTML renderer.
+
+:author: Athanasios Anastasiou
+:date: April 2020
+"""
+
 class Output_Render_HTML():
     def __init__(self, filename):
         self._filename = filename
