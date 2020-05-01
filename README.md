@@ -25,8 +25,13 @@ Not just any ruler, but the [Digirule2](https://bradsprojects.com/digirule2/) by
           timestep of execution.
        2. The final `.dgb` file that contains the final state of the memory space at the end of 
           execution.
+          
+4. `dgui`
+
+   * A very basic, text based, user interface that can be used to call `dgasm, dgsim` and compile 
+     the HTML simulation output in one step.
      
-These three tools work together to write, debug and simulate code for the Digirule 2 prior to "uploading" it to the 
+These tools work together to write, debug and simulate code for the Digirule 2 prior to "uploading" it to the 
 actual hardware.
 
 The most common workflow is:
@@ -34,7 +39,8 @@ The most common workflow is:
 1. Use a text editor to write human readable assembly code.
 2. Call `dgasm.py` to compile the binary
 3. Call `dgsim.py` to run and debug the binary
-4. Use `dginspect.py` to check a binary file, get/set values from the virtual machine or key the code in.
+4. *(Alternatively, call `dgui` to perform both of the above in sequence)*
+5. Use `dginspect.py` to check a binary file, get/set values from the virtual machine or key the code in.
 
 
 ## Installation
