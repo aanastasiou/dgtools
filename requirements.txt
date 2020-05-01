@@ -1,11 +1,12 @@
 alabaster==0.7.12
+attrs==19.3.0
 Babel==2.8.0
 backcall==0.1.0
 certifi==2019.11.28
 chardet==3.0.4
 click==7.1.1
 decorator==4.4.2
--e git+https://github.com/aanastasiou/dgtools.git@36f15e25246954e1356c3dbe084ab1ae6a9958e1#egg=dgtools
+-e git+https://github.com/aanastasiou/dgtools.git@1c92473c835fc6dd0dab4a36621db699ee67135d#egg=dgtools
 docutils==0.16
 fancycompleter==0.9.1
 idna==2.9
@@ -15,16 +16,20 @@ ipython-genutils==0.2.0
 jedi==0.16.0
 Jinja2==2.11.1
 MarkupSafe==1.1.1
+more-itertools==8.2.0
 packaging==20.3
 parso==0.6.2
 pdbpp==0.10.2
 pexpect==4.8.0
 pickleshare==0.7.5
+pluggy==0.13.1
 prompt-toolkit==2.0.10
 ptyprocess==0.6.0
+py==1.8.1
 Pygments==2.5.2
 pyparsing==2.4.6
 pyrepl==0.9.0
+pytest==5.4.1
 pytz==2019.3
 requests==2.23.0
 six==1.14.0
