@@ -137,13 +137,14 @@ class ModalDialogBox(urwid.PopUpLauncher):
                 validation_messages.append("* Please check extra symbols passed.")
         # Check that output directories exist
         output_file_dir = os.path.split(self.output_file)[0]
-        if not os.path.isdir(output_file_dir):
-            validation_messages.append(f"* Binary file path {output_file_dir} does not exist")
+        if len(output_file_dir)>0:
+            if not os.path.isdir(output_file_dir):
+                validation_messages.append(f"* Binary file path {output_file_dir} does not exist")
 
         output_trace_file_dir = os.path.split(self.output_trace_file)[0]
-        
-        if not os.path.isdir(output_trace_file_dir):
-            validation_messages.append(f"* Trace HTML file path {output_trace_file_dir} does not exist")
+        if len(output_trace_file_dir):
+            if not os.path.isdir(output_trace_file_dir):
+                validation_messages.append(f"* Trace HTML file path {output_trace_file_dir} does not exist")
 
         if len(validation_messages)>0:
             self._validation_messages = validation_messages
