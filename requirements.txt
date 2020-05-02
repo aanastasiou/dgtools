@@ -6,7 +6,7 @@ certifi==2019.11.28
 chardet==3.0.4
 click==7.1.1
 decorator==4.4.2
--e git+https://github.com/aanastasiou/dgtools.git@1c92473c835fc6dd0dab4a36621db699ee67135d#egg=dgtools
+-e git+https://github.com/aanastasiou/dgtools.git@0ee45154446a65b1f761a6c6b8bc63ee7d32c828#egg=dgtools
 docutils==0.16
 fancycompleter==0.9.1
 idna==2.9
