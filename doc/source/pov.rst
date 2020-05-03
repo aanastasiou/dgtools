@@ -47,7 +47,9 @@ literal values, defining that memory area in the editor also provides a sort of 
 
 Here for example is the letter ``A``:
 
-.. code::
+.. code-block:: DigiruleASM
+    :linenos:
+    :name: pov2_define_char
 
     pov_data:
     .DB 0b00111100
@@ -74,7 +76,9 @@ Probably the easiest thing to do: Set a counter to the start of the bitmap memor
 to fetch the next line. This is a very common "pattern" when dealing with "arrays" (to the extent an array data type 
 can be defined within the Digirule's capabilities) and proceeds like this:
 
-.. code::
+.. code-block:: DigiruleASM
+    :linenos:
+    :name: pov2_def_count
 
     reset:
     COPYLR pov_data pov_counter
@@ -100,7 +104,9 @@ not be the fastest CPU but it will count down from 255 incredibly fast.
 
 The delay routine is as simmple as:
 
-.. code::
+.. code-block:: DigiruleASM
+    :linenos:
+    :name: pov_def_delay
 
     delay:
     COPYLR delay_count r1
@@ -126,7 +132,9 @@ constants without having to recompile the program.
 The main loop for the light stick is available below:
 
 
-.. code::
+.. code-block:: DigiruleASM
+    :linenos:
+    :name: pov2_main_loop
 
     CBR 2 status_reg
     COPYLR led_reg f_to

@@ -28,7 +28,7 @@ Assembler directives ALWAYS start with a dot. At the moment, the following direc
 
 Assigns an expression to a "symbol". At the moment, the expression can only be a numeric literal. For example:
 
-.. code::
+.. code:: DigiruleASM
 
     .EQU a=5
     
@@ -49,14 +49,14 @@ understand variables and memory pointers.
 
 ``.DB`` has two forms, the simplest being:
 
-.. code:: 
+.. code:: DigiruleASM
 
     .DB 0
     
 This tells the assembler to emmit a plain ``0`` at the current memory offset. Multiple sequential ``.DB`` directives 
 cause sequential addresses in memory to be set to ``BYTE`` (always) values as in:
 
-.. code::
+.. code:: DigiruleASM
 
     .DB 0
     .DB 0b11110000
@@ -64,7 +64,7 @@ cause sequential addresses in memory to be set to ``BYTE`` (always) values as in
     
 But this can also be expressed in one single line as :
 
-.. code::
+.. code:: DigiruleASM
 
     .DB 0, 0b11110000, 0x0F
     
@@ -86,7 +86,7 @@ it points to. This is incredibly useful in two situations:
 
 The branching use case is the most straightforward, consider the following example:
 
-.. code::
+.. code:: DigiruleASM
 
     start:
     NOP
@@ -102,7 +102,7 @@ it again as the argument to ``JUMP`` it substitutes it for whatever offset it po
 The use of labels as targets to memory copy commands is similar but more interesting. Consider the following snippet 
 for example:
 
-.. code::
+.. code:: DigiruleASM
 
     COPYLR 1 r0
     r0:
@@ -152,12 +152,12 @@ in these commands.
 
 For example, the following two snippets are equivalent:
 
-.. code::
+.. code:: DigiruleASM
 
     COPYLA 1
     
 
-.. code::
+.. code:: DigiruleASM
 
     .EQU a=1
     
@@ -171,14 +171,14 @@ Any sequence of characters preceded by a hash symbol (``#``) is completely and u
 
 Comments can appear at the beginning of a line:
 
-.. code::
+.. code:: DigiruleASM
 
     # And in this way it is also possible to define
     # comments that expand to more than one lines
     
 Or, they can appear inline with code:
 
-.. code::
+.. code:: DigiruleASM
 
     COPYLA 1 # Copies the literal 1 to the Accumulator and also shows here the use of an inline comment.
     

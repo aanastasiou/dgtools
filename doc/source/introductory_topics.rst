@@ -15,16 +15,19 @@ activated and the current working directory is `src/data/intro/`.
 Adding two literals
 -------------------
 
-Adding two literals is a matter of three commands in Digirule 2 ASM:
+Adding two literals is the "Hello World" of Digirule 2 programming. It is a matter of three commands in 
+Digirule 2 ASM:
 
-.. code::
-
+.. code-block:: DigiruleASM
+    :linenos:
+    :name: simpleadd_1
+    
     COPYLA 1
     ADDLA 1
     HALT
+    
+This listing is available in :download:`data/intro/simpleadd_1.dsf <../../data/intro/simpleadd_1.dsf>`
 
-
-(This listing is available in :download:`data/intro/simpleadd_1.dsf <../../data/intro/simpleadd_1.dsf>`)
 
 Copy literal 1 to the accumulator, add literal 1 to the accumulator and stop.
 At the end of this program, we expect the accumulator to have the value ``2``.
@@ -51,7 +54,9 @@ out of the Accumulator to memory.
 
 Our new listing is now:
 
-.. code::
+.. code-block:: DigiruleASM
+    :linenos:
+    :name: simpleadd_2
 
     COPYRA r0
     ADDRA r1
@@ -65,6 +70,7 @@ Our new listing is now:
     .DB 0
     
 This listing is available in :download:`data/intro/simpleadd_2.dsf <../../data/intro/simpleadd_2.dsf>`
+
 
 Here, there are three labels (``r0, r1, r2``) that simply "tag" three locations in memory that hold initial literal 
 values (``1, 1 ,0`` respectively).
@@ -109,7 +115,9 @@ this way, it simply substitutes its value.
 
 The code now is:
 
-.. code::
+.. code-block:: DigiruleASM
+    :linenos:
+    :name: simpleadd_3
 
     .EQU led_register=0xFF
     COPYLA a
@@ -192,7 +200,9 @@ simulation to take user input into account. This is specified to ``dgsim`` with 
 
 The code listing for this example is as follows:
 
-.. code::
+.. code-block:: DigiruleASM
+    :linenos:
+    :name: simpleadd_4
 
     .EQU a=1
     COPYLA a
@@ -230,7 +240,9 @@ run programs and save its final state and it also provides ways of extracting th
 In fact, it is possible to *parametrise* Digirule 2 programs, call them and then extract values from the final memory 
 space as follows:
 
-.. code::
+.. code-block:: DigiruleASM
+    :linenos:
+    :name: simpleadd_5
 
     COPYRA a
     ADDRA b

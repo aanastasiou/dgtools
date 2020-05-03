@@ -173,7 +173,9 @@ computations and the purpose of the temporaries is to hold intermediate stage of
 
 For more details, please see inline code comments below:
 
-.. code::
+.. code-block:: DigiruleASM
+    :linenos:
+    :name: int2str
 
     .EQU status_reg=252
 

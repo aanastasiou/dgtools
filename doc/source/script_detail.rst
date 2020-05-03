@@ -39,6 +39,6 @@ At the moment this section includes the help sections of each script as it would
 
 
 ``dgform.py``
------------
+-------------
 
 .. automodule:: dgform

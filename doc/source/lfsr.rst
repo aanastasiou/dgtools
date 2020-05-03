@@ -88,7 +88,9 @@ This is a one liner in Python:
 
 The evaluation of this one liner in Digirule2 ASM proceeds as follows:
 
-.. code::
+.. code-block:: DigiruleASM
+    :linenos:
+    :name: lfsr
 
     .EQU status_reg=252
     
@@ -163,7 +165,9 @@ two bytes, the second one would practically be going "to waste".
 
 Here is what this implementation looks like:
 
-.. code::
+.. code-block:: DigiruleASM
+    :linenos:
+    :name: lfsr_9bit
 
     .EQU status_reg=252
     .EQU rnd_state=42

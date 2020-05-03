@@ -33,7 +33,9 @@ indirectly.
 
 This is achieved by writing a "template" function:
 
-.. code::
+.. code-block:: DigiruleASM
+    :linenos:
+    :name: stack_copy_by_ref
 
     f_copy_by_ref:
     .DB 7
@@ -63,7 +65,9 @@ Getting the "head" of the stack
 Defining the stack through ``dgasm`` is as trivial as defining a label and immediately populating it with values. For 
 example:
 
-.. code::
+.. code-block:: DigiruleASM
+    :linenos:
+    :name: stack_define
 
     stack:
     .DB 0xF0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0x0F
@@ -82,7 +86,9 @@ The stack also needs a way of pointing to its head address.
 
 This can be achieved by using another "labeled" location:
 
-.. code::
+.. code-block:: DigiruleASM
+    :linenos:
+    :name: stack_define_pointer
 
     stack_ptr:
     .DB 0
@@ -91,7 +97,9 @@ Having defined the stack, we now need to define its two fundamental operations: 
 all we have to do is find out where the head is pointing to and send (or retrieve) a number to (or from) that location.
 This is achieved with:
 
-.. code::
+.. code-block:: DigiruleASM
+    :linenos:
+    :name: stack_ops
 
     f_push:
     CALL f_get_stack_head
@@ -143,7 +151,9 @@ functions.
 
 The complete example below pushes values `0,1,2,3,2,1,0,1,2` to the stack and terminates:
 
-.. code::
+.. code-block:: DigiruleASM
+    :linenos:
+    :name: stack_prog
 
     start:
     COPYLR 0 r0
@@ -217,7 +227,9 @@ set of registers.
 
 In this section, the addition of two numbers is performed within the following two argument function:
 
-.. code::
+.. code-block:: DigiruleASM
+    :linenos:
+    :name: funcall_function
 
     q_add_ab:
     CALL f_pop
@@ -239,7 +251,9 @@ the call" to retrieve the result.
 
 The complete listing is now:
 
-.. code::
+.. code-block:: DigiruleASM
+    :linenos:
+    :name: funcall
 
     .EQU a=1
     .EQU b=2
@@ -335,7 +349,7 @@ The complete listing is now:
     .DB 0xF0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0x0F
 
 
-This is listing :download:`data/advanced/stack.dsf <../../data/advanced/stack.dsf>`.
+This is listing :download:`data/advanced/stack.dsf <../../data/advanced/funcall.dsf>`.
 
 It is basically a continuation of listing :download:`data/intro/simpleadd_5.dsf <../../data/intro/simpleadd_5.dsf>` 
 and it could be called externally as per :ref:`this example from the introductory section <cplx_intro_example_5>`.
