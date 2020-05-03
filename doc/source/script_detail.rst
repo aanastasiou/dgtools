@@ -36,3 +36,9 @@ At the moment this section includes the help sections of each script as it would
 -----------
 
 .. automodule:: dgui
+
+
+``dgform.py``
+-----------
+
+.. automodule:: dgform

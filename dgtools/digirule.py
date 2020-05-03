@@ -5,7 +5,7 @@ The main Digirule VM class.
 :author: Athanasios Anastasiou
 :date: Mar 2020
 """
-from .exceptions import DgtoolsErrorOpcodeNotSupported
+from dgtools.exceptions import DgtoolsErrorOpcodeNotSupported
 
 class Digirule:
     """
