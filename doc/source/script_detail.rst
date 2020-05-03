@@ -9,19 +9,19 @@ At the moment this section includes the help sections of each script as it would
 ``dgasm.py``
 ------------
 
-.. automodule:: dgasm
+.. automodule:: dgtools.dgasm
 
 
 ``dginspect.py``
 ----------------
 
-.. automodule:: dginspect
+.. automodule:: dgtools.dginspect
 
 
 ``dgsim.py``
 ------------
 
-.. automodule:: dgsim
+.. automodule:: dgtools.dgsim
 
 .. note::
 
@@ -35,10 +35,10 @@ At the moment this section includes the help sections of each script as it would
 ``dgui.py``
 -----------
 
-.. automodule:: dgui
+.. automodule:: dgtools.dgui
 
 
 ``dgform.py``
 -------------
 
-.. automodule:: dgform
+.. automodule:: dgtools.dgform

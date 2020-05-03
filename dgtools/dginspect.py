@@ -46,7 +46,7 @@ import sys
 import os
 import pickle
 import click
-from dgsim import mem_dump, validate_trace_symbol
+from dgtools.dgsim import mem_dump, validate_trace_symbol
 from dgtools.exceptions import DgtoolsErrorSymbolUndefined, DgtoolsErrorDgbarchiveCorrupted
 from dgtools.dgb_archive import DGB_Archive
 
