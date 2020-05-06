@@ -133,3 +133,4 @@ class Output_Render_HTML():
         self._dec_indent()
         self._write_tag("/table")
         return self
+        

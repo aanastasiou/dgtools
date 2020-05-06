@@ -88,7 +88,8 @@ def mem_dump(mem, offset_from=0, offset_to=256, line_length=16):
         mem_page_hex = " ".join([f"{q:02X}" for q in mem_page])
         # The same memory page in chr depictions.
         # TODO: MED, The character translation table can be improved here to get rid of the >9 and clarify depictions.
-        mem_page_char = "".join([chr(q) if q>9 else "." for q in mem_page]).translate(trans_tab)
+        # mem_page_char = "".join([chr(q) if q>9 else "." for q in mem_page]).translate(trans_tab)
+        mem_page_char=bytearray(mem_page).translate(trans_tab).decode("utf-8","ignore")
         to_ret += f"\t{(offset_from+k*line_length):02X} {mem_page_hex} {mem_page_char}\n"        
     return to_ret
     
@@ -159,7 +160,22 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
                 dgen.open_tag("header")
                 dgen.heading(f"Full memory dump:",3)
                 dgen.close_tag("header")
-                dgen.preformatted(mem_dump(machine._mem))
+                # dgen.preformatted(mem_dump(machine._mem))
+                dgen.open_tag("table")
+                dgen.open_tag("tr")
+                dgen._write_tag("th","Offset (h)")
+                # dgen.open_tag("td");dgen.close_tag("td")
+                for k in range(0,16):
+                    dgen._write_tag("th",f"{k:02X}")
+                dgen.close_tag("tr")
+                for m in range(0,16):
+                    dgen.open_tag("tr")
+                    dgen._write_tag("th",f"{m*16:02X}")
+                    for n in range(0,16):
+                        dgen._write_tag("td",f"{machine._mem[m*16+n]:02X}")
+                    dgen.close_tag("tr")
+                        
+                dgen.close_tag("table")
                 dgen.close_tag("section")
             
             # Extra symbols
