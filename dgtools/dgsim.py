@@ -8,7 +8,7 @@ Usage: dgsim.py [OPTIONS] INPUT_FILE
 
 Options:
   -otf, --output-trace_file PATH  Filename containing trace information in
-                                  Markdown.
+                                  HTML.
 
   -omf, --output-memdump_file PATH
                                   Filename containing final memory space.
@@ -96,11 +96,11 @@ def mem_dump(mem, offset_from=0, offset_to=256, line_length=16):
     
 def trace_program(program, output_file, max_n=200, trace_title="", in_interactive_mode=False, extra_symbols=[], with_mem_dump=True):
     """
-    Produces a detailed trace of program execution in Markdown format.
+    Produces a detailed trace of program execution in HTML form.
     
     :param program: A fully compiled Digirule2 binary.
     :type program: List<uint8>[256]
-    :param output_file: The Markdown filename to generate.
+    :param output_file: The HTML filename.
     :type output_file: str
     :param max_n: Maximum number of steps to allow the VM to run for.
     :type max_n: int
@@ -237,7 +237,7 @@ def validate_trace_symbol(ctx, param, value):
 @click.command()
 @click.argument("input-file", type=click.Path(exists=True))
 @click.option("--output-trace_file","-otf", type=click.Path(), 
-              help="Filename containing trace information in Markdown.")
+              help="Filename containing trace information in HTML.")
 @click.option("--output-memdump_file", "-omf", type=click.Path(), 
               help="Filename containing final memory space.")
 @click.option("--title","-t", type=str, 
@@ -263,7 +263,7 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
     \f
     :param input_file: The `.dgb` file to simulate.
     :type input_file: str<Path>
-    :param output_trace_file: The filename of the Markdown file containing human readable trace information.
+    :param output_trace_file: The filename of the HTML file containing human readable trace information.
     :type output_trace_file: str<Path>
     :param output_memdump_file: The filename of the `[]_memdump.dgb.` file containing the final machine memory state.
     :type output_memdump_file: str<Path>
