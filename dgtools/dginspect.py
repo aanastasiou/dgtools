@@ -46,9 +46,10 @@ import sys
 import os
 import pickle
 import click
-from dgtools.dgsim import mem_dump, validate_trace_symbol
+from dgtools.dgsim import validate_trace_symbol
 from dgtools.exceptions import DgtoolsErrorSymbolUndefined, DgtoolsErrorDgbarchiveCorrupted
 from dgtools.dgb_archive import DGB_Archive
+
 
 def binary_listing(a_program):
     """

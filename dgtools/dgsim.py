@@ -57,41 +57,6 @@ from dgtools.exceptions import (DgtoolsErrorOpcodeNotSupported,
 from dgtools.output_render_html import Output_Render_HTML
 from dgtools.dgb_archive import DGB_Archive
 from dgtools.digirule import Digirule
-
-
-def mem_dump(mem, offset_from=0, offset_to=256, line_length=16):
-    """
-    Dumps memory in a hex-editor style view.
-    
-    :param mem: A memory block to hex dump.
-    :type mem: list<uint8>[256]
-    :param offset_from: Where to start the dump from
-    :type offset_from: int
-    :param offset_to: Where to end the dump at
-    :type offset_to: int
-    :param line_length: How many bytes per character to print in one line
-    :type line_length: int
-    :returns: A multiline string containing the hex dump.
-    :rtype: str
-    """
-    char_map_from = "\n\a\t\r"
-    char_map_to = "...."
-    trans_tab = str.maketrans(char_map_from, char_map_to)
-    to_ret = f"Offset (h) " + " ".join([format(k, "02X") for k in range(0,line_length)])+"\n"
-    total_length = offset_to - offset_from
-    n_lines = total_length // line_length
-    remaining_chars = total_length % line_length
-    for k in range(0, n_lines):
-        # Memory page to visualise
-        mem_page = [mem[u] for u in range(offset_from+k*line_length,offset_from+k*line_length+line_length)]
-        # The same memory page in hex
-        mem_page_hex = " ".join([f"{q:02X}" for q in mem_page])
-        # The same memory page in chr depictions.
-        # TODO: MED, The character translation table can be improved here to get rid of the >9 and clarify depictions.
-        # mem_page_char = "".join([chr(q) if q>9 else "." for q in mem_page]).translate(trans_tab)
-        mem_page_char=bytearray(mem_page).translate(trans_tab).decode("utf-8","ignore")
-        to_ret += f"\t{(offset_from+k*line_length):02X} {mem_page_hex} {mem_page_char}\n"        
-    return to_ret
     
     
 def trace_program(program, output_file, max_n=200, trace_title="", in_interactive_mode=False, extra_symbols=[], with_mem_dump=True):
@@ -114,13 +79,6 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
     :returns: A Digirule2 object at its final state when the last command was executed.
     :rtype: Digirule
     """
-    # TODO: LOW, Reduce code duplication of the string translation table here.
-    #       The reason this was copied verbatim from the mem dump code was because in either places, the translation 
-    #       table is not yet fixed.
-    char_map_from = "\n\a\t\r"
-    char_map_to = "...."
-    trans_tab = str.maketrans(char_map_from, char_map_to)
-    
     # Setup the VM
     machine = Digirule()
     machine.load_program(program)
@@ -128,6 +86,9 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
         machine.interactive_mode = True
     done = False
     n=0
+    # Headings for the memory space dump
+    mem_space_heading_h = ["Offset (h)"]+[f"{x:02X}" for x in range(0,16)]
+    mem_space_heading_v = [f"{x:02X}" for x in range(0,256,16)]
     # This function could simply be returning a data structure with all data required by a template to produce the 
     # actual output. But that would increase dependencies and possibly required memory too. This is why the file is 
     # created here on the fly.
@@ -162,8 +123,8 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
                 dgen.heading(f"Full memory dump:",3)
                 dgen.close_tag("header")
                 dgen.table_hv([[f"{machine._mem[n]:02X}" for n in range(m,m+16)] for m in range(0,256,16)],
-                              heading_h = ["Offset (h)"]+[f"{x:02X}" for x in range(0,16)], 
-                              heading_v=[f"{x:02X}" for x in range(0,256,16)],
+                              mem_space_heading_h, 
+                              mem_space_heading_v,
                               attrs={"class":"table_memory_space"})
                 dgen.close_tag("section")
             
