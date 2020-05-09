@@ -1,9 +1,7 @@
-TODO List as of Sat May 2 00:00:27 BST 2020
-../dgtools/dginspect.py:99 TODO: HIGH, Add a mode that only generates an update of the VM state when the state of one of the tracked symbols changes
-../dgtools/dginspect.py:109 TODO: MID, Reduce code duplication by packaging this validation in a function
-../dgtools/dginspect.py:154 TODO: HIGH, the following operations can be "absorbed" into the DGB_Archive with appropriate validations too
-../dgtools/dgsim.py:90 TODO: MED, The character translation table can be improved here to get rid of the >9 and clarify depictions.
-../dgtools/dgsim.py:116 TODO: LOW, Reduce code duplication of the string translation table here.
+TODO List as of Sat May 9 23:41:52 BST 2020
+../dgtools/dginspect.py:100 TODO: HIGH, Add a mode that only generates an update of the VM state when the state of one of the tracked symbols changes
+../dgtools/dginspect.py:110 TODO: MID, Reduce code duplication by packaging this validation in a function
+../dgtools/dginspect.py:155 TODO: HIGH, the following operations can be "absorbed" into the DGB_Archive with appropriate validations too
 ../dgtools/digirule.py:25 TODO: MED, There might be constraints in the depth of this stack. Not yet implemented.
 ../dgtools/digirule.py:41 TODO: LOW, Make the speed setting functional
 ../dgtools/digirule.py:191 TODO: MED, addr cannot go higher than 252 or it will overwrite peripherals. It should generate a warning.

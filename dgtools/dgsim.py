@@ -108,7 +108,7 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
             dgen.open_tag("header")
             dgen.heading(f"Machine Registers",3)
             dgen.close_tag("header")
-            dgen.table_h(["Program Counter:","Accumulator:", "Status Reg:","Button Register", "Addr.Led Register",
+            dgen.table_h(["Program Counter:","Accumulator:", "Status Reg:","Button Register:", "Addr.Led Register:",
                           "Data Led Register:", "Speed setting:", "Program counter stack:"],
                          [[f"0x{machine._pc:02X}"], [machine._acc],[machine._mem[machine._status_reg_ptr]], 
                           [machine._mem[machine._bt_reg_ptr]], [machine._mem[machine._addrled_reg_ptr]], 
