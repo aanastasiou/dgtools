@@ -12,6 +12,21 @@ class Output_Render_HTML():
         self._fd = None
         self._indent_level = 0
         
+    @staticmethod
+    def _get_attr_str(attrs):
+        """
+        Returns a properly formatted string containing the attributes of a tag (e.g. class, id, name, etc)
+        
+        :param attrs: Dictionary of attributes to be added to a tag
+        :type attrs: dict
+        :returns: A string with key="value" pairs unfolded.
+        :rtype: str
+        """
+        attr_str = ""
+        if attrs is not None:
+            attr_str = " " + " ".join(map(lambda x:f'{x[0]}="{x[1]}"',attrs.items()))
+        return attr_str
+        
     def __enter__(self):
         self._fd = open(self._filename, "wt")
         self.doc_start()
@@ -43,19 +58,20 @@ class Output_Render_HTML():
             self._write_indented(f"{payload}")
         return self
             
-    def _write_tag(self, tag, payload=None):
+    def _write_tag(self, tag, payload=None, attrs=None):
+        attr_str = self._get_attr_str(attrs)
         if payload is None:
-            self._write_raw(f"<{tag}>\n")
+            self._write_raw(f"<{tag}{attr_str}>\n")
         else:        
             is_multiline = payload.count("\n")>0
             if is_multiline:
-                self._write_raw(f"<{tag}>\n")
+                self._write_raw(f"<{tag}{attr_str}>\n")
                 self._inc_indent()
                 list(map(lambda x:self._write_raw(f"{x}\n"),payload.split("\n")))
                 self._dec_indent()
                 self._write_raw(f"</{tag}>\n")
             else:
-                self._write_raw(f"<{tag}>{payload}</{tag}>\n")
+                self._write_raw(f"<{tag}{attr_str}>{payload}</{tag}>\n")
         return self
         
     def doc_start(self):
@@ -74,8 +90,9 @@ class Output_Render_HTML():
                        "</html>\n")
         return self
         
-    def open_tag(self, tag):
-        self._write_indented(f"<{tag}>\n")
+    def open_tag(self, tag, attrs=None):
+        attr_str = self._get_attr_str(attrs)
+        self._write_indented(f"<{tag}{attr_str}>\n")
         self._inc_indent()
         return self
         
@@ -85,61 +102,57 @@ class Output_Render_HTML():
         return self
 
         
-    def heading(self, text, level=1):
-        self._write_tag(f"h{level}",text)
+    def heading(self, text, level=1, attrs=None):
+        self._write_tag(f"h{level}",text, attrs)
         return self
         
-    def preformatted(self,text):
-        self._write_tag("pre", text)
+    def preformatted(self,text, attrs=None):
+        self._write_tag("pre", text, attrs)
         return self
         
     def ruler(self):
         self._write_tag("hr")
         
-    def table_v(self, headings, contents):
-        self._write_tag("table")
-        self._inc_indent()
+    def table_v(self, headings, contents, attrs=None):
+        """
+        Creates a vertical table. A vertical table has a row heading and column oriented content.
+        """
+        self.open_tag("table", attrs=attrs)
         # Write the headings
-        self._write_tag("tr")
-        self._inc_indent()
+        self.open_tag("tr")
         list(map(lambda x:self._write_tag("th",x),headings))
-        self._dec_indent()
-        self._write_tag("/tr")
+        self.close_tag("tr")
         # Write the data
         for a_row in contents:
-            self._write_tag("tr")
-            self._inc_indent()
+            self.open_tag("tr")
             for a_cell in a_row:
                 self._write_tag("td", str(a_cell))
-            self._dec_indent()
-            self._write_tag("/tr")
+            self.close_tag("tr")
             
-        self._dec_indent()
-        self._write_tag("/table")
+        self.close_tag("table")
         return self
         
-    def table_h(self, headings, contents):
-        self._write_tag("table")
-        self._inc_indent()
+    def table_h(self, headings, contents, attrs=None):
+        """
+        Creates a horizontal table. A horizontal table has a column heading and row oriented content.
+        """
+        self.open_tag("table", attrs=attrs)
         for a_row in enumerate(contents):
             # Write the heading
-            self._write_tag("tr")
-            self._inc_indent()
+            self.open_tag("tr")
             self._write_tag("th",headings[a_row[0]])
             for a_cell in a_row[1]:
                 self._write_tag("td", str(a_cell))
-            self._dec_indent()
-            self._write_tag("/tr")
-        self._dec_indent()
-        self._write_tag("/table")
+            self.close_tag("tr")
+        self.close_tag("table")
         return self
 
-    def table_hv(self,  contents, heading_h = None, heading_v = None):
+    def table_hv(self,  contents, heading_h = None, heading_v = None, attrs=None):
         """
         Creates a table that has headings both in horizontal and vertical dims and 
         lays out contents as a two dimensional table.
         """
-        self.open_tag("table")
+        self.open_tag("table", attrs=attrs)
         if heading_h is not None:
             self.open_tag("tr")
             for a_value in heading_h:

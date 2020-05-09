@@ -13,7 +13,7 @@ Here is what this looks like when trying to calculate ``4-2``:
 
 **With** the availability of ``SUBLA``: 
 
-.. code::
+.. code-block:: DigiruleASM
 
     COPYLA 4
     SUBLA 2
@@ -23,7 +23,7 @@ Here is what this looks like when trying to calculate ``4-2``:
 
 **Without** the availability of ``SUBLA``:
 
-.. code::
+.. code-block:: DigiruleASM
 
     COPYLA 2
     XORLA 0xFF
@@ -60,7 +60,8 @@ Currently, ``COPYRR addr1 addr2`` is a 3 byte command that performs ``mem[addr2]
 is written as a subroutine, it is impossible to get it to copy between two ``addr1, addr2`` that are the result of 
 a calculation. However, doing so requires the following pattern:
 
-.. code::
+.. code-block:: DigiruleASM
+    :linenos:
 
     COPY** f_crom
     COPY** f_to

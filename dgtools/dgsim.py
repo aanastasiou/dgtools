@@ -151,7 +151,8 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
                           "Data Led Register:", "Speed setting:", "Program counter stack:"],
                          [[f"0x{machine._pc:02X}"], [machine._acc],[machine._mem[machine._status_reg_ptr]], 
                           [machine._mem[machine._bt_reg_ptr]], [machine._mem[machine._addrled_reg_ptr]], 
-                          [machine._mem[machine._dataled_reg_ptr]], [machine._speed_setting], [machine._ppc]])
+                          [machine._mem[machine._dataled_reg_ptr]], [machine._speed_setting], [machine._ppc]],
+                          attrs={"class":"table_machine_state"})
             dgen.close_tag("section")
             
             # Memory space
@@ -162,7 +163,8 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
                 dgen.close_tag("header")
                 dgen.table_hv([[f"{machine._mem[n]:02X}" for n in range(m,m+16)] for m in range(0,256,16)],
                               heading_h = ["Offset (h)"]+[f"{x:02X}" for x in range(0,16)], 
-                              heading_v=[f"{x:02X}" for x in range(0,256,16)])
+                              heading_v=[f"{x:02X}" for x in range(0,256,16)],
+                              attrs={"class":"table_memory_space"})
                 dgen.close_tag("section")
             
             # Extra symbols
@@ -182,7 +184,7 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
                     else:
                         chr_bytes = ""
                     symbol_values.append([str(raw_bytes),chr_bytes])
-                dgen.table_h(symbol_names,symbol_values)
+                dgen.table_h(symbol_names,symbol_values, attrs={"class":"table_spec_sym"})
                 dgen.close_tag("section")
             
             # Onboard IO
@@ -191,7 +193,8 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
             dgen.heading("Onboard I/O",3)
             dgen.close_tag("header")
             dgen.table_h(["Address LEDs","Data LEDs","Button Switches"],
-                         [machine.addr_led, machine.data_led, machine.button_sw])
+                         [machine.addr_led, machine.data_led, machine.button_sw],
+                         attrs={"class":"table_onboard_io"})
             dgen.close_tag("section")
             
             dgen.close_tag("section")
