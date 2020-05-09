@@ -160,22 +160,9 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
                 dgen.open_tag("header")
                 dgen.heading(f"Full memory dump:",3)
                 dgen.close_tag("header")
-                # dgen.preformatted(mem_dump(machine._mem))
-                dgen.open_tag("table")
-                dgen.open_tag("tr")
-                dgen._write_tag("th","Offset (h)")
-                # dgen.open_tag("td");dgen.close_tag("td")
-                for k in range(0,16):
-                    dgen._write_tag("th",f"{k:02X}")
-                dgen.close_tag("tr")
-                for m in range(0,16):
-                    dgen.open_tag("tr")
-                    dgen._write_tag("th",f"{m*16:02X}")
-                    for n in range(0,16):
-                        dgen._write_tag("td",f"{machine._mem[m*16+n]:02X}")
-                    dgen.close_tag("tr")
-                        
-                dgen.close_tag("table")
+                dgen.table_hv([[f"{machine._mem[n]:02X}" for n in range(m,m+16)] for m in range(0,256,16)],
+                              heading_h = ["Offset (h)"]+[f"{x:02X}" for x in range(0,16)], 
+                              heading_v=[f"{x:02X}" for x in range(0,256,16)])
                 dgen.close_tag("section")
             
             # Extra symbols

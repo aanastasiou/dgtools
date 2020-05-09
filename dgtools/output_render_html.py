@@ -133,4 +133,30 @@ class Output_Render_HTML():
         self._dec_indent()
         self._write_tag("/table")
         return self
-        
+
+    def table_hv(self,  contents, heading_h = None, heading_v = None):
+        """
+        Creates a table that has headings both in horizontal and vertical dims and 
+        lays out contents as a two dimensional table.
+        """
+        self.open_tag("table")
+        if heading_h is not None:
+            self.open_tag("tr")
+            for a_value in heading_h:
+                self._write_tag("th",str(a_value))
+            self.close_tag("tr")
+        if heading_v is not None:
+            for a_row in enumerate(contents):
+                self.open_tag("tr")
+                self._write_tag("th", str(heading_v[a_row[0]]))
+                for a_col_v in a_row[1]:
+                    self._write_tag("td",a_col_v)
+                self.close_tag("tr")
+        else:
+            for a_row in contents:
+                self.open_tag("tr")
+                for a_col_v in a_row:
+                    self._write_tag("td",a_col_v)
+                self.close_tag("tr")
+                
+        self.close_tag("table")
