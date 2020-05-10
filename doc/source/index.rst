@@ -34,6 +34,7 @@ generate traces of your own code.
    instruction_set_notes
    
    code_projects
+   quick_progs
 
 
 

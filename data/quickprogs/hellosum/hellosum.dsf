@@ -1,0 +1,5 @@
+# DigiruleASM "Hello World"
+
+COPYLA 1
+ADDLA 1
+HALT
