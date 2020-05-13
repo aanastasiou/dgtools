@@ -1,0 +1,43 @@
+# Comparison operators in ASM
+.EQU status_reg=252
+.EQU carry_bit=1
+.EQU zero_bit=0
+
+COPYRA R0
+SUBRA R1
+# R0<R1?
+# BCRSC carry_bit status_reg
+# JUMP lt
+# JUMP gte
+# lt:
+# COPYLR 0xF0 R3
+# HALT
+# gte:
+# COPYLR 0x0F R3
+# HALT
+# R0<=R1?
+BCRSC carry_bit status_reg
+JUMP lt
+JUMP gte
+lt:
+COPYLR 0xF0 R3
+HALT
+gte:
+BCRSC zero_bit status_reg
+JUMP gte_final
+JUMP gt_final
+HALT
+gte_final:
+COPYLR 0x18 R3
+HALT
+gt_final:
+COPYLR 0x0F R3
+HALT
+
+
+R0:
+.DB 1
+R1:
+.DB 2
+R3:
+.DB 0xFF

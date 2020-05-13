@@ -1,0 +1,67 @@
+# Find the minimum of a list of integers
+
+.EQU status_reg=252
+.EQU carry_bit=1
+.EQU zero_bit=0
+
+# R0 Is the iteration bounded var
+# R1 Is the current min value of the array
+# R2 Is the index of the current value
+# R3 Is the current value from index
+# R4 is the index of the min value
+COPYLR 0 R0
+COPYLA num_array
+ADDRA R0
+COPYAR f_from
+COPYLR R1 f_to
+CALL f_copy_ind
+COPYRR R0 R2
+loop_start:
+COPYLA num_array
+ADDRA R0
+COPYAR f_from
+COPYLR R3 f_to
+CALL f_copy_ind
+# Now R3 has the next number at offset R0 from label num_array
+# Compare it with the currently assumed minimum
+COPYRA R3
+SUBRA R1
+BCRSC carry_bit status_reg
+CALL mark_new_min
+INCR R0
+COPYRA R0
+SUBLA 20
+BCRSS zero_bit status_reg
+JUMP loop_start
+HALT
+
+mark_new_min:
+COPYRR R0 R2
+COPYRR R3 R1
+RETURN
+
+
+
+num_array:
+.DB 1,3,8,12,150,14,38,22,110,20,191,88,175,61,59,42,139,222,215,0
+
+R0:
+.DB 0
+R1:
+.DB 0 
+R2:
+.DB 0
+R3:
+.DB 0
+
+f_copy_ind:
+# Performs an indirect copy between the addresses pointed to by `f_from, f_to`.
+# This also shows a "template" function. It is constructed and parametrised in 
+# memory prior to being called from the main program.
+.DB 7   # COPYRR opcode
+f_from:
+.DB 0
+f_to:
+.DB 0
+RETURN
+

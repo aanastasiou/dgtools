@@ -1,0 +1,20 @@
+# Low level bounded iteration
+
+.EQU status_reg=252
+.EQU carry_bit=1
+.EQU zero_bit=0
+
+# for r0 in range(4,22):
+#     iteration block
+COPYLR 4 R0
+loop_start:
+NOP
+INCR R0
+COPYRA R0
+SUBLA 22
+BCRSS zero_bit status_reg
+JUMP loop_start
+HALT
+
+R0:
+.DB 0

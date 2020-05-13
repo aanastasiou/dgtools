@@ -1,0 +1,39 @@
+.EQU status_reg=252
+.EQU zero_bit=0
+.EQU carry_bit=1
+
+COPYLR 0 R0
+COPYLA num_array
+ADDRA R0
+COPYAR f_from
+COPYLR R1 f_to
+
+
+f_copy_ind:
+# Performs an indirect copy between the addresses pointed to by `f_from, f_to`.
+# This also shows a "template" function. It is constructed and parametrised in 
+# memory prior to being called from the main program.
+.DB 7   # COPYRR opcode
+f_from:
+.DB 0
+f_to:
+.DB 0
+RETURN
+
+R0:
+.DB 0
+R1:
+.DB 0 
+R2:
+.DB 0
+R3:
+.DB 0
+R4:
+.DB 0
+R5:
+.DB 0
+R6:
+.DB 0
+
+num_array:
+.DB 9,8,7,6,5,4,3,2,1,0
