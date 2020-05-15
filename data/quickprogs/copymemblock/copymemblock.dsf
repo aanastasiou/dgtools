@@ -1,0 +1,30 @@
+# Copy a memory block
+
+COPYLR R0 f_from 
+COPYLR R1 f_to
+COPYLR 6 f_block_len
+CALL f_copy_block
+HALT
+
+f_copy_block:
+CALL f_copy_ind
+INCR f_from
+INCR f_to
+DECRJZ f_block_len
+JUMP f_copy_block
+RETURN
+f_block_len:
+.DB 0
+
+f_copy_ind:
+.DB 7
+f_from:
+.DB 0
+f_to:
+.DB 0
+RETURN 
+
+R0:
+.DB 0xAB, 0xCD, 0xEF, 0xFE, 0xDC, 0xBA
+R1:
+.DB 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
