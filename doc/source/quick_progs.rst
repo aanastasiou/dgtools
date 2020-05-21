@@ -7,6 +7,8 @@ Tweetable ``dgasm`` code demonstrations.
 ``Hello World``
 ---------------
 
+Perhaps the simplest program in DigiruleASM
+
 .. literalinclude:: ../../data/quickprogs/hellosum/hellosum.dsf
     :language: DigiruleASM
     :linenos:
@@ -58,7 +60,7 @@ Swap the values of two variables
     .DB 42
     R2:
     .DB 0
-
+    
 
 Indirect copy
 ^^^^^^^^^^^^^
@@ -94,6 +96,7 @@ Indirect copy
     RETURN
     
 
+
 Numeric Comparisons
 -------------------
 
@@ -119,7 +122,6 @@ Here is how ASM pieces together a for-loop: It's a counter followed by a numeric
 Array Indexing
 --------------
 
-Here is how ASM pieces together a for-loop: It's a counter followed by a numeric comparison.
 
 .. literalinclude:: ../../data/quickprogs/arrayindexing/arrayindexing.dsf
     :language: DigiruleASM
@@ -157,5 +159,13 @@ Sort an array
 -------------
 
 .. literalinclude:: ../../data/quickprogs/simplesort/selectsort.dsf
+    :language: DigiruleASM
+    :linenos:
+
+
+The Quick Brown Fox Jumps Over The Lazy Dog
+-------------------------------------------
+
+.. literalinclude:: ../../data/quickprogs/qbfjold/qbfjold.dsf
     :language: DigiruleASM
     :linenos:
