@@ -1,0 +1,22 @@
+# Assigning to expression 1
+# Or what in a higher level language
+# would be written as:
+
+# unsigned char R0=1, R1=42
+# ...
+# R0 = R1
+
+# Obviously an "expression" is not visible here.
+# But, at the ASM level the expression itself 
+# has to be explicitly evaluated and this would 
+# still be the last step in order to send the 
+# result of the expression from some temporary 
+# register to the variable
+
+COPYRR R1 R0
+HALT
+
+R0:
+.DB 1
+R1:
+.DB 42

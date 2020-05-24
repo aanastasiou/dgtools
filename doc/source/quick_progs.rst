@@ -19,29 +19,22 @@ Assignment
 Assigning a literal
 ^^^^^^^^^^^^^^^^^^^
 
-.. code-block:: DigiruleASM
+.. literalinclude:: ../../data/quickprogs/assignments/assign1.dsf
+    :language: DigiruleASM
     :linenos:
     
-    COPYLR 1 R0
-    HALT
-    
-    R0:
-    .DB 0
-    
-Assigning between variables
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code-block:: DigiruleASM
+Assigning to expression
+^^^^^^^^^^^^^^^^^^^^^^^
+
+.. literalinclude:: ../../data/quickprogs/assignments/assign2.dsf
+    :language: DigiruleASM
     :linenos:
     
-    COPYRR R1 R0
-    HALT
-    
-    R0:
-    .DB 1
-    R1:
-    .DB 42
-    
+.. literalinclude:: ../../data/quickprogs/assignments/assign3.dsf
+    :language: DigiruleASM
+    :linenos:
+
 
 Swap the values of two variables
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -64,6 +57,52 @@ Swap the values of two variables
 
 Indirect copy
 ^^^^^^^^^^^^^
+
+.. code-block:: DigiruleASM
+    :linenos:
+    
+    # Indirect addressing in Digirule2
+    #
+    # Notice here: COPYLR loads a literal to 
+    # some memory location. In this case, 
+    # the literal is simply the **address** of the label.
+    #
+    # This snippet implements R2=R0
+    #
+    # Set the values of the source (R0) and destination (R1)
+    COPYLR R0 f_from 
+    COPYLR R2 f_to
+    # Execute the copy
+    CALL f_copy_ind
+    HALT
+    
+    # R0 is a label. A label resolves to the address it
+    # is pointing.
+    #
+    # .DB is a dgasm directive that initialises memory to 
+    # some literal numeric value (e.g. 0,1,2 and so on)
+    R0:
+    .DB 0
+    R1:
+    .DB 1
+    R2:
+    .DB 2
+    
+    
+    # Indirect copy via self-modification.
+    # We construct a suitable absolute 
+    # addressing copy instruction (COPYRR) and 
+    # execute it as a sub-routine
+    f_copy_ind:
+    .DB 7
+    f_from:
+    .DB 0
+    f_to:
+    .DB 0
+    RETURN
+
+
+
 
 .. code-block:: DigiruleASM
     :linenos:

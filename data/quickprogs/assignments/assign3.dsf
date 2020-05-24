@@ -1,0 +1,33 @@
+# Assigning to expression 2
+# Or what in a higher level language
+# would be written as:
+
+# byte *f_from = NULL, *f_to = NULL;
+# byte R0 = 1, R1 = 42;
+# ...
+# ...
+# f_from = &R1
+# f_to = &R0
+# *f_to = *f_from
+
+COPYLR R1 f_from  # f_from = &R1
+COPYLR R0 f_to    # f_to = &R0
+CALL f_copy_ind   # *f_from = *f_to
+HALT
+
+R0:
+.DB 1
+R1:
+.DB 42
+
+# Memory copy by indirect addressing via self-modification.
+# We construct a suitable absolute
+# addressing copy instruction (COPYRR) and
+# execute it as a sub-routine over f_from, f_to
+f_copy_ind:
+.DB 7
+f_from:
+.DB 0
+f_to:
+.DB 0
+RETURN

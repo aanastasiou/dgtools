@@ -1,0 +1,14 @@
+# Literal assignment
+# Or what in a higher level language
+# could be written as:
+
+# byte R0=0
+# ...
+# ...
+# R0 = 1
+
+COPYLR 1 R0
+HALT
+
+R0:
+.DB 0
