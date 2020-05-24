@@ -1,0 +1,30 @@
+# Plain value swapping between two variables
+
+# Swaps are "traditionally" handled in a 
+# Towers-of-Hanoi kind of way, using an 
+# intermeidate variable.
+
+# Higher level languages might even offer 
+# "parallel assignment" by which a swap
+# is expressed as a,b = b,a
+
+# Here, we implement the barebones way of 
+# swapping the values of R0,R1, through 
+# an intermediate variable R2. In a higher level 
+# language this might be written as:
+
+# R2 = R0
+# R0 = R1
+# R1 = R2
+
+COPYRR R0 R2
+COPYRR R1 R0
+COPYRR R2 R1
+HALT
+
+R0:
+.DB 1
+R1:
+.DB 42
+R2:
+.DB 0

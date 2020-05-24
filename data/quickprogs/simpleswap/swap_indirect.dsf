@@ -1,0 +1,43 @@
+# Indirect value swapping between two variables
+
+# This version achieves the same end-result as swap_simple
+# but uses memory copies via indirect addressing.
+
+# In a higher level language this might be written as:
+# unsigned char *f_from=NULL, *f_to=NULL;
+# unsigned char R0=1, R1=42, R2=0;
+# f_from=&R0;f_to=&R2; *f_to = *f_from;
+# f_from=&R1;f_to=&R0; *f_to = *f_from;
+# f_from=&R2;f_to=&R1; *f_to = *f_from;
+
+COPYLR R0 f_from
+COPYLR R2 f_to
+CALL f_copy_ind
+
+COPYLR R1 f_from
+COPYLR R0 f_to
+CALL f_copy_ind
+
+COPYLR R2 f_from
+COPYLR R1 f_to
+CALL f_copy_ind
+HALT
+
+R0:
+.DB 1
+R1:
+.DB 42
+R2:
+.DB 0
+
+# Memory copy by indirect addressing via self-modification.
+# We construct a suitable absolute
+# addressing copy instruction (COPYRR) and
+# execute it as a sub-routine over f_from, f_to
+f_copy_ind:
+.DB 7
+f_from:
+.DB 0
+f_to:
+.DB 0
+RETURN

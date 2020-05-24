@@ -36,27 +36,8 @@ Assigning to expression
     :linenos:
 
 
-Swap the values of two variables
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. code-block:: DigiruleASM
-    :linenos:
-    
-    COPYRR R0 R2
-    COPYRR R1 R0
-    COPYRR R2 R1
-    HALT
-    
-    R0:
-    .DB 1
-    R1:
-    .DB 42
-    R2:
-    .DB 0
-    
-
-Indirect copy
-^^^^^^^^^^^^^
+Assignment with indirect addressing
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: DigiruleASM
     :linenos:
@@ -103,37 +84,17 @@ Indirect copy
 
 
 
+Swapping the values of two variables
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code-block:: DigiruleASM
+.. literalinclude:: ../../data/quickprogs/simpleswap/swap_simple.dsf
+    :language: DigiruleASM
     :linenos:
     
-    # Swap with indirect copy 
-    COPYLR R0 f_from 
-    COPYLR R2 f_to
-    CALL f_copy_ind
-    COPYLR R1 f_from 
-    COPYLR R0 f_to
-    CALL f_copy_ind
-    COPYLR R2 f_from 
-    COPYLR R1 f_to
-    CALL f_copy_ind
-    HALT
     
-    R0:
-    .DB 0
-    R1:
-    .DB 1
-    R2:
-    .DB 2
-    
-    f_copy_ind:
-    .DB 7
-    f_from:
-    .DB 0
-    f_to:
-    .DB 0
-    RETURN
-    
+.. literalinclude:: ../../data/quickprogs/simpleswap/swap_indirect.dsf
+    :language: DigiruleASM
+    :linenos:
 
 
 Numeric Comparisons
