@@ -22,7 +22,7 @@ class DigiruleASMLexer(RegexLexer):
                     "ORRA", "RETLA", "RETURN", "SBR", "SHIFTRL", "SHIFTRR", "SPEED", "SUBLA", "SUBRA", "XORLA", 
                     "XORRA"), suffix=r" ?"), Keyword.Reserved),
             (r'^[a-zA-Z_][a-zA-Z0-9_]*\:$', Name.Label),
-            (r'[a-zA-Z_][a-zA-Z0-9_]*?', Name.Variable),
+            (r'[a-zA-Z_][a-zA-Z0-9_]*', Name.Variable),
             (r'\.(DB|EQU) ?', Keyword.Declaration),
             (r' ?0b[0-1]{1,8}', Number.Bin),
             (r' ?0x[0-9A-F]{1,2}', Number.Hex),
