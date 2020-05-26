@@ -104,9 +104,14 @@ Have you ever wondered what comparison operators resolve to? Comparisons are
 resolved to humble subtractions if a-b==0 the numbers are equal, a-b<0 means 
 that a<b. <= and >= are cascaded logical ORs of the individual operations.
 
-.. literalinclude:: ../../data/quickprogs/compop/compop.dsf
+.. literalinclude:: ../../data/quickprogs/compop/compop_lt.dsf
     :language: DigiruleASM
     :linenos:
+    
+.. literalinclude:: ../../data/quickprogs/compop/compop_leq.dsf
+    :language: DigiruleASM
+    :linenos:
+
 
 
 For loops

@@ -1,0 +1,57 @@
+# If (expression) run_block_a else run_block_b :: part 2
+
+# This is almost identical to R0<R1 but since the expression 
+# now is R0<=R1, we also add an extra branch to show 
+# the equality case. Typically, only two exit points 
+# from this block are maintained.
+
+
+.EQU status_reg=252 # The status register on the Digirule
+.EQU carry_bit=1
+.EQU zero_bit=0
+
+
+# Evaluate the expression...
+COPYRA R0
+SUBRA R1
+
+# Test its result...
+BCRSC carry_bit status_reg
+JUMP lt
+JUMP gte
+
+# "THEN" BRANCH STARTS HERE
+lt:
+COPYLR 0xF0 R2
+HALT
+
+gte:
+# At this point, we know that R0<R1 does NOT hold.
+# But, the opposite of R0<R1 is not R1>R0 but 
+# R1>0 OR R1==R0. Therefore, knowing that 
+# R0 IS NOT LESS THAN R1 we proceed here to 
+# test if R0==R1. 
+BCRSC zero_bit status_reg
+JUMP gte_final
+JUMP gt_final
+HALT
+
+# The two branches are split here just to illustrate 
+# the <= distinction. Typically: 
+
+# "ELSE" BRANCH STARTS HERE
+
+gte_final:
+COPYLR 0x18 R2
+HALT
+gt_final:
+COPYLR 0x0F R2
+HALT
+
+
+R0:
+.DB 2
+R1:
+.DB 1
+R2:
+.DB 0xFF

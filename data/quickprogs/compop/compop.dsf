@@ -1,4 +1,19 @@
-# Comparison operators in ASM
+When you write an "if (R0>R1) {} else {}", how is it evaluated by a CPU? 
+Here it is, on a #Digirule, simplest form of branching. 
+
+All figures using #dgtools (https://github.com/aanastasiou/dgtools)
+
+
+# If (expression) run_block_a else run_block_b
+
+# A high level "if" captures an ASM pattern where an 
+# expression is evaluated and based on that expression's 
+# result deciding whether to execute "run_block_a" or 
+# "run_block_b" block of commands.
+
+# In a higher level language, this might be written as:
+# if
+
 .EQU status_reg=252
 .EQU carry_bit=1
 .EQU zero_bit=0
