@@ -11,7 +11,7 @@ compop_lt.dgb:compop_lt.dsf
 compop_leq.dgb:compop_leq.dsf
 	dgasm.py compop_leq.dsf
 
-show: compop_lt_trace.html compop_leq_trace.html
+html: compop_lt_trace.html compop_leq_trace.html
 	xdg-open compop_lt_trace.html
 	xdg-open compop_leq_trace.html
 

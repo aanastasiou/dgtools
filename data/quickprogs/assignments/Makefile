@@ -19,7 +19,7 @@ assign3.dgb: assign3.dsf
 clean:
 	rm *.dgb *.html
 
-show:assign1_trace.html assign2_trace.html assign3_trace.html
+html:assign1_trace.html assign2_trace.html assign3_trace.html
 	xdg-open assign1_trace.html &
 	xdg-open assign2_trace.html & 
 	xdg-open assign3_trace.html &

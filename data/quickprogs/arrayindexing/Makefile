@@ -7,5 +7,5 @@ arrayindexing.dgb:arrayindexing.dsf
 clean:
 	rm *.dgb *.html
 
-show:arrayindexing_trace.html
+html:arrayindexing_trace.html
 	xdg-open arrayindexing_trace.html

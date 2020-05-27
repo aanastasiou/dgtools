@@ -7,5 +7,5 @@ forloop.dgb:forloop.dsf
 clean:
 	rm *.dgb *.html
 
-show:forloop_trace.html
+html:forloop_trace.html
 	xdg-open forloop_trace.html

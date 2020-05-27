@@ -13,6 +13,6 @@ swap_indirect.dgb: swap_indirect.dsf
 clean:
 	rm *.dgb *html
 	
-show: swap_indirect_trace.html swap_simple_trace.html
+html: swap_indirect_trace.html swap_simple_trace.html
 	chromium-browser swap_simple_trace.html &
 	chromium-browser swap_indirect_trace.html &

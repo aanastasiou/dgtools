@@ -7,5 +7,5 @@ findmin.dgb:findmin.dsf
 clean:
 	rm *.dgb *.html
 
-show:findmin_trace.html
+html:findmin_trace.html
 	xdg-open findmin_trace.html

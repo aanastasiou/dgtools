@@ -7,5 +7,5 @@ swapmemblock.dgb:swapmemblock.dsf
 clean:
 	rm *.dgb *.html
 
-show:swapmemblock_trace.html
+html:swapmemblock_trace.html
 	xdg-open swapmemblock_trace.html

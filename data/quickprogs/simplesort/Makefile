@@ -7,5 +7,5 @@ selectsort.dgb:selectsort.dsf
 clean:
 	rm *.dgb *.html
 
-show:selectsort_trace.html
+html:selectsort_trace.html
 	xdg-open selectsort_trace.html

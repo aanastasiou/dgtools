@@ -7,5 +7,5 @@ qbfjold.dgb:qbfjold.dsf
 clean:
 	rm *.dgb *.html
 
-show:qbfjold_trace.html
+html:qbfjold_trace.html
 	xdg-open qbfjold_trace.html

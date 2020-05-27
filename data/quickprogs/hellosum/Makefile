@@ -7,5 +7,5 @@ hellosum.dgb:hellosum.dsf
 clean:
 	rm *.dgb *.html
 
-show:hellosum_trace.html
+html:hellosum_trace.html
 	xdg-open hellosum_trace.html

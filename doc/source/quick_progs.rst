@@ -114,14 +114,13 @@ that a<b. <= and >= are cascaded logical ORs of the individual operations.
 
 
 
-For loops
+Iteration
 ---------
-
-Here is how ASM pieces together a for-loop: It's a counter followed by a numeric comparison.
 
 .. literalinclude:: ../../data/quickprogs/forloop/forloop.dsf
     :language: DigiruleASM
     :linenos:
+
 
 
 Array Indexing

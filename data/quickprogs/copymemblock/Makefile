@@ -7,5 +7,5 @@ copymemblock.dgb:copymemblock.dsf
 clean:
 	rm *.dgb *.html
 
-show:copymemblock_trace.html
+html:copymemblock_trace.html
 	xdg-open copymemblock_trace.html
