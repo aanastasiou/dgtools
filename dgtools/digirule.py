@@ -77,7 +77,7 @@ class Digirule:
         
     @property
     def button_sw(self):
-        return f"{self._mem[self._bt_reg_ptr]:08b}\n"
+        return f"{self._mem[self._bt_reg_ptr]:08b}"
 
     @property
     def interactive_mode(self):

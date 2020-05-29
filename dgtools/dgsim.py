@@ -100,6 +100,7 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
         while not done and n<max_n:
             # Machine registers
             dgen.open_tag("section")
+            dgen.named_anchor(f"n{n}")
             dgen.open_tag("header")
             dgen.heading(f"Machine State at n={n}",2)
             dgen.close_tag("header")

@@ -58,10 +58,14 @@ class Output_Render_HTML():
             self._write_indented(f"{payload}")
         return self
             
-    def _write_tag(self, tag, payload=None, attrs=None):
+    def _write_tag(self, tag, payload=None, attrs=None, autoclose=True):
         attr_str = self._get_attr_str(attrs)
         if payload is None:
-            self._write_raw(f"<{tag}{attr_str}>\n")
+            self._write_raw(f"<{tag}{attr_str}>")
+            if autoclose:
+                self._write_raw(f"</{tag}>\n")
+            else:
+                self._write_raw("\n")
         else:        
             is_multiline = payload.count("\n")>0
             if is_multiline:
@@ -72,6 +76,7 @@ class Output_Render_HTML():
                 self._write_raw(f"</{tag}>\n")
             else:
                 self._write_raw(f"<{tag}{attr_str}>{payload}</{tag}>\n")
+        
         return self
         
     def doc_start(self):
@@ -111,7 +116,7 @@ class Output_Render_HTML():
         return self
         
     def ruler(self):
-        self._write_tag("hr")
+        self._write_tag("hr", autoclose=False)
         
     def table_v(self, headings, contents, attrs=None):
         """
@@ -173,3 +178,6 @@ class Output_Render_HTML():
                 self.close_tag("tr")
                 
         self.close_tag("table")
+        
+    def named_anchor(self, anchor_name):
+        self._write_tag("a",attrs={"id":anchor_name})

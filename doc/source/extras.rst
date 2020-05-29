@@ -55,3 +55,15 @@ Styling trace files
 -------------------
 
 Trace files can be styled by adding a ``dgtheme.css`` CSS file, in the same directory with the HTML file of the trace.
+
+
+Linking to trace files
+----------------------
+
+Trace files contain "named anchors" right at the beginning of each "Machine State" heading. These ``a`` tags 
+are prefixed with ``n`` followed by the clock-cycle number so you can link directly to a specific state even 
+within longer traces.
+
+Say for instance you have a file up on `jsbin.com <http://www.jsbin.com>`_ and something...exciting (?) is 
+hapenning at ``n=2``, you can link directly to that state with `<https://output.jsbin.com/huluzil/1#n2>`_ . 
+Notice the ``#n2`` right at the end of that URL and where the browser opens the document by default.
