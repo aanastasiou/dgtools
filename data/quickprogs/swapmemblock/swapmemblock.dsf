@@ -1,4 +1,15 @@
-# Copy a memory block
+# Swap the values of two arrays around.
+
+# This program extends the idea of swapping 
+# the values of two variables (2 1-byte values), 
+# to swapping the contents of two arrays.
+
+# This is realised by using a third array that 
+# stores the value of one of the variables being 
+# swapped.
+
+# In a higher level language, this could be written as:
+
 
 COPYLR R0 f_from 
 COPYLR R2 f_to
