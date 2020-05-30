@@ -29,13 +29,10 @@
 
 # In a higher level language, this could be expressed 
 # as:
-#
 # unsigned short R0[] = {0xAB, 0xCD, 0xEF, 0xFE, 0xDC, 0xBA};
 # unsigned short R1[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-#
 # unsigned short *f_from = NULL, *f_to = NULL;
 # unsigned short f_block_len = 6
-#
 # f_from = &R0;
 # f_to = &R1;
 # while (f_block_len){

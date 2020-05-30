@@ -34,6 +34,8 @@ generate traces of your own code.
    instruction_set_notes
    
    code_projects
+   
+   note_on_types
 
 
 

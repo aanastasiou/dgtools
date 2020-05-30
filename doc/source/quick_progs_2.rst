@@ -15,7 +15,7 @@ Copy a memory block
     
 
 Swap values between two memory blocks
--------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. literalinclude:: ../../data/quickprogs/swapmemblock/swapmemblock.dsf
     :language: DigiruleASM
