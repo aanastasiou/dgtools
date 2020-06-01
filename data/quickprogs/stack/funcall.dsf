@@ -1,0 +1,89 @@
+# Function calling and call conventions
+
+# Stacks allow us to define functions with 
+# many different arguments.
+
+# This brings about the question of how to load 
+# and clear the stack before and after a function 
+# call.
+
+# There are different ways to do this which are 
+# collectively known as "Calling Conventions".
+
+# In a higher level language, this demo would be
+# written as:
+# unsigned short f_add_two_numbers(unsigned short R0, unsigned short R1){
+#    return R0 + R1
+# }
+# ...
+# ...
+# R0 = f_add_two_numbers(2,2)
+
+.EQU status_reg=252 # The status register on the Digirule2
+.EQU zero_bit=0  
+
+# Initialise the stack head
+COPYLR stack stack_ptr
+
+COPYLR 2 R0
+COPYLR R0 f_from
+# Push 2 twice, so the function will do 2+2
+CALL f_push
+CALL f_push 
+CALL f_add_two_numbers  # Equivalent to: f_add_two_numbers(2,2) 
+COPYAR R0
+HALT
+
+
+# Self-explanatory
+f_add_two_numbers:
+COPYLR R0 f_to
+CALL f_pop
+COPYRA R0
+CALL f_pop
+ADDRA R0
+RETURN
+
+# Pushes the value of whatever f_from points to, to 
+# the top of the stack.
+f_push:
+COPYRR stack_ptr f_to
+CALL f_copy_ind
+INCR stack_ptr
+RETURN
+
+# Pops the value of the top of the stack to whatever f_to 
+# points to.
+# NOTE HERE: We re-use the value of the Accumulator which 
+# we may be already using in another part of the program.
+f_pop:
+COPYAR T0 # Save the Accumulator
+COPYRA stack_ptr
+SUBLA stack
+BCRSS zero_bit status_reg # NOTE THIS CHECK. It prevents >>UNDERFLOW<<
+DECR stack_ptr
+COPYRA T0 # Restore the Accumulator
+COPYRR stack_ptr f_from
+CALL f_copy_ind
+RETURN
+
+# Memory copy by indirect addressing via self-modification.
+# We construct a suitable absolute
+# addressing copy instruction (COPYRR) and
+# execute it as a sub-routine over f_from, f_to
+f_copy_ind:
+.DB 7
+f_from:
+.DB 0
+f_to:
+.DB 0
+RETURN
+
+R0:
+.DB 0xF0
+T0:
+.DB 0xFF
+stack:
+.DB 0xF0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0x0F
+stack_ptr:
+.DB 0
