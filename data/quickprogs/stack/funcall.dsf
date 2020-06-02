@@ -10,6 +10,9 @@
 # There are different ways to do this which are 
 # collectively known as "Calling Conventions".
 
+# Here, we are demonstrating a cdecl inspired 
+# scheme, adapted to the Digirule ASM.
+
 # In a higher level language, this demo would be
 # written as:
 # unsigned short f_add_two_numbers(unsigned short R0, unsigned short R1){
@@ -56,6 +59,7 @@ RETURN
 # points to.
 # NOTE HERE: We re-use the value of the Accumulator which 
 # we may be already using in another part of the program.
+# This too is specified in the cdecl convention.
 f_pop:
 COPYAR T0 # Save the Accumulator
 COPYRA stack_ptr

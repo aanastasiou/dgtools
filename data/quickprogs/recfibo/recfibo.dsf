@@ -7,7 +7,7 @@
 # Initialise the stack head
 COPYLR stack stack_ptr
 
-COPYLR 4 R0
+COPYLR 7 R0
 COPYLR R0 f_from
 CALL f_push
 CALL f_fibonacci
@@ -23,18 +23,22 @@ COPYLA 2
 SUBRA R0
 BCRSS carry_bit status_reg
 JUMP f_fibonacci_ret_num
-COPYRA R0
-SUBLA 1
-COPYAR R0
+DECR R0
 COPYLR R0 f_from
+CALL f_push
 CALL f_push
 CALL f_fibonacci
 COPYAR T1
-COPYRA R0
-SUBLA 1
-COPYAR R0
+COPYLR R0 f_to
+CALL f_pop
+DECR R0
+COPYLR T1 f_from
+CALL f_push
 COPYLR R0 f_from
+CALL f_push
 CALL f_fibonacci
+COPYLR T1 f_to
+CALL f_pop
 ADDRA T1
 RETURN
 

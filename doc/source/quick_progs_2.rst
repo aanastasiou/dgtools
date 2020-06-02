@@ -28,6 +28,22 @@ Implement A Stack
 .. literalinclude:: ../../data/quickprogs/stack/stack.dsf
     :language: DigiruleASM
     :linenos:
+    
+
+Function calling conventions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. literalinclude:: ../../data/quickprogs/stack/funcall.dsf
+    :language: DigiruleASM
+    :linenos:
+
+
+Recursion
+---------
+
+.. literalinclude:: ../../data/quickprogs/recfibo/recfibo.dsf
+    :language: DigiruleASM
+    :linenos:
 
 
 
