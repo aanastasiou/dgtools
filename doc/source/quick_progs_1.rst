@@ -133,7 +133,7 @@ Iteration
     
 
 Copy a memory block
--------------------
+^^^^^^^^^^^^^^^^^^^
 
 .. literalinclude:: ../../data/quickprogs/copymemblock/copymemblock.dsf
     :language: DigiruleASM
@@ -141,7 +141,7 @@ Copy a memory block
     
 
 Swap values between two memory blocks
--------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. literalinclude:: ../../data/quickprogs/swapmemblock/swapmemblock.dsf
     :language: DigiruleASM
