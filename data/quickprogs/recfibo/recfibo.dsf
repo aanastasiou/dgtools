@@ -1,4 +1,24 @@
-# Recursive Fibonacci
+# Recursive Fibonacci function evaluation
+
+# Every term in a Fibonacci sequence is the sum 
+# of the two terms preceding it, except the first 
+# two terms that are 0 and 1.
+
+# In far less words: F[n] = F[n-1] + F[n-2] for n>=2
+
+# Since every F[n] is the sum of two preceding 
+# terms until only 0 and 1 are left to add together, 
+# a Fibonacci term can be calculated recursively.
+
+# That is, establish a function that keeps calling
+# itself to calculate the terms.
+
+# But, for a function to be able to call itself recursively 
+# it needs a way to preserve whatever state (i.e. variables 
+# in memory) it is in. For this, we need a stack.
+
+# Luckily, we gave the Digirule2 a stack which we can 
+# use for both the function calling and the state saving.
 
 .EQU status_reg=252 # The status register on the Digirule2
 .EQU zero_bit=0  
@@ -7,49 +27,46 @@
 # Initialise the stack head
 COPYLR stack stack_ptr
 
-COPYLR 7 R0
+# Calculate the 6th term of the Fibonacci sequence.
+COPYLR 6 R0
 COPYLR R0 f_from
 CALL f_push
 CALL f_fibonacci
-COPYAR R0
+COPYAR R0        # Thus far equivalent to: R0 = f_fibonacci(6)
 HALT
 
-
-# Self-explanatory
+# f_fibonacci(n)
+# Calculates the n^{th} term of the Fibonacci series.
+# To call: Push the value of n to the stack and call
+# Returns: The value of the nth terms in the Accumulator
 f_fibonacci:
 COPYLR R0 f_to
-CALL f_pop
+CALL f_pop                 # Pop the parameter to R0
 COPYLA 2
 SUBRA R0
 BCRSS carry_bit status_reg
-JUMP f_fibonacci_ret_num
-DECR R0
+JUMP f_fibonacci_ret_num   # If it is less than 2 return it
+DECR R0                    # Evaluate the n-1 term. 
 COPYLR R0 f_from
-CALL f_push
-CALL f_push
-CALL f_fibonacci
+CALL f_push                # R0 is pushed twice, once to save 
+CALL f_push                # it and once to stand as a param to
+CALL f_fibonacci           # the function call.
 COPYAR T1
-COPYLR R0 f_to
-CALL f_pop
-DECR R0
-COPYLR T1 f_from
-CALL f_push
+COPYLR R0 f_to             # Upon return from the n-1 evaluation
+CALL f_pop                 # step, pop R0 to restore the value it  
+DECR R0                    # had while, trying to evaluate the n 
+COPYLR T1 f_from           # term.
+CALL f_push                # Notice here: Saving T1.
 COPYLR R0 f_from
 CALL f_push
-CALL f_fibonacci
+CALL f_fibonacci           # Now evaluate n-2
 COPYLR T1 f_to
 CALL f_pop
-ADDRA T1
-RETURN
-
+ADDRA T1                   # At this point we have the two terms  
+RETURN                     # and simply add them. 
 
 f_fibonacci_ret_num:
 COPYRA R0
-RETURN
-
-COPYRA R0
-CALL f_pop
-ADDRA R0
 RETURN
 
 # Pushes the value of whatever f_from points to, to 
@@ -68,8 +85,8 @@ f_pop:
 COPYAR T0 # Save the Accumulator
 COPYRA stack_ptr
 SUBLA stack
-BCRSS zero_bit status_reg # NOTE THIS CHECK. It prevents >>UNDERFLOW<<
-DECR stack_ptr
+BCRSS zero_bit status_reg # NOTE THIS CHECK: 
+DECR stack_ptr            # It prevents >>UNDERFLOW<<
 COPYRA T0 # Restore the Accumulator
 COPYRR stack_ptr f_from
 CALL f_copy_ind
