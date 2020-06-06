@@ -113,11 +113,11 @@ Here, ``r0`` is used as a "target" for ``COPYLR`` and it will substitute ``r0`` 
 
 For more illustrative examples of ``.DB``, see section :ref:`advanced-topics`
 
-Digirule 2 Assembly Commands
-----------------------------
+Digirule 2 Instruction Set
+--------------------------
 
-The Assembly language that Digirule 2 understands is detailed in the PDF user manual that accompanies the hardware 
-and is also available from `here <https://bradsprojects.com/wp-content/uploads/Digirule2-User-Manual.pdf>`_.
+The Assembly language that Digirule 2 executes is detailed in the PDF user manual that accompanies the hardware 
+and is also available `here <https://bradsprojects.com/wp-content/uploads/Digirule2-User-Manual.pdf>`_.
 
 An overview of the instruction set is provided here with the instructions grouped according to function:
 
@@ -143,12 +143,12 @@ An overview of the instruction set is provided here with the instructions groupe
 | RETUN        |              |              |              |              |
 +--------------+--------------+--------------+--------------+--------------+
 
-* ``HALT, RETURN, NOP`` are 1 Byte commands.
-* ``COPYLR, COPYRR, BCRSC, BCRSS`` are 3 byte commands
-* All other commands are 2 byte commands.
+* ``HALT, RETURN, NOP`` are 1 Byte instructions.
+* ``COPYLR, COPYRR, BCRSC, BCRSS`` are 3 byte instructions.
+* All other instructions are 2 byte instructions.
 
 In addition, ``dgasm`` will substitute constants and labels with their content if they were to be used as arguments 
-in these commands.
+in these instructions.
 
 For example, the following two snippets are equivalent:
 
