@@ -289,7 +289,7 @@ For more details, please see inline code comments below:
     .DB 0,0,0
 
 
-(This is part of listing :download:`dg_asm_examples/math/int2str.dsf <../../dg_asm_examples/math/int2str.dsf>` )
+(This is part of listing :download:`dg_asm_examples/itoa/int2str.dsf <../../dg_asm_examples/itoa/int2str.dsf>` )
 
 The usual workflow is followed to compile it here, assuming that ``dgtools`` is installed already:
 

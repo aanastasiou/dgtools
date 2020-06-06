@@ -1,0 +1,106 @@
+# int2str: Converts a byte to its string representation
+# The conversion routine is very simple and involves two steps:
+#    1. Decompose the number 
+#    2. Synthesize a "string"
+
+.EQU status_reg=252
+.EQU zero_bit=0
+.EQU carry_bit=1
+
+# Program Entry Point
+# Test the ascii to string
+COPYLR 255 R0
+COPYLR ascii_str R1
+CALL int2str
+HALT
+
+
+int2str:
+# Transforms an integer to an ASCII representation
+# Input:
+#    R0: int
+#    R1: Address of the first byte of the string
+# Note:
+#    The Digirule2 does not understand the string data type. In this 
+#    example, a "string" is just three sequential bytes in memory, 
+#    starting at the memory address indicated by register R1.
+#
+# Save the arguments
+COPYRR R0 T0
+COPYRR R1 T1
+# Divide by 100
+COPYRA R0
+COPYLR 100 R0
+CALL div
+# Adjust the ascii rep and copy to the next available string position
+CALL int2str_adjust_and_copy
+# Load the remainder, divide by 10 
+COPYRA R0
+COPYLR 10 R0
+CALL div
+CALL int2str_adjust_and_copy
+# Load the remainder
+# Notice here, the remainder is in R0 but it does not 
+# go through the division. For this reason, it is simply
+# copied across from R0 to R1 to be able to re_use the 
+# adjust_and_copy procedure as is.
+COPYRR R0 R1
+CALL int2str_adjust_and_copy
+RETURN
+int2str_adjust_and_copy:
+# Adds the ascii 0 value (48) to the order of mag multiplier 
+# and puts the result to the next available string position
+COPYRA R1
+ADDLA 48
+COPYAR T2
+COPYLR T2 f_from
+COPYRR T1 f_to
+CALL f_copy_ind
+INCR T1
+RETURN
+
+div:
+# Performs Acc/R0
+# Returns R1:Ratio, R0:Remainder
+CBR zero_bit status_reg # Zero bit
+CBR carry_bit status_reg # Carry bit
+COPYLR 0 R1
+sub_again:
+INCR R1
+SUBRA R0
+# Check if the last SUB hit zero 
+BCRSS zero_bit status_reg
+JUMP check_carry
+JUMP sub_again
+check_carry:
+# Maybe the last SUB overshot zero
+BCRSS carry_bit status_reg
+JUMP sub_again
+# Adjust results
+ADDRA R0
+DECR R1
+COPYAR R0
+RETURN
+
+f_copy_ind:
+# Indirect copy
+.DB 7     # Digirule2 ASM COPYRR opcode
+f_from:
+.DB 0
+f_to:
+.DB 0
+RETURN
+
+# General Registers
+R0:
+.DB 0
+R1:
+.DB 0
+T0:
+.DB 0
+T1:
+.DB 0
+T2:
+.DB 0
+ascii_str:
+.DB 0,0,0
