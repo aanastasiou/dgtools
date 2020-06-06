@@ -5,7 +5,7 @@ dgtools is a set of tools for developing software for a...ruler.
 Not just any ruler, but the [Digirule2](https://bradsprojects.com/digirule2/) by 
 [bradsprojects](https://bradsprojects.com).
 
-## Tool Overview
+## Overview
 
 1. `dgasm`
 
@@ -66,14 +66,17 @@ The most common workflow is:
 
 ## Where to from here?
 
-``dgtools`` documentation is up on [ReadTheDocs](https://dgtools.readthedocs.io/en/latest/) and in ``doc/``.
+``dgtools`` documentation is up on [ReadTheDocs](https://dgtools.readthedocs.io/en/latest/) and of course
+in ``doc/``.
 
-* The features of each of the programs included in `dgtools` are best demonstrated through 
-[this introductory walkthrough](https://dgtools.readthedocs.io/en/latest/introductory_topics.html)
+Practical examples of how to use `dgtools` are available in 
+[this introductory walkthrough](https://dgtools.readthedocs.io/en/latest/introductory_topics.html).
 
-* Advanced uses of the Digirule 2 ASM are discussed in 
- [this advanced walkthrough](https://dgtools.readthedocs.io/en/latest/advanced_topics.html)
+Once you familiarise yourself with the tools and Digirule's ASM, you might want to move to 
+[the advanced walkthrough](https://dgtools.readthedocs.io/en/latest/advanced_topics.html) or 
+check out other [programming examples](https://dgtools.readthedocs.io/en/latest/code_projects.html) 
+in `dg_asm_eamples/`.
 
-Enjoy
+Enjoy!
 
 Athanasios Anastasiou
