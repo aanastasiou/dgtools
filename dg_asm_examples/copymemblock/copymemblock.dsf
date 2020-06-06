@@ -1,0 +1,88 @@
+# Copy across memory (arrays).
+
+# An array represents a continuous memory block
+# that begins at some address and has a length.
+
+# In some high level languages, such as C, 
+# the array must be homogeneous. That is, every 
+# one of its elements can be of one and only one 
+# type.
+# In others, such as Python, each 
+# element of the array can be an object of a 
+# different type. 
+
+# These incredibly flexible arrays are, again, 
+# higher level constructs. In other words, they 
+# are conveniences that are still pieced 
+# together and delivered via the same low level 
+# operations.
+
+# At the level of the CPU, the only thing that 
+# trully _exists_ is mathematical and memory 
+# operations.
+
+# Here, copying one array to another is a matter 
+# of calling a COPY operation ITERATIVELY for every
+# one of the array's elements. And right now, on the
+# Digirule2, we know how to both do iterations and 
+# indirect copies. 
+
+# In a higher level language, this could be expressed 
+# as:
+# unsigned short R0[] = {0xAB, 0xCD, 0xEF, 0xFE, 0xDC, 0xBA};
+# unsigned short R1[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+# unsigned short *f_from = NULL, *f_to = NULL;
+# unsigned short f_block_len = 6
+# f_from = &R0;
+# f_to = &R1;
+# while (f_block_len){
+#   *f_to = *f_from;
+#   f_block_len--;
+#   f_to++;
+#   f_from++;
+
+
+COPYLR R0 f_from        # f_from = &R0; 
+COPYLR R1 f_to          # f_from = &R0;
+CALL f_copy_block
+HALT
+
+
+# Generalises f_copy_ind so that it copies the values
+# of an array of length f_copy_block.
+# To call it, set:
+# f_from to the beginning of the source block
+# f_to to the beginning of the target block
+# f_copy_block to how many elements to copy
+
+f_copy_block:
+CALL f_copy_ind         # *f_to = *f_from;
+INCR f_from             # *f_from++;
+INCR f_to               # *f_to++;
+DECRJZ f_block_len      # f_block_len--; AND while (f_block_len){...
+JUMP f_copy_block       
+RETURN
+
+
+
+# Memory copy by indirect addressing via self-modification.
+# We construct a suitable absolute
+# addressing copy instruction (COPYRR) and
+# execute it as a sub-routine over f_from, f_to
+
+f_copy_ind:
+.DB 7
+f_from:
+.DB 0
+f_to:
+.DB 0
+RETURN 
+
+R0:
+.DB 0xAB, 0xCD, 0xEF, 0xFE, 0xDC, 0xBA
+
+R1:
+.DB 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
+
+f_block_len:
+.DB 6

@@ -1,0 +1,85 @@
+# Swap the values of two arrays around.
+
+# This program extends the idea of swapping 
+# the values of two variables (2 1-byte values), 
+# to swapping the contents of two arrays.
+
+# This is realised by using a third array that 
+# stores the value of one of the variables being 
+# swapped.
+
+# In a higher level language, this could be written as:
+# void f_copy_block(unigned short *f_from, 
+#                   unsigned short *f_to, 
+#                   unsigned short f_block_len) {
+#     while (f_block_len){
+#         *f_to = *f_from;
+#          f_to++;
+#          f_from++;
+#          f_block_len--;
+#     }
+# }
+# unsigned int R0[] = {0xFA, 0xBF, 0xAB, 0xFA, 0xBF, 0xAB};
+# unsigned int R1[] = {0xBA, 0xEB, 0xAE, 0xBA, 0xEB, 0xAE}; 
+# unsigned int R2[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+# f_copy_block(R0,R2,6)
+# f_copy_block(R1,R0,6)
+# f_copy_block(R2,R1,6)
+
+
+COPYLR R0 f_from 
+COPYLR R2 f_to
+COPYLR 6 f_block_len
+CALL f_copy_block
+
+COPYLR R1 f_from 
+COPYLR R0 f_to
+COPYLR 6 f_block_len
+CALL f_copy_block
+
+COPYLR R2 f_from 
+COPYLR R1 f_to
+COPYLR 6 f_block_len
+CALL f_copy_block
+HALT
+
+
+# Generalises f_copy_ind so that it copies the values
+# of an array of length f_copy_block.
+# To call it, set:
+# f_from to the beginning of the source block
+# f_to to the beginning of the target block
+# f_copy_block to how many elements to copy
+
+f_copy_block:
+CALL f_copy_ind
+INCR f_from
+INCR f_to
+DECRJZ f_block_len
+JUMP f_copy_block
+RETURN
+
+# Memory copy by indirect addressing via self-modification.
+# We construct a suitable absolute
+# addressing copy instruction (COPYRR) and
+# execute it as a sub-routine over f_from, f_to
+
+f_copy_ind:
+.DB 7
+f_from:
+.DB 0
+f_to:
+.DB 0
+RETURN 
+
+R0:
+.DB 0xFA, 0xBF, 0xAB, 0xFA, 0xBF, 0xAB
+
+R1:
+.DB 0xBA, 0xEB, 0xAE, 0xBA, 0xEB, 0xAE
+
+R2:
+.DB 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
+
+f_block_len:
+.DB 0

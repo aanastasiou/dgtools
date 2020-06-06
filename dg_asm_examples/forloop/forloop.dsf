@@ -1,0 +1,43 @@
+# For - loop (a.k.a Bounded Iteration)
+
+# At the ASM level, there is only conditional 
+# and unconditional branching and therefore
+# just one pattern that leads to iteration.
+ 
+# FOR and WHILE, the two fundamental ways to 
+# express iteration, are higher level constructs.
+
+# FOR is used when the iteration bounds (start 
+#     and end) are known; and
+# WHILE is used when the bounds are not known but 
+#     an expression that determines when the loop
+#     has to conclude is known.
+
+# There is nothing at the CPU level that actually 
+# "does" a FOR, or WHILE.
+
+# In a higher level language, this would be written as:
+
+# unsigned char R0=63;
+# for (R0=4;R0++;R0<22) {}
+ 
+
+.EQU status_reg=252 # The status register on the Digirule2
+.EQU zero_bit=0  
+
+# Set the initial value of the iteration variable R0
+COPYLR 4 R0 # Equivalent to: for (R0=4;...
+loop_start:
+NOP         # Equivalent to: {}
+
+INCR R0     # Equivalent to: R0++;...
+
+# End condition satisfied?
+COPYRA R0 
+SUBLA 22    # Equivalent to: ...R0<22)
+BCRSS zero_bit status_reg
+JUMP loop_start # Jump to loop_start if it doesn't.
+HALT
+
+R0:
+.DB 63

@@ -127,7 +127,7 @@ The evaluation of this one liner in Digirule2 ASM proceeds as follows:
     r2:
     .DB 0
     
-This is part of :download:`../../data/advanced/lfsr.dsf`
+This is part of :download:`../../dg_asm_examples/advanced/lfsr.dsf`
 
 Notice here that in the first two operations, the current state is saved in ``r1`` and then undergoes a series of 
 shifts and XORs between these shifted versions. The ``CBR`` that precedes the SHIFT is specific to Digirule2 ASM because 
@@ -142,7 +142,7 @@ With an initial state value of :math:`42` and set to produce 10 random numbers, 
 
 ``149, 202, 229, 114, 185, 220, 238, 119, 187, 221``
 
-The complete listing is available in :download:`../../data/advanced/lfsr.dsf`
+The complete listing is available in :download:`../../dg_asm_examples/advanced/lfsr.dsf`
 
 
 
@@ -198,7 +198,7 @@ Here is what this implementation looks like:
     .DB rnd_state
 
 
-This is part of :download:`../../data/advanced/lfsr_9bit.dsf`
+This is part of :download:`../../dg_asm_examples/advanced/lfsr_9bit.dsf`
 
 Notice here that due to the fact that only 1 XOR is required, it is run "in-place" through a series of bit tests that 
 directly modify the Carry flag, prior to shifting the register.
@@ -207,7 +207,7 @@ As before, we get to see only the lower 8bits but with much more variation in th
 produces these numbers: ``149, 202, 229, 114, 185, 220, 238, 119, 187, 221``
 
 The complete listing adds parameters for the initial state of the register and how many numbers to generate and is 
-available in :download:`../../data/advanced/lfsr_9bit.dsf`
+available in :download:`../../dg_asm_examples/advanced/lfsr_9bit.dsf`
 
 Conclusion
 ----------

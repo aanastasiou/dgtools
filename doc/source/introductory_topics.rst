@@ -10,7 +10,7 @@ favourable. This walkthrough is based on the very simple example of adding two n
 here, each one introducing one new feature or capability of `dgtools`. 
 
 Throughout the following section, it is assumed that `dgtools` is installed on a virtualenv, the virtualenv is 
-activated and the current working directory is `src/data/intro/`.
+activated and the current working directory is `dg_asm_examples/intro/`.
 
 Adding two literals
 -------------------
@@ -26,7 +26,7 @@ Digirule 2 ASM:
     ADDLA 1
     HALT
     
-This listing is available in :download:`data/intro/simpleadd_1.dsf <../../data/intro/simpleadd_1.dsf>`
+This listing is available in :download:`dg_asm_examples/intro/simpleadd_1.dsf <../../dg_asm_examples/intro/simpleadd_1.dsf>`
 
 
 Copy literal 1 to the accumulator, add literal 1 to the accumulator and stop.
@@ -69,7 +69,7 @@ Our new listing is now:
     r3:
     .DB 0
     
-This listing is available in :download:`data/intro/simpleadd_2.dsf <../../data/intro/simpleadd_2.dsf>`
+This listing is available in :download:`dg_asm_examples/intro/simpleadd_2.dsf <../../dg_asm_examples/intro/simpleadd_2.dsf>`
 
 
 Here, there are three labels (``r0, r1, r2``) that simply "tag" three locations in memory that hold initial literal 
@@ -128,7 +128,7 @@ The code now is:
     r3:
     .DB 0
 
-This listing is available in :download:`data/intro/simpleadd_3.dsf <../../data/intro/simpleadd_3.dsf>`
+This listing is available in :download:`dg_asm_examples/intro/simpleadd_3.dsf <../../dg_asm_examples/intro/simpleadd_3.dsf>`
 
 This program can be tried out in one of the ways that were explained previously. 
 
@@ -212,7 +212,7 @@ The code listing for this example is as follows:
     r3:
     .DB 0
 
-This listing is available in :download:`data/intro/simpleadd_4.dsf <../../data/intro/simpleadd_4.dsf>`
+This listing is available in :download:`dg_asm_examples/intro/simpleadd_4.dsf <../../dg_asm_examples/intro/simpleadd_4.dsf>`
 
 The compilation process is the same as previously, but since this program attempts to read from address `253`, 
 we might want to try the code over real user input. To achieve this, we modify the call to `dgsim` as follows:
@@ -257,7 +257,7 @@ space as follows:
     b:
     .DB 6
 
-This listing is available in :download:`data/intro/simpleadd_5.dsf <../../data/intro/simpleadd_5.dsf>`
+This listing is available in :download:`dg_asm_examples/intro/simpleadd_5.dsf <../../dg_asm_examples/intro/simpleadd_5.dsf>`
 
 This program specifies 1 byte ``a,b`` which hold literals that participate in addition and ``r3`` that 
 points to a one byte memory location that receives the result of the addition.

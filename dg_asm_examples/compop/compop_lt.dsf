@@ -1,0 +1,54 @@
+# If (expression) run_block_a else run_block_b :: part 1
+
+# A high level "if" captures an ASM pattern where an 
+# expression is evaluated and based on that expression's 
+# result deciding whether to execute "run_block_a" or 
+# "run_block_b" block of commands.
+
+# In a higher level language, this might be written as:
+# unsigned char R0, R1, R3
+
+.EQU status_reg=252 # The status register on the Digirule
+.EQU carry_bit=1
+
+# IF STARTS HERE
+# To test the expression, we
+# first have to evaluate the 
+# expression.
+
+COPYRA R0
+SUBRA R1
+
+# We now check the result of 
+# the expression, if the 
+# carry bit is set after 
+# R0-R1, then R0>R1 else
+# R0<=R1.
+
+BCRSC carry_bit status_reg
+JUMP lt
+JUMP gte
+
+
+# "THEN" BRANCH STARTS HERE
+# then R2 = 0xF0
+
+lt:
+COPYLR 0xF0 R2
+HALT
+
+
+# "ELSE" BRANCH STARTS HERE
+# else R2 = 0xF0
+
+gte:
+COPYLR 0x0F R2
+HALT
+
+
+R0:
+.DB 1
+R1:
+.DB 2
+R2:
+.DB 0xFF
