@@ -140,7 +140,7 @@ An overview of the instruction set is provided here with the instructions groupe
 +--------------+--------------+--------------+--------------+--------------+
 | RETLA        |              | INCR         |              |              |
 +--------------+--------------+--------------+--------------+--------------+
-| RETUN        |              |              |              |              |
+| RETURN       |              |              |              |              |
 +--------------+--------------+--------------+--------------+--------------+
 
 * ``HALT, RETURN, NOP`` are 1 Byte instructions.
