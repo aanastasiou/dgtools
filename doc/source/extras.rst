@@ -56,6 +56,24 @@ Styling trace files
 
 Trace files can be styled by adding a ``dgtheme.css`` CSS file, in the same directory with the HTML file of the trace.
 
+The HTML file that ``dgsim.py`` produces is an ``article`` split into ``section``. Each "clock-tick" is a section of 
+the article and each block of output (e.g. the memory dump, the I/O state, etc) is a subsection within that.
+
+Therefore, it is very easy to select and style an element (or more practically a whole group of elements) through 
+CSS selectors.
+
+To make selection of certain elements even easier, the following classes are set:
+
+#. ``table_machine_state``
+#. ``table_memory_space``
+#. ``table_spec_sym``
+#. ``table_onboard_io``
+
+These are all self-explanatory and refer to the content in the respective subsections.
+
+In addition to those, the class ``current_pc`` is reserved to flag that cell of ``table_memory_space`` that 
+indicates the current position of the "Program Counter".
+
 
 Linking to trace files
 ----------------------
