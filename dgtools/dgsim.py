@@ -111,9 +111,15 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
             dgen.close_tag("header")
             dgen.table_h(["Program Counter:","Accumulator:", "Status Reg:","Button Register:", "Addr.Led Register:",
                           "Data Led Register:", "Speed setting:", "Program counter stack:"],
-                         [[f"0x{machine._pc:02X}"], [machine._acc],[machine._mem[machine._status_reg_ptr]], 
-                          [machine._mem[machine._bt_reg_ptr]], [machine._mem[machine._addrled_reg_ptr]], 
-                          [machine._mem[machine._dataled_reg_ptr]], [machine._speed_setting], [machine._ppc]],
+                         [[f"0x{machine._pc:02X}"], 
+                          [machine._acc],
+                          [machine._mem[machine._status_reg_ptr]], 
+                          [machine._mem[machine._bt_reg_ptr]], 
+                          [machine._mem[machine._addrled_reg_ptr]], 
+                          [machine._mem[machine._dataled_reg_ptr]], 
+                          [machine._speed_setting], 
+                          # [machine._ppc]],
+                          [",".join(list(map(lambda x:f"0x{x:02X}",machine._ppc)))]],
                           attrs={"class":"table_machine_state"})
             dgen.close_tag("section")
             
@@ -126,7 +132,8 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
                 dgen.table_hv([[f"{machine._mem[n]:02X}" for n in range(m,m+16)] for m in range(0,256,16)],
                               mem_space_heading_h, 
                               mem_space_heading_v,
-                              attrs={"class":"table_memory_space"})
+                              attrs={"class":"table_memory_space"},
+                              cell_attrs={(machine._pc // 16,machine._pc-(machine._pc // 16)):{"class":"current_pc"}})
                 dgen.close_tag("section")
             
             # Extra symbols
@@ -136,7 +143,7 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
                 dgen.heading(f"Specific Symbols",3)
                 dgen.close_tag("header")
                 
-                symbol_names = list(map(lambda x:x[0],extra_symbols))
+                # symbol_names = list(map(lambda x:x[0],extra_symbols))
                 
                 symbol_values = []
                 for a_symbol in extra_symbols:
@@ -146,7 +153,13 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
                     else:
                         chr_bytes = ""
                     symbol_values.append([str(raw_bytes),chr_bytes])
-                dgen.table_h(symbol_names,symbol_values, attrs={"class":"table_spec_sym"})
+                # dgen.table_h(symbol_names,symbol_values, attrs={"class":"table_spec_sym"})
+                dgen.table_v(["Symbol","Offset","Value(s)", "Value as string"],
+                             list(map(lambda x:[x[0][0],
+                                                f"0x{x[0][1]:02X}",
+                                                x[1][0],x[1][1]],
+                                      zip(extra_symbols,symbol_values))), 
+                             attrs={"class":"table_spec_sym"})
                 dgen.close_tag("section")
             
             # Onboard IO
