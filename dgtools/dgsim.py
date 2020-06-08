@@ -118,7 +118,6 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
                           [machine._mem[machine._addrled_reg_ptr]], 
                           [machine._mem[machine._dataled_reg_ptr]], 
                           [machine._speed_setting], 
-                          # [machine._ppc]],
                           [",".join(list(map(lambda x:f"0x{x:02X}",machine._ppc)))]],
                           attrs={"class":"table_machine_state"})
             dgen.close_tag("section")
@@ -127,13 +126,13 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
             if with_mem_dump:
                 dgen.open_tag("section")
                 dgen.open_tag("header")
-                dgen.heading(f"Full memory dump:",3)
+                dgen.heading(f"Full memory dump",3)
                 dgen.close_tag("header")
                 dgen.table_hv([[f"{machine._mem[n]:02X}" for n in range(m,m+16)] for m in range(0,256,16)],
                               mem_space_heading_h, 
                               mem_space_heading_v,
                               attrs={"class":"table_memory_space"},
-                              cell_attrs={(machine._pc // 16,machine._pc-(machine._pc // 16)):{"class":"current_pc"}})
+                              cell_attrs={(machine._pc // 16,machine._pc-16*(machine._pc // 16)):{"class":"current_pc"}})
                 dgen.close_tag("section")
             
             # Extra symbols
@@ -154,7 +153,7 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
                         chr_bytes = ""
                     symbol_values.append([str(raw_bytes),chr_bytes])
                 # dgen.table_h(symbol_names,symbol_values, attrs={"class":"table_spec_sym"})
-                dgen.table_v(["Symbol","Offset","Value(s)", "Value as string"],
+                dgen.table_v(["Symbol","Offset","Value(dec)", "Value(str)"],
                              list(map(lambda x:[x[0][0],
                                                 f"0x{x[0][1]:02X}",
                                                 x[1][0],x[1][1]],
@@ -167,7 +166,7 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
             dgen.open_tag("header")
             dgen.heading("Onboard I/O",3)
             dgen.close_tag("header")
-            dgen.table_h(["Address LEDs","Data LEDs","Button Switches"],
+            dgen.table_h(["Address LEDs:","Data LEDs:","Button Switches:"],
                          [machine.addr_led, machine.data_led, machine.button_sw],
                          attrs={"class":"table_onboard_io"})
             dgen.close_tag("section")
