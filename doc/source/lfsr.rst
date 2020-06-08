@@ -1,13 +1,15 @@
-.. _prng:
+.. _lfsr:
 
 Pseudorandom Number Generator (PRNG)
 ====================================
 
-The availability of random numbers in modern computers is taken for granted. We always assume that it will be possible
-to simulate the throw of a dice by calling a function that "magically" returns a random number.
+The availability of random numbers in modern computers is taken for granted. 
+We always assume that it will be possible to simulate the throw of a dice by 
+calling a function that "magically" returns a random number.
 
 
-But, where do random numbers come from and how can we use the Digirule2 to generate a few?
+But, where do random numbers come from and how can we use the Digirule2 to 
+generate a few?
 
 The Linear Feedback Shift Register (LFSR)
 -----------------------------------------
@@ -93,43 +95,44 @@ The evaluation of this one liner in Digirule2 ASM proceeds as follows:
     :name: lfsr
 
     .EQU status_reg=252
+    .EQU carry_bit=1
     
     COPYRA state
-    COPYRR state r1
+    COPYRR state R1
     SHIFTRR state
-    CBR 1 status_reg
-    SHIFTRR state
-    XORRA state
-    CBR 1 status_reg
+    CBR carry_bit status_reg
     SHIFTRR state
     XORRA state
-    CBR 1 status_reg
+    CBR carry_bit status_reg
+    SHIFTRR state
+    XORRA state
+    CBR carry_bit status_reg
     SHIFTRR state
     XORRA state
     ANDLA 1
-    COPYAR r2
-    CBR 1 status_reg
-    SHIFTRR r1
-    DECRJZ r2
+    COPYAR R2
+    CBR carry_bit status_reg
+    SHIFTRR R1
+    DECRJZ R2
     JUMP clr_bit
     set_bit:
-    SBR 7 r1
+    SBR 7 R1
     JUMP resume
     clr_bit:
-    CBR 7 r1
+    CBR 7 R1
     resume:
-    COPYRR r1 state
+    COPYRR R1 state
     HALT
     state:
     .DB 42
-    r1:
+    R1:
     .DB 0
-    r2:
+    R2:
     .DB 0
     
-This is part of :download:`../../dg_asm_examples/advanced/lfsr.dsf`
+This is part of :download:`../../dg_asm_examples/lfsr/lfsr.dsf`
 
-Notice here that in the first two operations, the current state is saved in ``r1`` and then undergoes a series of 
+Notice here that in the first two operations, the current state is saved in ``R1`` and then undergoes a series of 
 shifts and XORs between these shifted versions. The ``CBR`` that precedes the SHIFT is specific to Digirule2 ASM because 
 its shift operation is through the Carry bit. Also, although the whole word is XORed, we are only interested in the LSB.
 Finally, the input bit of the shift register (the :math:`x^8`) is set (or cleared) and the final value is copied back 
@@ -142,18 +145,28 @@ With an initial state value of :math:`42` and set to produce 10 random numbers, 
 
 ``149, 202, 229, 114, 185, 220, 238, 119, 187, 221``
 
-The complete listing is available in :download:`../../dg_asm_examples/advanced/lfsr.dsf`
+
+Putting it all together
+-----------------------
+
+The complete listing is as follows:
+
+
+.. literalinclude:: ../../dg_asm_examples/lfsr/lfsr.dsf
+    :language: DigiruleASM
+    :linenos:
 
 
 
-A 9bit PRNG
------------
+1bit Powerup! - A 9bit PRNG!
+----------------------------
 
-Surprisingy, a 9bit PRNG is not only feasible on the Digirule2, it probably runs faster than the 8bit but requires 
-slightly more memory.
+Surprisingy, a 9bit PRNG is not only feasible on the Digirule2, it probably runs faster than the 8bit but 
+if it was to be used practically, it ends up being inefficient.  
 
 The technique is exactly the same but in the case of the 9bit PRNG we are taking into advantage the fact that the 
-``SHIFT**`` operations are *through Carry* on the Digirule2. Therefore, we get 1 more bit for free.
+``SHIFT**`` operations are *through carry* on the Digirule2. Therefore, 1 more bit is inserted in the 
+whole process, for free.
 
 This characteristic, along with the fact that the 9bit PRNG uses a 2 factor polyonym, makes this PRNG much faster 
 compared to the 8bit version.
@@ -165,40 +178,10 @@ two bytes, the second one would practically be going "to waste".
 
 Here is what this implementation looks like:
 
-.. code-block:: DigiruleASM
+.. literalinclude:: ../../dg_asm_examples/lfsr/lfsr_9bit.dsf
+    :language: DigiruleASM
     :linenos:
-    :name: lfsr_9bit
 
-    .EQU status_reg=252
-    .EQU rnd_state=42
-    COPYLR array array_idx
-    start:
-    BCRSS 0 state
-    JUMP op_a_was_0
-    JUMP op_a_was_1
-    op_a_was_0:
-    BCRSS 5 state
-    JUMP op_a_was_0_op_b_was_0
-    JUMP op_a_was_0_op_b_was_1
-    op_a_was_1:
-    BCRSS 5 state
-    JUMP op_a_was_1_op_b_was_0
-    JUMP op_a_was_1_op_b_was_1
-    op_a_was_1_op_b_was_1:
-    op_a_was_0_op_b_was_0:
-    CBR 1 status_reg
-    JUMP continue
-    op_a_was_0_op_b_was_1:
-    op_a_was_1_op_b_was_0:
-    SBR 1 status_reg
-    continue:
-    SHIFTRR state
-    HALT
-    state:
-    .DB rnd_state
-
-
-This is part of :download:`../../dg_asm_examples/advanced/lfsr_9bit.dsf`
 
 Notice here that due to the fact that only 1 XOR is required, it is run "in-place" through a series of bit tests that 
 directly modify the Carry flag, prior to shifting the register.
@@ -207,7 +190,7 @@ As before, we get to see only the lower 8bits but with much more variation in th
 produces these numbers: ``149, 202, 229, 114, 185, 220, 238, 119, 187, 221``
 
 The complete listing adds parameters for the initial state of the register and how many numbers to generate and is 
-available in :download:`../../dg_asm_examples/advanced/lfsr_9bit.dsf`
+available in :download:`../../dg_asm_examples/lfsr/lfsr_9bit.dsf`
 
 Conclusion
 ----------
