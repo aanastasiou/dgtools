@@ -61,8 +61,7 @@ evaluation.
 .. literalinclude:: ../../dg_asm_examples/recfibo/recfibo.dsf
     :language: DigiruleASM
     :linenos:
-
-
+    
 
 .. Find minimum num in an array
 .. ----------------------------

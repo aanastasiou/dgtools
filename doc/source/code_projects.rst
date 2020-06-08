@@ -22,3 +22,4 @@ But before crying out for "more memory", let's see what can be said in 256 bytes
    
    pov
    int2str
+   lfsr
