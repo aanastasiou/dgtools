@@ -63,8 +63,8 @@ evaluation.
     :linenos:
     
 
-Find minimum num in an array
-----------------------------
+Find the minimum value of an array of integers
+----------------------------------------------
 
 One of the more detailed Digirule demos presented here, is that of a
 very simple random number generator, using a :ref:`Linear Feedback Shift Register (LFSR) <lfsr>`.
