@@ -92,7 +92,7 @@ The evaluation of this one liner in Digirule2 ASM proceeds as follows:
 
 .. code-block:: DigiruleASM
     :linenos:
-    :name: lfsr
+    :name: lfsr8bit
 
     .EQU status_reg=252
     .EQU carry_bit=1

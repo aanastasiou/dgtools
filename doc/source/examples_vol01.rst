@@ -63,14 +63,23 @@ evaluation.
     :linenos:
     
 
-.. Find minimum num in an array
-.. ----------------------------
+Find minimum num in an array
+----------------------------
 
-.. Here is how ASM pieces together a for-loop: It's a counter followed by a numeric comparison.
+One of the more detailed Digirule demos presented here, is that of a
+very simple random number generator, using a :ref:`Linear Feedback Shift Register (LFSR) <lfsr>`.
+This random number generator, can be used to fill an array with random numbers.
 
-.. .. literalinclude:: ../../dg_asm_examples/findmin/findmin.dsf
-..     :language: DigiruleASM
-..     :linenos:
+But, what can we do with a set of random numbers?
+
+We can find its minimum (or maximum)
+
+*What modifications would this code snippet require, so that it returns the maximum value of the array?*  
+
+
+.. literalinclude:: ../../dg_asm_examples/findmin/findmin.dsf
+    :language: DigiruleASM
+    :linenos:
     
 
 .. Sort an array
