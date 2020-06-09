@@ -1,0 +1,77 @@
+# Find the minimum value of an array of integers
+
+# Plain simple minimum number finder:
+# Suppose that the first number is the minimum
+# then compare it against all others. If you 
+# find a number that is smaller than the initial 
+# assumption, make THAT number your current "assumed" 
+# min.
+
+.EQU status_reg=252  # The status register on the Digirule
+.EQU carry_bit=1     # Carry bit field of the status reg
+.EQU zero_bit=0      # Zero bit field of the status reg
+
+
+# R0 Is the iteration bounded var
+# R1 Is the current min value of the array
+# R2 Is the index of the current value
+# R3 Is the current value from index
+# R4 is the index of the min value
+
+COPYLR 0 R0                     # Locate the zero element of the array...
+COPYLA num_array
+ADDRA R0
+COPYAR f_from
+COPYLR R1 f_to                  # ...and make it the "current min value".
+CALL f_copy_ind
+COPYRR R0 R2
+loop_start:
+COPYLA num_array
+ADDRA R0                        # Fetch the next number from the array...
+COPYAR f_from
+COPYLR R3 f_to
+CALL f_copy_ind
+
+COPYRA R3
+SUBRA R1
+BCRSC carry_bit status_reg      # Is it smaller than the "current min value"?
+CALL mark_new_min               # If it is, make THAT number the "current min value".
+INCR R0                         # Otherwise, move to the next number to compare...
+COPYRA R0
+SUBLA 20
+BCRSS zero_bit status_reg
+JUMP loop_start                 # UNLESS, you have checked all N numbers (N=20 here) in
+HALT                            # which case, stop.
+
+mark_new_min:
+COPYRR R0 R2
+COPYRR R3 R1
+RETURN
+
+
+
+# Memory copy by indirect addressing via self-modification.
+# We construct a suitable absolute
+# addressing copy instruction (COPYRR) and
+# execute it as a sub-routine over f_from, f_to
+
+f_copy_ind:
+# memory prior to being called from the main program.
+.DB 7   # COPYRR opcode
+f_from:
+.DB 0
+f_to:
+.DB 0
+RETURN
+
+R0:
+.DB 0
+R1:
+.DB 0 
+R2:
+.DB 0
+R3:
+.DB 0
+
+num_array:
+.DB 1,3,8,12,150,14,38,22,110,20,191,88,175,61,59,42,139,222,215,0
