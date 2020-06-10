@@ -82,9 +82,25 @@ We can find its minimum (or maximum)
     :linenos:
     
 
-.. Sort an array
-.. -------------
+Sorting an array of integers
+----------------------------
 
-.. .. literalinclude:: ../../dg_asm_examples/simplesort/selectsort.dsf
-..     :language: DigiruleASM
-..     :linenos:
+Bubble Sort, Shaker Sort, Quicksort, Merge Sort, Heap sort, Insertion sort....Delay sort!
+
+So many different ways to enforce order to a list of items.
+
+This is a demonstration of the simplest, most primitive and slowest algorithm that is based on 
+finding the minimum (or maximum) element in an array: "Selection Sort".
+
+The algorithm is composed of two steps: 
+
+1. Find the minimum of an array of :math:`N-n` numbers starting at position :math:`n`, 
+2. Move that minimum value to position :math:`n`
+3. Repeat from step 1 while :math:`n<N`
+
+*As is, the agorithm sorts a list of integers in ascending order. What modifications would make the algorithm to sort in descending order?*
+
+
+.. literalinclude:: ../../dg_asm_examples/simplesort/selectsort.dsf
+    :language: DigiruleASM
+    :linenos:

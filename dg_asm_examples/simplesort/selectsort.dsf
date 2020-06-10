@@ -1,0 +1,121 @@
+# Sort a list of integers using "Select Sort".
+
+# Sorting algorithms are often used to 
+# demonstrate the concept of computational complexity 
+# (i.e. How many steps does it take for an algorithm 
+# to complete a task).
+
+# Here is a demonstration of one of the simplest, 
+# most primitive and slowest algorithms to sort a 
+# list of integers. It is called "Select Sort" and it 
+# is basically the repetitive application of 
+# finding an extreme element (min or max) and then 
+# bringing it to the beginning of the list: 
+
+# Find the min of ([5,12,6,1]) --> 1
+# Move it to the beginning ([1,12,6,5])
+# Find the min of (1,[12,6,5]) --> 5
+# Move it to the beginning (1,[5,12,6])
+# Find the min of (1,5,[12,6]) --> 6
+# Move it to the beginning (1,5,6,12) DONE.
+
+.EQU status_reg=252
+.EQU carry_bit=1
+.EQU zero_bit=0
+
+COPYLR 0 R4
+COPYLR 0 R5
+index_loop:
+CALL f_find_min     # Find the minimum...
+
+COPYLA num_array    # Move it to the beginning of the current block    
+ADDRA R5
+COPYAR f_from
+COPYLR R6 f_to
+CALL f_copy_ind
+COPYAR f_to
+COPYLA num_array
+ADDRA R2
+COPYAR f_from
+CALL f_copy_ind
+COPYAR f_to
+COPYLR R6 f_from
+CALL f_copy_ind
+
+INCR R5  
+INCR R4
+COPYRA R4
+SUBLA 7                     # Have all elements been covered?
+BCRSS zero_bit status_reg
+JUMP index_loop             # If not, repeat this sequence of steps
+HALT                        # Else, terminate.
+
+# R0 Is the iteration bounded var
+# R1 Is the current min value of the array
+# R2 Is the index of the current value
+# R3 Is the current value from index
+# R4 is the begin index
+
+f_find_min:
+COPYRR R4 R0
+COPYLA num_array
+ADDRA R0
+COPYAR f_from
+COPYLR R1 f_to
+CALL f_copy_ind
+COPYRR R0 R2
+loop_start:
+COPYLA num_array
+ADDRA R0
+COPYAR f_from
+COPYLR R3 f_to
+CALL f_copy_ind
+
+# Now R3 has the next number at offset R0 from label num_array
+# Compare it with the currently assumed minimum
+
+COPYRA R3
+SUBRA R1
+BCRSC carry_bit status_reg
+CALL mark_new_min
+INCR R0
+COPYRA R0
+SUBLA 8
+BCRSS zero_bit status_reg
+JUMP loop_start
+RETURN
+
+mark_new_min:
+COPYRR R0 R2
+COPYRR R3 R1
+RETURN
+
+# Memory copy by indirect addressing via self-modification.
+# We construct a suitable absolute
+# addressing copy instruction (COPYRR) and
+# execute it as a sub-routine over f_from, f_to
+f_copy_ind:
+.DB 7   # COPYRR opcode
+f_from:
+.DB 0
+f_to:
+.DB 0
+RETURN
+
+R0:
+.DB 0
+R1:
+.DB 0 
+R2:
+.DB 0
+R3:
+.DB 0
+R4:
+.DB 0
+R5:
+.DB 0
+R6:
+.DB 0
+
+num_array:
+.DB 10,132,8,12,150,9,1,4,192,200,0,0,0,0,0,0,0,0,0,0,0,0,0,0
