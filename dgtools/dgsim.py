@@ -51,6 +51,8 @@ import pickle
 import click
 import os
 import types
+import inspect
+import shutil
 from dgtools.exceptions import (DgtoolsErrorOpcodeNotSupported, 
                          DgtoolsErrorDgbarchiveCorrupted, 
                          DgtoolsErrorSymbolUndefined)
@@ -59,7 +61,8 @@ from dgtools.dgb_archive import DGB_Archive
 from dgtools.digirule import Digirule
     
     
-def trace_program(program, output_file, max_n=200, trace_title="", in_interactive_mode=False, extra_symbols=[], with_mem_dump=True):
+def trace_program(program, output_file, max_n=200, trace_title="", in_interactive_mode=False, 
+                  extra_symbols=[], with_mem_dump=True, theme=None):
     """
     Produces a detailed trace of program execution in HTML form.
     
@@ -76,6 +79,8 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
     :param with_mem_dump: Whether to be producing a full memory dump at each time step of execution.
     :param exra_symbols: A list of symbol name, offset, length to explicitly monitor during execution
     :type extra_symbols: List<str, int, int>
+    :param theme: The theme to use as a string
+    :type theme: str(path)
     :returns: A Digirule2 object at its final state when the last command was executed.
     :rtype: Digirule
     """
@@ -176,6 +181,16 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
             done = not machine._exec_next()
             n+=1
         dgen.close_tag("article")
+
+    # Take care of the theme specification
+    if theme is not None:
+        theme_source = f"{os.path.dirname(inspect.getfile(DGB_Archive))}/css_themes/{theme}.css"
+        theme_destination = f"{os.path.dirname(output_file) or '.'}/dgtheme.css"
+        if not os.path.exists(theme_source):
+            print(f"WARNING: Specified theme ({theme}) not installed.")
+        else:
+            shutil.copy(theme_source, theme_destination)
+    
     return machine
 
 def validate_trace_symbol(ctx, param, value):
@@ -233,7 +248,8 @@ def validate_trace_symbol(ctx, param, value):
                    "bytes that starts at Offset.")    
 @click.option("--max-n","-mn", type=int, default=200, 
               help="Maximum number of time steps to allow the sim to run for.")
-def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, interactive_mode, trace_symbol, max_n):
+@click.option("--theme",type=str, help="Specifies the CSS theme to use (e.g. dgbeos)")
+def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, interactive_mode, trace_symbol, max_n, theme):
     """
     Command line program that produces a trace of a Digirule2 binary on simulated hardware.
     
@@ -254,6 +270,8 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
     :type trace_symbol: tuple<tuple<str, int, int>>
     :param max_n: The total number of timesteps to allow execution to run for.
     :type max_n:int
+    :param theme: A theme to apply to the output. Must be installed under [package]/css_data
+    :type theme: str(path)
     """
     if output_trace_file is None:
         output_trace_file = f"{os.path.splitext(input_file)[0]}_trace.html"
@@ -293,7 +311,8 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
                                             trace_title = title, 
                                             in_interactive_mode=interactive_mode, 
                                             with_mem_dump=with_dump, 
-                                            extra_symbols=extra_symbols)
+                                            extra_symbols=extra_symbols,
+                                            theme=theme)
                                             
     machine_after_execution_archive = DGB_Archive(machine_after_execution._mem, 
                                                   compiled_program.labels)
