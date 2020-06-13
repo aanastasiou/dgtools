@@ -110,82 +110,105 @@ The algorithm is composed of two steps:
 Longest Ripple Counter Ever
 ---------------------------
 
-A ripple counter is the basic building block of timers.
+A ripple counter and a relatively accurate clock signal source are the basic building blocks of digital timers.
 
-To understand its operation, consider what happens to some ``i`` 
-when we increase its value via a ``i=i+1`` (or ``i++`` for short) : ::
+All that a ripple counter does is count clock pulses. Now, suppose we have some ``i`` 
+and we start counting in binary by repeatedly calling ``i=i+1`` (or ``i++`` for short).
 
-      MSb    LSb  Decimal
-    ----------------------
-     0b00000000     0
-     0b00000001     1
-     0b00000010     2
-     0b00000011     3
-     0b00000100     4
-     0b00000101     5
-     0b00000110     6
-     0b00000111     7
-     ..........    ...
-     0b11111111    255
+The values of ``i`` will be:
+
+::
+
+    MSb    LSb  Decimal
+ bit 76543210
+    -------------------
+     00000000     0
+     00000001     1
+     00000010     2
+     00000011     3
+     00000100     4
+     00000101     5
+     00000110     6
+     00000111     7
+     ........    ...
+     11111111    255
     
-Notice the Least Significant bit (LSb), it continuously "pulses" between 
-``0`` and ``1``. Once the LSb counts 1, it resets and "pulses" its 
-neighbour *to the left* (towards the Most Significant bit (MSb)).
+Bit 0, the Least Significant bit (LSb), counts :math:`0,1` and then resets and 
+"signals" bit 1, its neighbour *to the left* to count :math:`1`. Once bit 1 has 
+counted its maximum (:math:`0,1`) it will reset and "signal" bit 2, its neighbour
+*to the left* to count :math:`1`....And so on, all the way to the Most 
+Significant bit (MSb)).
 
-This continues until ``i`` now assumes the value 255 (or ``0b11111111`` in 
-binary).
+From this point of view a ripple counter is just a chain of tiny little elementary 
+counters, each one counting to its maximum and then advancing the next counter.
 
-Now, something special happens: If we try to ``i++`` once more, ``i`` **wraps around** 
-and hits zero again.
 
-At that point, we have counted 255. At that point, if we had a 9bit wide 
-variable for ``i``, we could "bump" that to ``1`` and that would denote 
-*"1 twohundredfiftyfiven" PLUS whatever i contains*.
+This continues until ``i`` now assumes the value 255 (or ``11111111`` in 
+binary). Now, something special happens: If we try to ``i++`` once more, ``i`` 
+**wraps around** and hits zero again.
 
-In fact, we can extend that idea to create arbitrary length ripple counters:
+This is a fancy way of saying ``i`` resets and we could "catch" that event 
+and use it to increase another variable (``j``) to start counting. This, would 
+now look like: 
 
-* Increase variable ``a``
-    * Once ``a`` **wraps around** increase ``b``
-        * Once ``b`` **wraps around** increase ``c``
-            * Once ``c`` **wraps around** increase ``d``
-                * Once ``d`` **wraps around** increase ``e``
+* Increase variable ``i``
+    * Once ``i`` **wraps around** increase ``j``
+        * Once ``j`` **wraps around** increase ``k``
+            * Once ``k`` **wraps around** increase ``l``
+                * Once ``l`` **wraps around** increase ``m``
     
 And so on until we run out of memory.
 
-Notice here the distinction between **b** its and **B** ytes.
+In the following Digirule2 program, we use this concept to 
+construct a ripple counter that is 224 **BYTES** long.
 
-In the following Digirule2 program, we use the exact same concept to 
-construct a ripple counter that is 233 bytes long.
+(Notice here the distinction between bit and Byte.)
 
-Consequently it can count from 0 to :math:`2^{233}`.
+A 1 byte long counter can count from :math:`0` to :math:`2^{1 \times 8} - 1`, or :math:`255`.
 
-That number is: ::
+A 224 byte long counter can count from :math:`0` to :math:`2^{224 \times 8} - 1` or ... ::
     
-    1317989400684132247985462012217008492691201352246603794343706666106002621345561402409288057184803891421955702295376321167301153177543164830484060369180090017640453495090693794266442291580023684417164027872494288824399014228601614308240494248737033497020218523643351874839672280540716174154647379870729350964002203580783694150516875895770731889313358644413955737374858503352890882385294315489946453488394423398674401553548965414666791756989103381598433903560751938491589040648835760728486421431223385020250955241295200644184289426016410194726827646163765077999616
+    279095111627852376407822673918065072905887935345660252615989519488029661278604994789701101367875859521849524793382568057369148405837577299984720398976429790087982805274893437406788716103454867635208144157749912668657006085226160261808841484862703257771979713923863820038729637520989894984676774385364934677289947762340313157123529922421738738162392233756507666339799675257002539356619747080176786496732679854783185583233878234270370065954615221443190595445898747930123678952192875629172092437548194134594886873249778512829119416327938768895
 
-(Seriously, just type ``2**233`` on a Python interpreter)
+This number is big.
 
 
-So What?
-^^^^^^^^
+How Long Is Long?
+^^^^^^^^^^^^^^^^^
 
-There is no single battery that will keep this counter going until it counts to its maximum.
-There is no single lifetime within which to see it wrapping around.
-
-Suppose that it takes the Digirule aproximately :math:`60e-6` seconds to increase the counter 
+Suppose that it takes the Digirule aproximately :math:`60e-6` seconds [1]_ to increase the counter 
 by 1. That is 60 microseconds.
 
-* This means that this number, describes :math:`7.90793640410479348791e556` seconds.
-    * Divided by 3600 seconds in an hour, it describes :math:`2.19664900114022041331e553` hours.
-        * Divided by 24 hours in a day, it describes :math:`9.15270417141758505545e551` days.
-            * Divided by 30 days in a month, it describes :math:`3.05090139047252835182e550` months.
-                * Divided by 12 months in a year, it describes :math:`2.54241782539377362651e549` years.
-                    * Divided by 100 years in a century, it describes :math:`2.54241782539377362651e547` centuries.
-                        * Divided by 1000 years in a millenium, it descrbes :math:`2.54241782539377362651e544` millenia.
+* This means that this number, describes :math:`1.67457066976711425845e535` seconds.
+    * Divided by 3600 seconds in an hour, it describes :math:`4.6515851937975396068e531` hours.
+        * Divided by 24 hours in a day, it describes :math:`1.93816049741564150283e530` days.
+            * Divided by 30 days in a month, it describes :math:`6.46053499138547167611e528` months.
+                * Divided by 12 months in a year, it describes :math:`5.38377915948789306342e527` years.
+                    * Divided by 100 years in a century, it describes :math:`5.38377915948789306342e525` centuries.
+                        * Divided by 100 centuries in a millenium, it describes :math:`5.38377915948789306342e523` millenia.
 
-That is :math:`\approx 2.54 \times 10^{544}` **millenia**.
+That is :math:`\approx 5.4 \times 10^{523}` **millenia**.
+
+There is no single battery that will keep this counter going until it counts to its maximum.
+
+There is no single lifetime (devoted to maintaining a running Digirule) within which to see its value wrap around.
+
+
+And while this counter scans through each and every value between :math:`0` and :math:`2^{1792}` as it gallops through 
+the millenia, it also goes through **ALL** the possible Digirule 2 programs that can be constructed in 224 bytes and, 
+all the possible phrases in English [2]_ that can be described in 224 bytes.
 
 
 .. literalinclude:: ../../dg_asm_examples/longcounter/longcounter.dsf
     :language: DigiruleASM
     :linenos:
+    
+.. [1] Brent Hauser responded with all the details about the Digirule2's timings on the Discord server. The 60 micro 
+       second estimate is a conservative estimate of the Digirule's timing to execute the counter program. If the 
+       hardware counts a bit slower than that, then the millenia will keep piling up. Even if the Digirule was made 
+       to run 1 order of mangitude faster, that would only knock off one order of magnitude from that :math:`...e51`.
+       It would still be, a big number.
+
+.. [2] "...phrases in English" is the quicker thing to describe here, since the ASCII table contains direct
+       correspondences of numbers to English characters. If the memory was interpreted as Unicode, all languages would 
+       be possible but in that case, the maximum number of letters described by 224 bytes would varry.
