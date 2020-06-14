@@ -205,20 +205,93 @@ all the possible phrases in English [2]_ that can be described in 224 bytes.
 
 
 
-
 Hacking the Status Register
 ---------------------------
+
+Out of the 8 bits available in Digirule2's status register, the CPU makes use of just 3:
+
+* 0 Zero bit (Set when the previous operation resulted in ``0``)
+* 1 Carry bit (Set when the previous operation results in a carry bit)
+* 2 Display bit (Determines what the ADDR LEDs display)
+
+This leaves another 5 bits "hidden" in the status register that go unused.
+
+Are these bits accessible via Digirule2 code? And if they are, can we use them to save 
+and recall the status register bits themselves?
+
+Answering these questions ends up being a fantastic brainteaser, primarily because 
+the instructions we use to *manipulate* the status register, also *modify* the status 
+register.
+
+
+Are the extra bits accessible?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The idea here is to set the higher bits (>3) and then try to 
+read them back. If their state has been preserved, then they can be considered 
+"accessible". 
+
+Here is the code:
 
 .. literalinclude:: ../../dg_asm_examples/statusreghack/statusreghack.dsf
     :language: DigiruleASM
     :linenos:
+    
+Keying this in to the Digirule2 confirms the result. It is indeed possible to write and read to those "hidden" bits.
+
+
+Can the "hidden" bits be re-used?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This all comes down to saving bits 0,1 to higher bits (say for example 4 and 5).
+
+The straightforward way to do this would be to store the status register, shift it left 
+by 3,ORit with the saved value and then store that result back to the status register. To 
+restore it we can simply shift right by 3 positions and have the status register set to the 
+stored values.
+
+The following code is indeed along those lines but with minor differences since:
+
+1. Logic operations such as ``OR`` go through the Accumulator but ``SHIFT**`` operations
+   can be applied to numeric registers directly. Shifting and ORing to save the status 
+   register bits to higher bits would require an extra memory location. Which would then 
+   beg the question: Why not just save the status register to memory and move on? (But 
+   that is not what we are trying to do here).
+   
+1. The ``SHIFT**`` instructions are through the carry bit. Therefore, to just do SHIFT 
+   on the Digirule2, it has to be preceded by an instruction that clears the carry bit.
+      
+2. The ``COPYRR`` instruction modifies the zero bit.
+
+
+For these reasons, SAVING the values of the status register is carried out by plain simple 
+bit operations and restoring them via a plain old SHIFT.
+
+Here is the code:
 
 .. literalinclude:: ../../dg_asm_examples/statusreghack/statusreghack3.dsf
     :language: DigiruleASM
     :linenos:
     
+
+Concluding remarks
+^^^^^^^^^^^^^^^^^^
+
+1. Both Save and Restore can be carried out via bit operations. The code is almost identical 
+   which means that it can possibly be optimised further (e.g. use the same function for 
+   saving and loading)
+   
+2. **Note that** in this program, the value of the ADDR LED display is ignored. It is possible 
+   to save it too but then the 5 hidden bits would only have space to save the carry and zero bit
+   just once. If the ADDR LED is ignored, the status register has space to save the carry and zero 
+   bits twice.
+
     
     
+    
+
+
+
+
 .. [1] Brent Hauser responded with all the details about the Digirule2's timings on the Discord server. The 60 micro 
        second estimate is a conservative estimate of the Digirule's timing to execute the counter program. If the 
        hardware counts a bit slower than that, then the millenia will keep piling up. Even if the Digirule was made 

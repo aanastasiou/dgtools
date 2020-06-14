@@ -176,6 +176,11 @@ the ``state`` variable as well as the Carry flag bit (that is 1 bit) would have 
 calls to the function. Since it is impossible to save a single bit, two bytes would have to be used. Out of these 
 two bytes, the second one would practically be going "to waste".
 
+.. note::
+    The PRNG **is** re-usable in its current form **if** the ``state`` variable can be truncated to 8 bits. 
+    In that case, the random number sequence would not have the variation possible with the 9bits but it would
+    still appear "random".
+
 Here is what this implementation looks like:
 
 .. literalinclude:: ../../dg_asm_examples/lfsr/lfsr_9bit.dsf
