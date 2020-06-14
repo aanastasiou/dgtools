@@ -224,8 +224,8 @@ the instructions we use to *manipulate* the status register, also *modify* the s
 register.
 
 
-Are the extra bits accessible?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Are the "hidden" bits accessible?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The idea here is to set the higher bits (>3) and then try to 
 read them back. If their state has been preserved, then they can be considered 
 "accessible". 
@@ -239,8 +239,8 @@ Here is the code:
 Keying this in to the Digirule2 confirms the result. It is indeed possible to write and read to those "hidden" bits.
 
 
-Can the "hidden" bits be re-used?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Using the "hidden" bits to save and restore the status register
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This all comes down to saving bits 0,1 to higher bits (say for example 4 and 5).
 
