@@ -23,14 +23,17 @@
 SBR carry_bit status_reg    # Set both bits of th status register
 SBR zero_bit status_reg
 CALL save_status_reg        # Save that value of the status register
-COPYRR status_reg R0        # This is for displaying the value but it also
-CALL load_status_reg        # modifies the status reg. Let's LOAD it back in
-COPYRR status_reg R0        # Finally, let's look at its value again.
+COPYRR status_reg R0        # Check the content of R0
+CBR carry_bit status_reg
+CBR zero_bit status_reg     # Modify both flags and check the content again
+COPYRR status_reg R0
+CALL load_status_reg
+COPYRR status_reg R0        # Recall the status register and examine it via R0.
 HALT
 
 save_status_reg:
-CBR 4 status_reg                # Clear both higher bits
-CBR 5 status_reg
+CBR 3 status_reg                # Clear both higher bits
+CBR 4 status_reg
 BCRSC zero_bit status_reg       # Test bit 0 if it is 1 set the 4th bit
 JUMP save_status_reg_zero_bit
 save_status_reg_test_carry_bit:
@@ -40,20 +43,29 @@ save_status_reg_return:
 RETURN
 
 save_status_reg_zero_bit:
-SBR 4 status_reg
+SBR 3 status_reg
 JUMP save_status_reg_test_carry_bit
 save_status_reg_carry_bit:
-SBR 5 status_reg
+SBR 4 status_reg
 JUMP save_status_reg_return
 
 load_status_reg:                
-CBR carry_bit status_reg        # During loading, we simply shift right
-SHIFTRR status_reg              # making sure to turn off the carry_bit 
-CBR carry_bit status_reg        # because all SHIFT are through carry
-SHIFTRR status_reg              # on the Digirule.
-CBR carry_bit status_reg        
-SHIFTRR status_reg              # NOTE: This will turn off bit 3 (ADDR display LEDs)
+CBR zero_bit status_reg                # Clear both higher bits
+CBR carry_bit status_reg
+BCRSC 3 status_reg       # Test bit 3 if it is 1 set the zero bit
+JUMP load_status_reg_zero_bit
+load_status_reg_test_carry_bit:
+BCRSC 4 status_reg      # Test bit 4 if it is 1 set the carry bit
+JUMP load_status_reg_carry_bit
+load_status_reg_return:
 RETURN
+
+load_status_reg_zero_bit:
+SBR zero_bit status_reg
+JUMP load_status_reg_test_carry_bit
+load_status_reg_carry_bit:
+SBR carry_bit status_reg
+JUMP load_status_reg_return
 
 R0:
 .DB 0

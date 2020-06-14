@@ -263,8 +263,9 @@ The following code is indeed along those lines but with minor differences since:
 2. The ``COPYRR`` instruction modifies the zero bit.
 
 
-For these reasons, SAVING the values of the status register is carried out by plain simple 
-bit operations and restoring them via a plain old SHIFT.
+For these reasons, saving and loading the values of the status register is carried out by 
+plain simple bit operations. The code is almost identical which means that it can possibly 
+be reduced and optimised even further (e.g. use the same function for saving and loading).
 
 Here is the code:
 
@@ -272,23 +273,6 @@ Here is the code:
     :language: DigiruleASM
     :linenos:
     
-
-Concluding remarks
-^^^^^^^^^^^^^^^^^^
-
-1. Both Save and Restore can be carried out via bit operations. The code is almost identical 
-   which means that it can possibly be optimised further (e.g. use the same function for 
-   saving and loading)
-   
-2. **Note that** in this program, the value of the ADDR LED display is ignored. It is possible 
-   to save it too but then the 5 hidden bits would only have space to save the carry and zero bit
-   just once. If the ADDR LED is ignored, the status register has space to save the carry and zero 
-   bits twice.
-
-    
-    
-    
-
 
 
 
