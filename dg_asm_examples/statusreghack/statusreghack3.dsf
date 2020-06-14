@@ -1,0 +1,59 @@
+# Hacking the status register. Save and Restore.
+
+# Since we confirmed that it is possible to use the "hidden" 
+# bits of the status register, is it possible to use it so that
+# we save and restore the status register WITHOUT using additional 
+# memory?
+
+# It turns out that this is more difficult than it sounds at first, 
+# because of the way the instruction set interacts with the carry 
+# bit.
+
+# The specific problem is that COPYRR modifies the zero flag. Therefore
+# any computation that ends with a COPYRR in order to set the status 
+# register to some new value ends up MODIFYING it as well.
+
+# The answer? Do EVERYTHING with bit operations.
+
+.EQU status_reg=252
+.EQU led_reg=255
+.EQU carry_bit=1
+.EQU zero_bit=0
+
+SBR carry_bit status_reg    # Set both bits of th status register
+SBR zero_bit status_reg
+CALL save_status_reg        # Save that value of the status register
+COPYRR status_reg R0        # This is for displaying the value but it also
+CALL load_status_reg        # modifies the status reg. Let's LOAD it back in
+COPYRR status_reg R0        # Finally, let's look at its value again.
+HALT
+
+save_status_reg:
+CBR 4 status_reg                # Clear both higher bits
+CBR 5 status_reg
+BCRSC zero_bit status_reg       # Test bit 0 if it is 1 set the 4th bit
+JUMP save_status_reg_zero_bit
+save_status_reg_test_carry_bit:
+BCRSC carry_bit status_reg      # Test bit 1 if it is 1 set the 5th bit
+JUMP save_status_reg_carry_bit
+save_status_reg_return:
+RETURN
+
+save_status_reg_zero_bit:
+SBR 4 status_reg
+JUMP save_status_reg_test_carry_bit
+save_status_reg_carry_bit:
+SBR 5 status_reg
+JUMP save_status_reg_return
+
+load_status_reg:                
+CBR carry_bit status_reg        # During loading, we simply shift right
+SHIFTRR status_reg              # making sure to turn off the carry_bit 
+CBR carry_bit status_reg        # because all SHIFT are through carry
+SHIFTRR status_reg              # on the Digirule.
+CBR carry_bit status_reg        
+SHIFTRR status_reg              # NOTE: This will turn off bit 3 (ADDR display LEDs)
+RETURN
+
+R0:
+.DB 0

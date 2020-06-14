@@ -1,0 +1,33 @@
+# Hacking the status register. Can it be done?
+
+# The Digirule2 has an 8bit status register but only uses 3 of those bits
+# Is it possible to use the remaining 5 bits?
+
+# It turns out that is. The following program confirms that when
+# executed on the actual hardware.  
+
+.EQU status_reg=252
+.EQU led_reg=255
+.EQU carry_bit=1
+.EQU zero_bit=0
+
+CBR 4 status_reg        # Clear bit 4 (this is the first of the "hidden" bits)
+BCRSS 4 status_reg      # Test bit 4
+JUMP disp_left          # If bit 4 is zero, display 0xF0    
+JUMP disp_right         # If bit 4 is one, display 0x0F
+HALT
+
+disp_right:
+COPYLR 0x0F R0
+JUMP display
+
+disp_left:
+COPYLR 0xF0 R0
+JUMP display
+
+display:
+COPYRR R0 led_reg
+JUMP display
+
+R0:
+.DB 0

@@ -202,6 +202,22 @@ all the possible phrases in English [2]_ that can be described in 224 bytes.
 .. literalinclude:: ../../dg_asm_examples/longcounter/longcounter.dsf
     :language: DigiruleASM
     :linenos:
+
+
+
+
+Hacking the Status Register
+---------------------------
+
+.. literalinclude:: ../../dg_asm_examples/statusreghack/statusreghack.dsf
+    :language: DigiruleASM
+    :linenos:
+
+.. literalinclude:: ../../dg_asm_examples/statusreghack/statusreghack3.dsf
+    :language: DigiruleASM
+    :linenos:
+    
+    
     
 .. [1] Brent Hauser responded with all the details about the Digirule2's timings on the Discord server. The 60 micro 
        second estimate is a conservative estimate of the Digirule's timing to execute the counter program. If the 
