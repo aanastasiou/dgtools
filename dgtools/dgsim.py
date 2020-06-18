@@ -38,6 +38,7 @@ Options:
   -mn, --max-n INTEGER            Maximum number of time steps to allow the
                                   sim to run for.
 
+  --theme TEXT                    Specifies the CSS theme to use (e.g. dgbeos)
   --help                          Show this message and exit.
 
 
@@ -62,7 +63,7 @@ from dgtools.digirule import Digirule
     
     
 def trace_program(program, output_file, max_n=200, trace_title="", in_interactive_mode=False, 
-                  extra_symbols=[], with_mem_dump=True, theme=None):
+                  extra_symbols=[], with_mem_dump=True):
     """
     Produces a detailed trace of program execution in HTML form.
     
@@ -79,8 +80,6 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
     :param with_mem_dump: Whether to be producing a full memory dump at each time step of execution.
     :param exra_symbols: A list of symbol name, offset, length to explicitly monitor during execution
     :type extra_symbols: List<str, int, int>
-    :param theme: The theme to use as a string
-    :type theme: str(path)
     :returns: A Digirule2 object at its final state when the last command was executed.
     :rtype: Digirule
     """
@@ -147,8 +146,6 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
                 dgen.heading(f"Specific Symbols",3)
                 dgen.close_tag("header")
                 
-                # symbol_names = list(map(lambda x:x[0],extra_symbols))
-                
                 symbol_values = []
                 for a_symbol in extra_symbols:
                     raw_bytes = machine._mem[a_symbol[1]:(a_symbol[1]+a_symbol[2])]
@@ -157,7 +154,6 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
                     else:
                         chr_bytes = ""
                     symbol_values.append([str(raw_bytes),chr_bytes])
-                # dgen.table_h(symbol_names,symbol_values, attrs={"class":"table_spec_sym"})
                 dgen.table_v(["Symbol","Offset","Value(dec)", "Value(str)"],
                              list(map(lambda x:[x[0][0],
                                                 f"0x{x[0][1]:02X}",
@@ -181,16 +177,6 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
             done = not machine._exec_next()
             n+=1
         dgen.close_tag("article")
-
-    # Take care of the theme specification
-    if theme is not None:
-        theme_source = f"{os.path.dirname(inspect.getfile(DGB_Archive))}/css_themes/{theme}.css"
-        theme_destination = f"{os.path.dirname(output_file) or '.'}/dgtheme.css"
-        if not os.path.exists(theme_source):
-            print(f"WARNING: Specified theme ({theme}) not installed.")
-        else:
-            shutil.copy(theme_source, theme_destination)
-    
     return machine
 
 def validate_trace_symbol(ctx, param, value):
@@ -296,13 +282,11 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
         raise DgtoolsErrorSymbolUndefined(f"Symbol(s) undefined: {undefined_symbols}")
     # If all is well, format the table of TITLE:OFFSET:LENGTH to be sent to trace_program
     # Extra symbols is the union of all combinations of forms (just symbol, symbol:len, symbol:len:offset)
-    # This is further "decoded" here, because extra_symbols only understands name,start_addr,stop_addr.
-    # The resolution of symbols takes place externally.
     extra_symbols = list(map(lambda x:(x[0],compiled_program.labels[x[0]],1),
                              filter(lambda x:len(x)==1, symbols_to_trace))) + \
                     list(map(lambda x:(x[0],compiled_program.labels[x[0]], int(x[1])), 
                              filter(lambda x:len(x)==2, symbols_to_trace))) + \
-                    list(map(lambda x:(x[0],compiled_program.labels[x[0]], int(x[1])), 
+                    list(map(lambda x:(x[0],int(x[1]), int(x[2])), 
                              filter(lambda x:len(x)==3, symbols_to_trace)))
                              
     machine_after_execution = trace_program(compiled_program.program, 
@@ -311,13 +295,21 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
                                             trace_title = title, 
                                             in_interactive_mode=interactive_mode, 
                                             with_mem_dump=with_dump, 
-                                            extra_symbols=extra_symbols,
-                                            theme=theme)
+                                            extra_symbols=extra_symbols)
                                             
     machine_after_execution_archive = DGB_Archive(machine_after_execution._mem, 
                                                   compiled_program.labels)
-    
     machine_after_execution_archive.save(output_memdump_file)
+        
+    # Take care of the theme specification
+    if theme is not None:
+        theme_source = f"{os.path.dirname(inspect.getfile(DGB_Archive))}/css_themes/{theme}.css"
+        theme_destination = f"{os.path.dirname(output_trace_file) or '.'}/dgtheme.css"
+        if not os.path.exists(theme_source):
+            print(f"WARNING: Specified theme ({theme}) not installed.")
+        else:
+            shutil.copy(theme_source, theme_destination)
+
         
 if __name__ == "__main__":
     dgsim()
