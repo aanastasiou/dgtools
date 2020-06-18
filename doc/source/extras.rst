@@ -54,7 +54,11 @@ through ``Ctrl + Shift + B``.
 Styling trace files
 -------------------
 
-Trace files can be styled by adding a ``dgtheme.css`` CSS file, in the same directory with the HTML file of the trace.
+Trace files can be styled by adding a ``dgtheme.css`` CSS file, in the same directory with the HTML file of the trace, 
+or via builtin themes specified through the ``--theme`` parameter.
+
+Writing your own ``dgtheme.css``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The HTML file that ``dgsim.py`` produces is an ``article`` split into ``section``. Each "clock-tick" is a section of 
 the article and each block of output (e.g. the memory dump, the I/O state, etc) is a subsection within that.
@@ -73,6 +77,18 @@ These are all self-explanatory and refer to the content in the respective subsec
 
 In addition to those, the class ``current_pc`` is reserved to flag that cell of ``table_memory_space`` that 
 indicates the current position of the "Program Counter".
+
+Using a builtin theme
+^^^^^^^^^^^^^^^^^^^^^
+
+A built-in theme can be specified by using the ``-theme`` parameter on ``dgsim.py``.
+
+Built-in themes are CSS files too that reside in ``[dgtools package location]/css_themes/`` and are simply copied 
+across to the ``*_trace.html`` file's location.
+
+.. note::
+
+    At the moment, the ``dgtools`` package comes with just one pre-defined theme, called ``dgbeos``.
 
 
 Linking to trace files

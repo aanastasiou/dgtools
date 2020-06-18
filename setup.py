@@ -14,4 +14,5 @@ setup(
     license='Apache2.0',
     packages=find_packages(),
     scripts=['dgtools/dgasm.py', 'dgtools/dgsim.py', 'dgtools/dginspect.py', 'dgtools/dgui.py', 'dgtools/dgform.py'],
+    package_data={'dgtools':'dgtools/css_themes'},
     install_requires=['click', 'pyparsing', 'urwid', 'pygments'])

@@ -38,6 +38,7 @@ Options:
   -mn, --max-n INTEGER            Maximum number of time steps to allow the
                                   sim to run for.
 
+  --theme TEXT                    Specifies the CSS theme to use (e.g. dgbeos)
   --help                          Show this message and exit.
 
 
@@ -51,6 +52,8 @@ import pickle
 import click
 import os
 import types
+import inspect
+import shutil
 from dgtools.exceptions import (DgtoolsErrorOpcodeNotSupported, 
                          DgtoolsErrorDgbarchiveCorrupted, 
                          DgtoolsErrorSymbolUndefined)
@@ -59,7 +62,8 @@ from dgtools.dgb_archive import DGB_Archive
 from dgtools.digirule import Digirule
     
     
-def trace_program(program, output_file, max_n=200, trace_title="", in_interactive_mode=False, extra_symbols=[], with_mem_dump=True):
+def trace_program(program, output_file, max_n=200, trace_title="", in_interactive_mode=False, 
+                  extra_symbols=[], with_mem_dump=True):
     """
     Produces a detailed trace of program execution in HTML form.
     
@@ -118,7 +122,6 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
                           [machine._mem[machine._addrled_reg_ptr]], 
                           [machine._mem[machine._dataled_reg_ptr]], 
                           [machine._speed_setting], 
-                          # [machine._ppc]],
                           [",".join(list(map(lambda x:f"0x{x:02X}",machine._ppc)))]],
                           attrs={"class":"table_machine_state"})
             dgen.close_tag("section")
@@ -127,13 +130,13 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
             if with_mem_dump:
                 dgen.open_tag("section")
                 dgen.open_tag("header")
-                dgen.heading(f"Full memory dump:",3)
+                dgen.heading(f"Full memory dump",3)
                 dgen.close_tag("header")
                 dgen.table_hv([[f"{machine._mem[n]:02X}" for n in range(m,m+16)] for m in range(0,256,16)],
                               mem_space_heading_h, 
                               mem_space_heading_v,
                               attrs={"class":"table_memory_space"},
-                              cell_attrs={(machine._pc // 16,machine._pc-(machine._pc // 16)):{"class":"current_pc"}})
+                              cell_attrs={(machine._pc // 16,machine._pc-16*(machine._pc // 16)):{"class":"current_pc"}})
                 dgen.close_tag("section")
             
             # Extra symbols
@@ -143,8 +146,6 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
                 dgen.heading(f"Specific Symbols",3)
                 dgen.close_tag("header")
                 
-                # symbol_names = list(map(lambda x:x[0],extra_symbols))
-                
                 symbol_values = []
                 for a_symbol in extra_symbols:
                     raw_bytes = machine._mem[a_symbol[1]:(a_symbol[1]+a_symbol[2])]
@@ -153,8 +154,7 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
                     else:
                         chr_bytes = ""
                     symbol_values.append([str(raw_bytes),chr_bytes])
-                # dgen.table_h(symbol_names,symbol_values, attrs={"class":"table_spec_sym"})
-                dgen.table_v(["Symbol","Offset","Value(s)", "Value as string"],
+                dgen.table_v(["Symbol","Offset","Value(dec)", "Value(str)"],
                              list(map(lambda x:[x[0][0],
                                                 f"0x{x[0][1]:02X}",
                                                 x[1][0],x[1][1]],
@@ -167,7 +167,7 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
             dgen.open_tag("header")
             dgen.heading("Onboard I/O",3)
             dgen.close_tag("header")
-            dgen.table_h(["Address LEDs","Data LEDs","Button Switches"],
+            dgen.table_h(["Address LEDs:","Data LEDs:","Button Switches:"],
                          [machine.addr_led, machine.data_led, machine.button_sw],
                          attrs={"class":"table_onboard_io"})
             dgen.close_tag("section")
@@ -234,7 +234,8 @@ def validate_trace_symbol(ctx, param, value):
                    "bytes that starts at Offset.")    
 @click.option("--max-n","-mn", type=int, default=200, 
               help="Maximum number of time steps to allow the sim to run for.")
-def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, interactive_mode, trace_symbol, max_n):
+@click.option("--theme",type=str, help="Specifies the CSS theme to use (e.g. dgbeos)")
+def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, interactive_mode, trace_symbol, max_n, theme):
     """
     Command line program that produces a trace of a Digirule2 binary on simulated hardware.
     
@@ -255,6 +256,8 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
     :type trace_symbol: tuple<tuple<str, int, int>>
     :param max_n: The total number of timesteps to allow execution to run for.
     :type max_n:int
+    :param theme: A theme to apply to the output. Must be installed under [package]/css_data
+    :type theme: str(path)
     """
     if output_trace_file is None:
         output_trace_file = f"{os.path.splitext(input_file)[0]}_trace.html"
@@ -279,13 +282,11 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
         raise DgtoolsErrorSymbolUndefined(f"Symbol(s) undefined: {undefined_symbols}")
     # If all is well, format the table of TITLE:OFFSET:LENGTH to be sent to trace_program
     # Extra symbols is the union of all combinations of forms (just symbol, symbol:len, symbol:len:offset)
-    # This is further "decoded" here, because extra_symbols only understands name,start_addr,stop_addr.
-    # The resolution of symbols takes place externally.
     extra_symbols = list(map(lambda x:(x[0],compiled_program.labels[x[0]],1),
                              filter(lambda x:len(x)==1, symbols_to_trace))) + \
                     list(map(lambda x:(x[0],compiled_program.labels[x[0]], int(x[1])), 
                              filter(lambda x:len(x)==2, symbols_to_trace))) + \
-                    list(map(lambda x:(x[0],compiled_program.labels[x[0]], int(x[1])), 
+                    list(map(lambda x:(x[0],int(x[1]), int(x[2])), 
                              filter(lambda x:len(x)==3, symbols_to_trace)))
                              
     machine_after_execution = trace_program(compiled_program.program, 
@@ -298,8 +299,17 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
                                             
     machine_after_execution_archive = DGB_Archive(machine_after_execution._mem, 
                                                   compiled_program.labels)
-    
     machine_after_execution_archive.save(output_memdump_file)
+        
+    # Take care of the theme specification
+    if theme is not None:
+        theme_source = f"{os.path.dirname(inspect.getfile(DGB_Archive))}/css_themes/{theme}.css"
+        theme_destination = f"{os.path.dirname(output_trace_file) or '.'}/dgtheme.css"
+        if not os.path.exists(theme_source):
+            print(f"WARNING: Specified theme ({theme}) not installed.")
+        else:
+            shutil.copy(theme_source, theme_destination)
+
         
 if __name__ == "__main__":
     dgsim()
