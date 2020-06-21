@@ -6,10 +6,11 @@ The main Digirule VM class.
 :date: Mar 2020
 """
 from dgtools.exceptions import DgtoolsErrorOpcodeNotSupported
+import random
 
 class Digirule:
     """
-    Abstracts the Digirule 2 hardware.
+    Abstracts the Digirule 2A hardware.
     
     Maps all registers, flags and memory spaces accessible.
     
@@ -204,20 +205,17 @@ class Digirule:
         if addr == self._bt_reg_ptr and self._interactive_mode:
             self._mem[addr] = self._interactive_callback()
         return self._mem[addr]
-                
-    def _exec_next(self):
-        """
-        Fetches and executes an opcode from memory.
         
-        :returns: 0 if a HALT is executed 1 otherwise.
+    def _exec_instruction(self, cmd):
+        """
+        Handles the execution of a specific instruction. Emulates the 2A firmware.
+        
+        :param cmd: The instruction code to execute 
+        :type cmd: int
+        :returns: 0 if HALT has been reached, 1 if the instruction was carried out succesfully.
         :rtype: int
+        :raises: DgtoolsErrorOpcodeNotSupported 
         """
-        # TODO: LOW, Obviously, each command can be abstracted in its own callback so that the VM becomes easily 
-        #      extensible and re-usable.
-        
-        # Fetch...
-        cmd = self._read_next()
-        
         if cmd>32:
             # TODO: LOW, Unsupported opcodes could be intercepted and re-interpreted?
             raise DgtoolsErrorOpcodeNotSupported(f"Opcode {cmd} not supported.")
@@ -428,6 +426,20 @@ class Digirule:
             self._pc += self._read_next()
             
         return 1
+                
+    def _exec_next(self):
+        """
+        Fetches and executes an opcode from memory.
+        
+        :returns: 0 if a HALT is executed 1 otherwise.
+        :rtype: int
+        """
+        # TODO: LOW, Obviously, each command can be abstracted in its own callback so that the VM becomes easily 
+        #      extensible and re-usable.
+        
+        # Fetch...
+        cmd = self._read_next()
+        return self._exec_instruction(cmd)
         
     def goto(self, offset):
         if type(offset) is not int:
@@ -459,3 +471,90 @@ class Digirule:
         return f"ADDR LED:{self._pc:08b}\n" \
                f"DATA LED:{self._rd_mem(self._dataled_reg_ptr):08b}\n"\
                f"  BTT SW:{self._mem[self._bt_reg_ptr]:08b}\n"
+               
+
+class Digirule2U(Digirule):
+    """
+    Implements the Digirule 2U model.
+    """
+    def _exec_instruction(self, cmd):
+        """
+        Handles the execution of a specific instruction. Emulates the 2U firmware.
+
+        Note:
+            * See also ``Digirule._exec_instruction()``.
+        """
+
+        # Check if this is a valid instruction
+        if (cmd>38 and cmd<192) or cmd>194:
+            raise DgtoolsErrorOpcodeNotSupported(f"Opcode {cmd} not supported.")
+
+        
+        # Switch around RETLA and RETURN
+        if cmd == 30:
+            return super()._exec_instruction(31)
+
+        if cmd == 31:
+            return super()._exec_instruction(30)
+        
+        # Handle the new instructions
+        # INITSP
+        if cmd == 33:
+            # The stack pointer is initialised internally anyway.
+            pass
+
+        # RANDA
+        if cmd == 34:
+            self._acc = random.randint(0,255)
+
+        # SWAPRA
+        if cmd == 35:
+            mem_addr = self._read_next()
+            mem_val = self._rd_mem(mem_addr)
+            current_acc_value = self._acc
+            self._acc = mem_val
+            self._wr_mem(mem_addr, current_acc_value)
+
+        # SWAPRR
+        if cmd == 36:
+            mem_addr_left = self._read_next()
+            mem_addr_right = self._read_next()
+            mem_val_left =  self._rd_mem(mem_addr_left)
+            mem_val_right = self._rd_mem(mem_addr_right)
+            self._wr_mem(mem_addr_left, mem_val_right)
+            self._wr_mem(mem_addr_right, mem_val_left)
+
+        # MUL
+        if cmd == 37:
+            mem_addr_left = self._read_next()
+            mem_val_left = self._rd_mem(mem_addr_left)
+            mem_addr_right = self._read_next()
+            mem_val_right = self._rd_mem(mem_addr_right)
+            self._wr_mem(mem_addr_left,(mem_val_left * mem_val_right) & 0xFF
+        
+        # DIV
+        if cmd == 38:
+            # TODO: MED, This can raise a divide by zero warning / exception too
+            mem_addr_left = self._read_next()
+            mem_val_left = self._rd_mem(mem_addr_left)
+            mem_addr_right = self._read_next()
+            mem_val_right = self._rd_mem(mem_addr_right)
+            if mem_val_right == 0:
+                # This is the division by zero behaviour
+                return 0
+            self._wr_mem(mem_addr_left, (mem_val_left // mem_val_right) & 0xFF)
+            self._acc = (mem_val_left % mem_val_right) & 0xFF
+
+        # COMOUT
+        if cmd == 192:
+            pass
+        
+        # COMIN
+        if cmd == 193:
+            pass
+
+        # COMRDY
+        if cmd == 194:
+            pass
+
+        return 1
