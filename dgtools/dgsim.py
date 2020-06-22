@@ -52,10 +52,11 @@ import click
 import os
 import types
 from dgtools.exceptions import (DgtoolsErrorOpcodeNotSupported, 
-                         DgtoolsErrorDgbarchiveCorrupted, 
-                         DgtoolsErrorSymbolUndefined)
+                                DgtoolsErrorDgbarchiveCorrupted, 
+                                DgtoolsErrorSymbolUndefined)
 from dgtools.output_render_html import Output_Render_HTML
 from dgtools.dgb_archive import DGB_Archive
+from dgtools.callbacks import DigiruleCallbackInputUserInteraction
 from dgtools.digirule import Digirule
     
     
@@ -82,8 +83,10 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
     # Setup the VM
     machine = Digirule()
     machine.load_program(program)
+    
     if in_interactive_mode:
-        machine.interactive_mode = True
+        machine.interactive_callback = DigiruleCallbackInputUserInteraction("Binary button Input (e.g. '010010' wihout " 
+                                                                            "quotes):")
     done = False
     n=0
     # Headings for the memory space dump

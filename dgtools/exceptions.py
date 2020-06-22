@@ -35,3 +35,10 @@ class DgtoolsErrorDgbarchiveCorrupted(DgtoolsError):
     Raised when a .dgb archive does not conform to its defined format.
     """
     pass
+    
+class DgtoolsErrorDgbarchiveVersionIncompatible(DgtoolsError):
+    """
+    Raised when a Digirule is attempting to load a DGBArchive whose version (firmware version) does not match that 
+    of the hardware.
+    """
+    pass

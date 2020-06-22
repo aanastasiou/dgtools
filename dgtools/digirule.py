@@ -5,7 +5,8 @@ The main Digirule VM class.
 :author: Athanasios Anastasiou
 :date: Mar 2020
 """
-from dgtools.exceptions import DgtoolsErrorOpcodeNotSupported
+from .exceptions import DgtoolsErrorOpcodeNotSupported
+from .callbacks import DigiruleCallbackInputBase
 import random
 
 class Digirule:
@@ -41,32 +42,10 @@ class Digirule:
         # The speed setting is just for visualisation
         # TODO: LOW, Make the speed setting functional
         self._speed_setting = 0
-        # If the Digirule is in interactive mode and a program tries to read from the button register
+        # To put the Digirule in interactive mode, set interactive_callback to an appropriate callback.
+        # When a Digirule is in Interactive Mode and an instruction comes to read from the button register
         # it prompts the user for input
-        self._interactive_mode = False
-        self._interactive_callback = self._default_interactive_callback
-        
-    @staticmethod
-    def _default_interactive_callback():
-        """
-        Prompts the user for (binary) button input.
-        
-        :returns: Type checked user input
-        :rtype: uint8
-        """
-        done = False
-        while not done:
-            user_input = input("BT:")
-            try:
-                user_input_numeric = int(user_input, 2)
-                if user_input_numeric>255:
-                    raise ValueError("User input greater than 255")
-                else:
-                    done = True
-            except ValueError as ve:
-                sys.stdout.write(f"ERROR:{ve}\n")
-                
-        return user_input_numeric
+        self._interactive_callback = None
         
     @property
     def addr_led(self):
@@ -80,22 +59,15 @@ class Digirule:
     def button_sw(self):
         return f"{self._mem[self._bt_reg_ptr]:08b}"
 
-    @property
-    def interactive_mode(self):
-        return self._interactive_mode
-        
-    @interactive_mode.setter
-    def interactive_mode(self, new_mode):
-        self._interactive_mode = new_mode
-        
     @property 
     def interactive_callback(self):
         return self._interactive_callback
         
     @interactive_callback.setter
     def interactive_callback(self, new_callback):
-        if type(new_callback) is not types.FunctionType:
-            raise TypeError(f"interactive_callback() setter expected a function, received {type(new_callback)}")
+        if not isinstance(new_callback, DigiruleCallbackInputBase):
+            raise TypeError(f"interactive_callback() setter expected descendant of DigiruleCallbackInputBase, "
+                            f"received {type(new_callback)}")
         self._interactive_callback = new_callback
     
     @property
@@ -123,7 +95,7 @@ class Digirule:
         """
         if type(a_program) is not list:
             raise TypeError(f"Expected a_program as list received {type(a_program)}")
-            
+        
         if len(a_program) > 256:
             raise ValueError(f"Expected length of program to be at most 256, received {len(a_program)}")
             
@@ -202,7 +174,7 @@ class Digirule:
             * If the VM is in interactive mode and the button register is attempted to be read, it prompts the user 
               for input.
         """
-        if addr == self._bt_reg_ptr and self._interactive_mode:
+        if addr == self._bt_reg_ptr and self._interactive_callback is not None:
             self._mem[addr] = self._interactive_callback()
         return self._mem[addr]
         
@@ -477,6 +449,32 @@ class Digirule2U(Digirule):
     """
     Implements the Digirule 2U model.
     """
+    
+    def __init__(self):
+        self._comout_callback = None
+        self._comin_callback = None
+        
+    @property 
+    def comout_callback(self):
+        return self._comout_callback
+        
+    @comout_callback.setter
+    def comout_callback(self, new_callback):
+        if not isinstance(new_callback, DigiruleCallbackInputBase):
+            raise TypeError(f"comout_callback() setter expected descendant of DigiruleCallbackInputBase, "
+                            f"received {type(new_callback)}")
+        self._comout_callback = new_callback
+        
+    @property 
+    def comin_callback(self):
+        return self._comin_callback
+        
+    @comin_callback.setter
+    def comin_callback(self, new_callback):
+        if type(new_callback) is not types.FunctionType:
+            raise TypeError(f"comin_callback() setter expected a function, received {type(new_callback)}")
+        self._comin_callback = new_callback
+
     def _exec_instruction(self, cmd):
         """
         Handles the execution of a specific instruction. Emulates the 2U firmware.
@@ -530,7 +528,7 @@ class Digirule2U(Digirule):
             mem_val_left = self._rd_mem(mem_addr_left)
             mem_addr_right = self._read_next()
             mem_val_right = self._rd_mem(mem_addr_right)
-            self._wr_mem(mem_addr_left,(mem_val_left * mem_val_right) & 0xFF
+            self._wr_mem(mem_addr_left,(mem_val_left * mem_val_right) & 0xFF)
         
         # DIV
         if cmd == 38:
@@ -547,7 +545,8 @@ class Digirule2U(Digirule):
 
         # COMOUT
         if cmd == 192:
-            pass
+            if self._comout_callback is not None:
+                self._comout_callback(self._acc)
         
         # COMIN
         if cmd == 193:
