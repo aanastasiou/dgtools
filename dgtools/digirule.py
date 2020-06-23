@@ -550,10 +550,13 @@ class Digirule2U(Digirule):
         
         # COMIN
         if cmd == 193:
-            pass
+            if self._comin_callback is not None:
+                self._comin_callback(self._acc)
 
         # COMRDY
         if cmd == 194:
-            pass
+            # Comms is always "ready" in emulation.
+            # TODO: MED, Maybe this can be matched to a more realistic behaviour once comout, comin are connected to real files.
+            self._set_status_reg(self._ZERO_FLAG_BIT, 0)
 
         return 1
