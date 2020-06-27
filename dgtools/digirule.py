@@ -438,6 +438,7 @@ class Digirule:
             
             * See inline comments for specification of the grammar
         """
+        # TODO: HIGH, The parser should also be physically separated between directive and ASM commands.
         # Action functions to convert valid string literals to numbers
         uchar2num = lambda toks:int(toks[0])
         buchar2num = lambda toks:int(toks[0],2)

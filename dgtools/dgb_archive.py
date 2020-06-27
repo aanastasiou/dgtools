@@ -15,7 +15,7 @@ class DGB_Archive:
     """
     Implements functionality to store, modify and retrieve DGB archives.
     """
-    def __init__(self, compiled_program, labels, version="1.0.0"):
+    def __init__(self, compiled_program, labels, version="2A"):
         """
         Initialisation
         
@@ -53,7 +53,7 @@ class DGB_Archive:
             raise DgtoolsErrorDgbarchiveCorrupted("DGB archive corrupted.")
                            
         if "version" not in archive_sections:
-            archive_sections.update({"version":"1.0.0"})
+            archive_sections.update({"version":"2A"})
         return cls(archive_sections["program"], archive_sections["labels"], archive_sections["version"]) 
         
     @property
