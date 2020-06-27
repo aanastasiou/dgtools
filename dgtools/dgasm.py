@@ -142,20 +142,18 @@ def asm_ast_to_obj(parsed_code):
             else:
                 raise DgtoolsErrorSymbolAlreadyDefined(f"Symbol {arguments['idf']} is getting redefined")
         else:
-            # It's a command. The opcode of the command has already been recognised, but we need to grab the operands
-            # wherever they are available
-            numeric_command = int(command)
-            mem[mem_ptr] = numeric_command
+            # It's an instruction. The opcode of the instruction has already been recognised, 
+            # but we need to grab the operands wherever they are available
+            inst_data = command.split(":")
+            instruction_code = int(inst_data[0])
+            instruction_num_op = int(inst_data[1])
+                        
+            mem[mem_ptr] = instruction_code
             mem_ptr+=1
-            # 3 Byte opcodes
-            if numeric_command in [3,7,24,25,26,27]:
-                mem[mem_ptr] = arguments[1][0]
-                mem[mem_ptr + 1] = arguments[2][0]
-                mem_ptr+=2
-            # 2 Byte opcodes
-            elif numeric_command not in [0,1,31]:
-                mem[mem_ptr] = arguments[1][0] 
-                mem_ptr+=1
+            if instruction_num_op>0:
+                mem[mem_ptr:(mem_ptr+instruction_num_op)] = list(map(lambda x:x[0], 
+                                                                     arguments[1:(1+instruction_num_op)])) 
+                mem_ptr+=instruction_num_op
     # The first pass produces an intermediate object that still contains symbolic references.
     # This second pass here substitutes those references and produces the final object.
     symbol_offsets = {}

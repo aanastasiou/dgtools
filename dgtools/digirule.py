@@ -8,6 +8,7 @@ The main Digirule VM class.
 from .exceptions import DgtoolsErrorOpcodeNotSupported, DgtoolsErrorProgramHalt
 from .callbacks import DigiruleCallbackInputBase
 import random
+import pyparsing
 
 class Digirule:
     """
@@ -457,7 +458,7 @@ class Digirule:
         asm_halt = pyparsing.Group(pyparsing.Regex(r"HALT")("cmd"))("0:0")
         asm_nop = pyparsing.Group(pyparsing.Regex(r"NOP")("cmd"))("1:0")
         asm_speed = pyparsing.Group(pyparsing.Regex(r"SPEED")("cmd") + literal_or_identifier("value"))("2:1")
-        asm_copylr = pyparsing.Group(pyparsing.Regex("COPYLR")("cmd") + literal_or_identifier("value") + literal_or_identifier("addr"))("3:1")
+        asm_copylr = pyparsing.Group(pyparsing.Regex("COPYLR")("cmd") + literal_or_identifier("value") + literal_or_identifier("addr"))("3:2")
         asm_copyla = pyparsing.Group(pyparsing.Regex(r"COPYLA")("cmd") + literal_or_identifier("value"))("4:1")
         asm_copyar = pyparsing.Group(pyparsing.Regex("COPYAR")("cmd") + literal_or_identifier("addr"))("5:1")
         asm_copyra = pyparsing.Group(pyparsing.Regex("COPYRA")("cmd") + literal_or_identifier("addr"))("6:1")
