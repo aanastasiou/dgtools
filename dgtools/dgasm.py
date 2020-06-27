@@ -23,6 +23,7 @@ import pickle
 import click
 from dgtools.exceptions import DgtoolsErrorSymbolAlreadyDefined, DgtoolsErrorSymbolUndefined
 from dgtools.dgb_archive import DGB_Archive
+from dgtools import Digirule
 
 def get_asm_parser():
     """
@@ -197,7 +198,8 @@ def dgasm(input_file, output_file):
     with open(input_file, "rt") as fd:
         asm_code_text = fd.read()
     
-    parser = get_asm_parser()
+    # parser = get_asm_parser()
+    parser = Digirule.get_asm_parser()
     
     try:
         parsed_code = parser.parseString(asm_code_text, parseAll=True)
