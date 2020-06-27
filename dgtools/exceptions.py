@@ -42,3 +42,9 @@ class DgtoolsErrorDgbarchiveVersionIncompatible(DgtoolsError):
     of the hardware.
     """
     pass
+    
+class DgtoolsErrorProgramHalt(DgtoolsError):
+    """
+    Raised to signify that execution has halted for whatever reason
+    """
+    pass

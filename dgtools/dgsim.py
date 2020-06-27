@@ -53,7 +53,8 @@ import os
 import types
 from dgtools.exceptions import (DgtoolsErrorOpcodeNotSupported, 
                                 DgtoolsErrorDgbarchiveCorrupted, 
-                                DgtoolsErrorSymbolUndefined)
+                                DgtoolsErrorSymbolUndefined,
+                                DgtoolsErrorProgramHalt)
 from dgtools.output_render_html import Output_Render_HTML
 from dgtools.dgb_archive import DGB_Archive
 from dgtools.callbacks import DigiruleCallbackInputUserInteraction
@@ -177,7 +178,11 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
             
             dgen.close_tag("section")
             dgen.ruler()
-            done = not machine._exec_next()
+            try:
+                machine._exec_next()
+            except DgtoolsErrorProgramHalt:
+                done = True
+                
             n+=1
         dgen.close_tag("article")
     return machine

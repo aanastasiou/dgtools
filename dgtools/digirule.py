@@ -5,7 +5,7 @@ The main Digirule VM class.
 :author: Athanasios Anastasiou
 :date: Mar 2020
 """
-from .exceptions import DgtoolsErrorOpcodeNotSupported
+from .exceptions import DgtoolsErrorOpcodeNotSupported, DgtoolsErrorProgramHalt
 from .callbacks import DigiruleCallbackInputBase
 import random
 
@@ -46,6 +46,40 @@ class Digirule:
         # When a Digirule is in Interactive Mode and an instruction comes to read from the button register
         # it prompts the user for input
         self._interactive_callback = None
+        # Instruction set lookup
+        self._ins_lookup = {0:self._halt,
+                            1:self._nop,
+                            2:self._speed,
+                            3:self._copylr,
+                            4:self._copyla,
+                            5:self._copyar,
+                            6:self._copyra,
+                            7:self._copyrr,
+                            8:self._addla,
+                            9:self._addra,
+                           10:self._subla,
+                           11:self._subra,
+                           12:self._andla,
+                           13:self._andra,
+                           14:self._orla,
+                           15:self._orra,
+                           16:self._xorla,
+                           17:self._xorra,
+                           18:self._decr,
+                           19:self._incr,
+                           20:self._decrjz,
+                           21:self._incrjz,
+                           22:self._shiftrl,
+                           23:self._shiftrr,
+                           24:self._cbr,
+                           25:self._sbr,
+                           26:self._bcrsc,
+                           27:self._bcrss,
+                           28:self._jump,
+                           29:self._call,
+                           30:self._retla,
+                           31:self._return,
+                           32:self._addrpc}
         
     @property
     def addr_led(self):
@@ -178,240 +212,189 @@ class Digirule:
             self._mem[addr] = self._interactive_callback()
         return self._mem[addr]
         
-    def _exec_instruction(self, cmd):
-        """
-        Handles the execution of a specific instruction. Emulates the 2A firmware.
+    def _halt(self):
+        raise DgtoolsErrorProgramHalt()
         
-        :param cmd: The instruction code to execute 
-        :type cmd: int
-        :returns: 0 if HALT has been reached, 1 if the instruction was carried out succesfully.
-        :rtype: int
-        :raises: DgtoolsErrorOpcodeNotSupported 
-        """
-        if cmd>32:
-            # TODO: LOW, Unsupported opcodes could be intercepted and re-interpreted?
-            raise DgtoolsErrorOpcodeNotSupported(f"Opcode {cmd} not supported.")
-            
-        # ...Execute    
-        # HALT
-        if cmd == 0:
-            return 0 
+    def _nop(self):
+        pass
         
-        # NOP
-        if cmd == 1:
-            pass
+    def _speed(self):
+        self._speed_setting = self._read_next()
         
-        # SPEED
-        if cmd == 2:
-            self._speed_setting = self._read_next()            
+    def _copylr(self):
+        literal = self._read_next()
+        self._wr_mem(self._read_next(), literal)
         
-        # COPYLR
-        if cmd == 3:
-            literal = self._read_next()
-            self._wr_mem(self._read_next(), literal)
-        
-        # COPYLA
-        if cmd == 4:
-            literal = self._read_next()
-            self._set_acc_value(literal)
-            
-        # COPYAR
-        if cmd == 5:
-            self._wr_mem(self._read_next(), self._get_acc_value())
-            
-        # COPYRA
-        if cmd == 6:
-            new_value = self._rd_mem(self._read_next())
-            self._set_acc_value(new_value)
-            self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
-        
-        # COPYRR
-        if cmd == 7:
-            addr1 = self._read_next()
-            value_addr1 = self._rd_mem(addr1) & 0xFF
-            addr2 = self._read_next()
-            self._wr_mem(addr2, value_addr1)
-            self._set_status_reg(self._ZERO_FLAG_BIT,value_addr1==0)
-            
-        # ADDLA
-        if cmd == 8:
-            new_value = self._get_acc_value()+self._read_next()
-            self._set_acc_value(new_value)
-            self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
-            self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
+    def _copyla(self):
+        literal = self._read_next()
+        self._set_acc_value(literal)
 
-        # ADDRA
-        if cmd == 9:
-            new_value = self._get_acc_value() + self._rd_mem(self._read_next())
-            self._set_acc_value(new_value)
-            self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
-            self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
+    def _copyar(self):
+        self._wr_mem(self._read_next(), self._get_acc_value())
 
-        # SUBLA
-        if cmd == 10:
-            new_value = self._get_acc_value() - self._read_next()
-            self._set_acc_value(new_value)
-            self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
-            self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
+    def _copyra(self):
+        new_value = self._rd_mem(self._read_next())
+        self._set_acc_value(new_value)
+        self._set_status_reg(self._ZERO_FLAG_BIT, new_value==0)
 
-        # SUBRA
-        if cmd == 11:
-            new_value = self._get_acc_value() - self._rd_mem(self._read_next())
-            self._set_acc_value(new_value)
-            self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
-            self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
+    def _copyrr(self):
+        addr1 = self._read_next()
+        value_addr1 = self._rd_mem(addr1) & 0xFF
+        addr2 = self._read_next()
+        self._wr_mem(addr2, value_addr1)
+        self._set_status_reg(self._ZERO_FLAG_BIT,value_addr1==0)
+
+    def _addla(self):
+        new_value = self._get_acc_value()+self._read_next()
+        self._set_acc_value(new_value)
+        self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
+        self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
+
+    def _addra(self):
+        new_value = self._get_acc_value() + self._rd_mem(self._read_next())
+        self._set_acc_value(new_value)
+        self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
+        self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
+
+    def _subla(self):
+        new_value = self._get_acc_value() - self._read_next()
+        self._set_acc_value(new_value)
+        self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
+        self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
+
+    def _subra(self):
+        new_value = self._get_acc_value() - self._rd_mem(self._read_next())
+        self._set_acc_value(new_value)
+        self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
+        self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
+
+    def _andla(self):
+        new_value = self._get_acc_value() & self._read_next()
+        self._set_acc_value(new_value)
+        self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
+
+    def _andra(self):
+        new_value = self._get_acc_value() & self._rd_mem(self._read_next())
+        self._set_acc_value(new_value)
+        self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
+
+    def _orla(self):
+        new_value = self._get_acc_value() | self._read_next()
+        self._set_acc_value(new_value)
+        self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
+
+    def _orra(self):
+        new_value = self._get_acc_value() | self._rd_mem(self._read_next())
+        self._set_acc_value(new_value)
+        self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
+
+    def _xorla(self):
+        new_value = self._get_acc_value() ^ self._read_next()
+        self._set_acc_value(new_value)
+        self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
+
+    def _xorra(self):
+        new_value = self._get_acc_value() ^ self._rd_mem(self._read_next())
+        self._set_acc_value(new_value)
+        self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
+
+    def _decr(self):
+        addr = self._read_next()
+        value = (self._rd_mem(addr) - 1) & 0xFF
+        self._wr_mem(addr, value)
+        self._set_status_reg(self._ZERO_FLAG_BIT,value==0)
+
+    def _incr(self):
+        addr = self._read_next()
+        value = (self._rd_mem(addr) + 1) & 0xFF
+        self._wr_mem(addr, value)
+        self._set_status_reg(self._ZERO_FLAG_BIT,value==0)
+
+    def _decrjz(self):
+        addr = self._read_next()
+        value = (self._rd_mem(addr) - 1) & 0xFF
+        self._wr_mem(addr, value)
+        self._set_status_reg(self._ZERO_FLAG_BIT,value==0)
+        if value == 0:
+            self._pc+=2
+
+    def _incrjz(self):        
+        addr = self._read_next()
+        value = (self._rd_mem(addr) + 1) & 0xFF
+        self._wr_mem(addr, value)
+        self._set_status_reg(self._ZERO_FLAG_BIT,value==0)
+        if value == 0:
+            self._pc += 2
             
-        # ANDLA
-        if cmd == 12:
-            new_value = self._get_acc_value() & self._read_next()
-            self._set_acc_value(new_value)
-            self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
-            
-        # ANDRA
-        if cmd == 13:
-            new_value = self._get_acc_value() & self._rd_mem(self._read_next())
-            self._set_acc_value(new_value)
-            self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
-            
-        # ORLA
-        if cmd == 14:
-            new_value = self._get_acc_value() | self._read_next()
-            self._set_acc_value(new_value)
-            self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
-            
-        # ORRA
-        if cmd == 15:
-            new_value = self._get_acc_value() | self._rd_mem(self._read_next())
-            self._set_acc_value(new_value)
-            self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
+    def _shiftrl(self):
+        addr = self._read_next()
+        value = self._rd_mem(addr)
+        next_carry_value = 1 if value & 128 == 128 else 0
+        self._wr_mem(addr, ((value<<1) & 0xFF)|self._get_status_reg(self._CARRY_FLAG_BIT))
+        self._set_status_reg(self._CARRY_FLAG_BIT,next_carry_value)
+
+    def _shiftrr(self):
+        addr = self._read_next()
+        value = self._rd_mem(addr)
+        next_carry_value = 1 if value & 1 == 1 else 0
+        self._wr_mem(addr, ((value>>1) & 0xFF)|(self._get_status_reg(self._CARRY_FLAG_BIT) << 7))
+        self._set_status_reg(self._CARRY_FLAG_BIT,next_carry_value)
+
+    def _cbr(self):
+        bit_to_clear = self._read_next()
+        addr = self._read_next()
+        new_value = self._rd_mem(addr) & (255 - (1<<bit_to_clear))
+        self._wr_mem(addr, new_value)
         
-        # XORLA
-        if cmd == 16:
-            new_value = self._get_acc_value() ^ self._read_next()
-            self._set_acc_value(new_value)
-            self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
-            
-        # XORRA
-        if cmd == 17:
-            new_value = self._get_acc_value() ^ self._rd_mem(self._read_next())
-            self._set_acc_value(new_value)
-            self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
-        
-        # DECR
-        if cmd == 18:
-            addr = self._read_next()
-            value = (self._rd_mem(addr) - 1) & 0xFF
-            self._wr_mem(addr, value)
-            self._set_status_reg(self._ZERO_FLAG_BIT,value==0)
-                
-        # INCR
-        if cmd == 19:
-            addr = self._read_next()
-            value = (self._rd_mem(addr) + 1) & 0xFF
-            self._wr_mem(addr, value)
-            self._set_status_reg(self._ZERO_FLAG_BIT,value==0)
-            
-        # DECRJZ
-        if cmd == 20:
-            addr = self._read_next()
-            value = (self._rd_mem(addr) - 1) & 0xFF
-            self._wr_mem(addr, value)
-            self._set_status_reg(self._ZERO_FLAG_BIT,value==0)
-            if value == 0:
-                self._pc+=2
-                
-        # INCRJZ
-        if cmd == 21:
-            addr = self._read_next()
-            value = (self._rd_mem(addr) + 1) & 0xFF
-            self._wr_mem(addr, value)
-            self._set_status_reg(self._ZERO_FLAG_BIT,value==0)
-            if value == 0:
-                self._pc += 2
+    def _sbr(self):
+        # TODO: MED, In CBR and SBR, if the bit is zero, it should raise an error at compile time.
+        bit_to_clear = self._read_next()
+        addr = self._read_next()
+        new_value = self._rd_mem(addr) | (1<<bit_to_clear)
+        self._wr_mem(addr, new_value)
 
-        # SHIFTRL
-        if cmd == 22:
-            addr = self._read_next()
-            value = self._rd_mem(addr)
-            next_carry_value = 1 if value & 128 == 128 else 0
-            self._wr_mem(addr, ((value<<1) & 0xFF)|self._get_status_reg(self._CARRY_FLAG_BIT))
-            self._set_status_reg(self._CARRY_FLAG_BIT,next_carry_value)
+    def _bcrsc(self):
+        bit_to_check_mask = 1 << self._read_next()
+        addr = self._read_next()
+        if (self._rd_mem(addr) & bit_to_check_mask) != bit_to_check_mask:
+            self._pc+=2
+            
+    def _bcrss(self):
+        bit_to_check_mask = 1 << self._read_next()
+        addr = self._read_next()
+        if (self._rd_mem(addr) & bit_to_check_mask) == bit_to_check_mask:
+            self._pc+=2
 
-        # SHIFTRR
-        if cmd == 23:
-            addr = self._read_next()
-            value = self._rd_mem(addr)
-            next_carry_value = 1 if value & 1 == 1 else 0
-            self._wr_mem(addr, ((value>>1) & 0xFF)|(self._get_status_reg(self._CARRY_FLAG_BIT) << 7))
-            self._set_status_reg(self._CARRY_FLAG_BIT,next_carry_value)
-            
-        # CBR
-        if cmd == 24:
-            bit_to_clear = self._read_next()
-            addr = self._read_next()
-            new_value = self._rd_mem(addr) & (255 - (1<<bit_to_clear))
-            self._wr_mem(addr, new_value)
-                    
-        # SBR
-        if cmd == 25:
-            # TODO: MED, In CBR and SBR, if the bit is zero, it should raise an error at compile time.
-            bit_to_clear = self._read_next()
-            addr = self._read_next()
-            new_value = self._rd_mem(addr) | (1<<bit_to_clear)
-            self._wr_mem(addr, new_value)
-            
-        # BCRSC
-        if cmd == 26:
-            bit_to_check_mask = 1 << self._read_next()
-            addr = self._read_next()
-            if (self._rd_mem(addr) & bit_to_check_mask) != bit_to_check_mask:
-                self._pc+=2
-            
-        # BCRSS
-        if cmd == 27:
-            bit_to_check_mask = 1 << self._read_next()
-            addr = self._read_next()
-            if (self._rd_mem(addr) & bit_to_check_mask) == bit_to_check_mask:
-                self._pc+=2
+    def _jump(self):
+        self._pc = self._read_next()
+        
+    def _call(self):
+        self._ppc.append(self._pc + 1)
+        self._pc = self._read_next()
+        
+    def _retla(self):
+        self._acc = self._read_next()
+        # TODO: MED, If you get a RETLA without first having called CALL, it should raise an exception at compile time.
+        self._pc = self._ppc.pop()
 
-        # JUMP
-        if cmd == 28:
-            self._pc = self._read_next()
-            
-        # CALL
-        if cmd == 29:
-            self._ppc.append(self._pc + 1)
-            self._pc = self._read_next()
-            
-        # RETLA
-        if cmd == 30:
-            self._acc = self._read_next()
-            # TODO: MED, If you get a RETLA without first having called CALL, it should raise an exception at compile time.
-            self._pc = self._ppc.pop()
-        
-        # RETURN
-        if cmd == 31:
-            self._pc = self._ppc.pop()
-        
-        # ADDRPC
-        if cmd == 32:
-            self._pc += self._read_next()
-            
-        return 1
-                
+    def _return(self):
+        self._pc = self._ppc.pop()
+
+    def _addrpc(self):
+        self._pc += self._read_next()
+
+
     def _exec_next(self):
         """
-        Fetches and executes an opcode from memory.
-        
-        :returns: 0 if a HALT is executed 1 otherwise.
-        :rtype: int
+        Fetches and executes an opcode from memory. Emulates the 2A firmware.
         """
-        # TODO: LOW, Obviously, each command can be abstracted in its own callback so that the VM becomes easily 
-        #      extensible and re-usable.
-        
         # Fetch...
         cmd = self._read_next()
-        return self._exec_instruction(cmd)
+        # Execute
+        try:
+            self._ins_lookup[cmd]()
+        except KeyError as ke:
+            raise DgtoolsErrorOpcodeNotSupported(f"Opcode {cmd} not understood")
         
     def goto(self, offset):
         if type(offset) is not int:
@@ -422,16 +405,17 @@ class Digirule:
             
         self._pc = offset
     
-    def run(self):
+    def run(self, max_n=2500):
         """
         Executes commands from the current program counter until a HALT opcode.
-        
-        :param offset: The offset within `_mem` to start executing from.
-        :type offset: int
         """
         cnt = self._exec_next()
-        while cnt:
+        n = 0
+        while n<2500:
             cnt = self._exec_next()
+            n+=1
+            
+        raise DgtoolsErrorProgramHalt()
             
     def step(self):
         return self._exec_next()
@@ -451,6 +435,20 @@ class Digirule2U(Digirule):
     """
     
     def __init__(self):
+        super().__init__()
+
+        # Switch around RETLA and RETURN
+        self._ins_lookup[30], self._ins_lookup[31] = self._ins_lookup[31], self._ins_lookup[30]  
+        # Add the new commands
+        self._ins_lookup.update({33:self._initsp,
+                                 34:self._randa,
+                                 35:self._swapra,
+                                 36:self._swaprr,
+                                 37:self._mul,
+                                 38:self._div,
+                                192:self._comout,
+                                193:self._comin,
+                                194:self._comrdy})
         self._comout_callback = None
         self._comin_callback = None
         
@@ -475,88 +473,55 @@ class Digirule2U(Digirule):
             raise TypeError(f"comin_callback() setter expected a function, received {type(new_callback)}")
         self._comin_callback = new_callback
 
-    def _exec_instruction(self, cmd):
-        """
-        Handles the execution of a specific instruction. Emulates the 2U firmware.
-
-        Note:
-            * See also ``Digirule._exec_instruction()``.
-        """
-
-        # Check if this is a valid instruction
-        if (cmd>38 and cmd<192) or cmd>194:
-            raise DgtoolsErrorOpcodeNotSupported(f"Opcode {cmd} not supported.")
-
+    def _initsp(self):
+        pass
         
-        # Switch around RETLA and RETURN
-        if cmd == 30:
-            return super()._exec_instruction(31)
-
-        if cmd == 31:
-            return super()._exec_instruction(30)
+    def _randa(self):
+        self._acc = random.randint(0,255)
         
-        # Handle the new instructions
-        # INITSP
-        if cmd == 33:
-            # The stack pointer is initialised internally anyway.
-            pass
+    def _swapra(self):
+        mem_addr = self._read_next()
+        mem_val = self._rd_mem(mem_addr)
+        current_acc_value = self._acc
+        self._acc = mem_val
+        self._wr_mem(mem_addr, current_acc_value)
 
-        # RANDA
-        if cmd == 34:
-            self._acc = random.randint(0,255)
-
-        # SWAPRA
-        if cmd == 35:
-            mem_addr = self._read_next()
-            mem_val = self._rd_mem(mem_addr)
-            current_acc_value = self._acc
-            self._acc = mem_val
-            self._wr_mem(mem_addr, current_acc_value)
-
-        # SWAPRR
-        if cmd == 36:
-            mem_addr_left = self._read_next()
-            mem_addr_right = self._read_next()
-            mem_val_left =  self._rd_mem(mem_addr_left)
-            mem_val_right = self._rd_mem(mem_addr_right)
-            self._wr_mem(mem_addr_left, mem_val_right)
-            self._wr_mem(mem_addr_right, mem_val_left)
-
-        # MUL
-        if cmd == 37:
-            mem_addr_left = self._read_next()
-            mem_val_left = self._rd_mem(mem_addr_left)
-            mem_addr_right = self._read_next()
-            mem_val_right = self._rd_mem(mem_addr_right)
-            self._wr_mem(mem_addr_left,(mem_val_left * mem_val_right) & 0xFF)
+    def _swaprr(self):
+        mem_addr_left = self._read_next()
+        mem_addr_right = self._read_next()
+        mem_val_left =  self._rd_mem(mem_addr_left)
+        mem_val_right = self._rd_mem(mem_addr_right)
+        self._wr_mem(mem_addr_left, mem_val_right)
+        self._wr_mem(mem_addr_right, mem_val_left)
+    
+    def _mul(self):
+        mem_addr_left = self._read_next()
+        mem_val_left = self._rd_mem(mem_addr_left)
+        mem_addr_right = self._read_next()
+        mem_val_right = self._rd_mem(mem_addr_right)
+        self._wr_mem(mem_addr_left,(mem_val_left * mem_val_right) & 0xFF)
         
-        # DIV
-        if cmd == 38:
-            # TODO: MED, This can raise a divide by zero warning / exception too
-            mem_addr_left = self._read_next()
-            mem_val_left = self._rd_mem(mem_addr_left)
-            mem_addr_right = self._read_next()
-            mem_val_right = self._rd_mem(mem_addr_right)
-            if mem_val_right == 0:
-                # This is the division by zero behaviour
-                return 0
-            self._wr_mem(mem_addr_left, (mem_val_left // mem_val_right) & 0xFF)
-            self._acc = (mem_val_left % mem_val_right) & 0xFF
-
-        # COMOUT
-        if cmd == 192:
-            if self._comout_callback is not None:
-                self._comout_callback(self._acc)
+    def _div(self):
+        # TODO: MED, This can raise a divide by zero warning / exception too
+        mem_addr_left = self._read_next()
+        mem_val_left = self._rd_mem(mem_addr_left)
+        mem_addr_right = self._read_next()
+        mem_val_right = self._rd_mem(mem_addr_right)
+        if mem_val_right == 0:
+            # This is the default division by zero behaviour
+            raise DgtoolsErrorProgramHalt()
+        self._wr_mem(mem_addr_left, (mem_val_left // mem_val_right) & 0xFF)
+        self._acc = (mem_val_left % mem_val_right) & 0xFF
         
-        # COMIN
-        if cmd == 193:
-            if self._comin_callback is not None:
-                self._comin_callback(self._acc)
-
-        # COMRDY
-        if cmd == 194:
-            # Comms is always "ready" in emulation.
-            # TODO: MED, Maybe this can be matched to a more realistic behaviour once comout, comin are connected to real files.
-            self._set_status_reg(self._ZERO_FLAG_BIT, 0)
-
-        return 1
+    def _comout(self):
+        if self._comout_callback is not None:
+            self._comout_callback(self._acc)
+        
+    def _comin(self):
+        if self._comin_callback is not None:
+            self._comin_callback(self._acc)
+        
+    def _comrdy(self):
+        # Comms is always "ready" in emulation.
+        # TODO: MED, Maybe this can be matched to a more realistic behaviour once comout, comin are connected to real files.
+        self._set_status_reg(self._ZERO_FLAG_BIT, 0)
