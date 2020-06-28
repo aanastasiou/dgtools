@@ -12,7 +12,7 @@ import pyparsing
 
 class Digirule:
     """
-    Abstracts the Digirule 2A hardware.
+    Abstracts the Digirule 2 hardware.
     
     Maps all registers, flags and memory spaces accessible.
     
@@ -167,6 +167,14 @@ class Digirule:
         
     def _incr_pc(self):
         self._pc+=1
+        return self
+        
+    def _push_pc(self):
+        self._ppc.append(self._pc + 1)
+        return self
+        
+    def _pop_pc(self):
+        self._pc = self._ppc.pop()
         return self
         
     def _set_acc_value(self, new_value):
@@ -370,17 +378,17 @@ class Digirule:
         self._pc = self._read_next()
         
     def _call(self):
-        self._ppc.append(self._pc + 1)
+        self._push_pc()
         self._pc = self._read_next()
         
     def _retla(self):
         self._acc = self._read_next()
         # TODO: MED, If you get a RETLA without first having called CALL, it should raise an exception at compile time.
-        self._pc = self._ppc.pop()
+        self._pop_pc()
 
     def _return(self):
-        self._pc = self._ppc.pop()
-
+        self.pop_pc()
+        
     def _addrpc(self):
         self._pc += self._read_next()
 
@@ -522,18 +530,55 @@ class Digirule2U(Digirule):
     def __init__(self):
         super().__init__()
 
-        # Switch around RETLA and RETURN
-        self._ins_lookup[30], self._ins_lookup[31] = self._ins_lookup[31], self._ins_lookup[30]  
         # Add the new commands
-        self._ins_lookup.update({33:self._initsp,
-                                 34:self._randa,
-                                 35:self._swapra,
-                                 36:self._swaprr,
-                                 37:self._mul,
-                                 38:self._div,
-                                192:self._comout,
-                                193:self._comin,
-                                194:self._comrdy})
+        self._ins_lookup.update({3:self._initsp,
+                                 4:self._copyla,
+                                 5:self._copylr,
+                                 6:self._copyli,
+                                 7:self._copyar,
+                                 8:self._copyai,
+                                 9:self._copyra,
+                                10:self._copyrr,
+                                11:self._copyri,
+                                12:self._copyia,
+                                13:self._copyir,
+                                14:self._copyii,
+                                15:self._swapra,
+                                16:self._swaprr,
+                                17:self._addla,
+                                18:self._addra,
+                                19:self._subla,
+                                20:self._subra,
+                                21:self._mul,
+                                22:self._div,
+                                23:self._andla,
+                                24:self._andra,
+                                25:self._orla,
+                                26:self._orra,
+                                27:self._xorla,
+                                28:self._xorra,
+                                29:self._decr,
+                                30:self._incr,
+                                31:self._decrjz,
+                                32:self._incrjz,
+                                33:self._shiftrl,
+                                34:self._shiftrr,
+                                35:self._cbr,
+                                36:self._sbr,
+                                37:self._bcrsc,
+                                38:self._bcrss,
+                                39:self._jump,
+                                40:self._jumpi,
+                                41:self._call,
+                                42:self._calli,
+                                43:self._return,
+                                44:self._retla,
+                                45:self._addrpc,
+                                46:self._randa,
+                               192:self._comout,
+                               193:self._comin,
+                               194:self._comrdy}
+                               
         self._comout_callback = None
         self._comin_callback = None
         
@@ -559,7 +604,7 @@ class Digirule2U(Digirule):
         self._comin_callback = new_callback
 
     def _initsp(self):
-        pass
+        self._ppc = []
         
     def _randa(self):
         self._acc = random.randint(0,255)
@@ -584,7 +629,10 @@ class Digirule2U(Digirule):
         mem_val_left = self._rd_mem(mem_addr_left)
         mem_addr_right = self._read_next()
         mem_val_right = self._rd_mem(mem_addr_right)
-        self._wr_mem(mem_addr_left,(mem_val_left * mem_val_right) & 0xFF)
+        product = mem_val_left * mem_val_right
+        self._wr_mem(mem_addr_left,product & 0xFF)
+        self._set_status_reg(self._CARRY_FLAG_BIT, product > 255)
+        self._set_status_reg(self._ZERO_FLAG_BIT, (product & 0xFF) == 0)
         
     def _div(self):
         # TODO: MED, This can raise a divide by zero warning / exception too
@@ -594,9 +642,59 @@ class Digirule2U(Digirule):
         mem_val_right = self._rd_mem(mem_addr_right)
         if mem_val_right == 0:
             # This is the default division by zero behaviour
+            # TODO: HIGH, The reason for terminating should also be visible to the program trace.
             raise DgtoolsErrorProgramHalt()
-        self._wr_mem(mem_addr_left, (mem_val_left // mem_val_right) & 0xFF)
-        self._acc = (mem_val_left % mem_val_right) & 0xFF
+        div_res = mem_val_left // mem_val_right
+        self._wr_mem(mem_addr_left, div_res & 0xFF)
+        self._set_acc_value(mem_val_left % mem_val_right)
+        self._set_status_reg(self._ZERO_FLAG_BIT, (div_res & 0xFF) == 0)
+        self._set_status_reg(self._CARRY_FLAG_BIT, self._get_acc_value() == 0) 
+        
+    def _copyli(self):
+        literal = self._read_next()
+        i_addr = self._read_next()
+        self._wr_mem(self._rd_mem(i_addr), literal)
+        self._set_status_regself._ZERO_FLAG_BIT, literal == 0)
+        
+    def _copyai(self):
+        i_addr = self._read_next()
+        self._wr_mem(self._rd_mem(i_addr), self._get_acc_value())
+        self._set_status_reg(self._ZERO_FLAG_BIT, self._get_acc_value() == 0)
+        
+    def _copyia(self):
+        i_addr = self._read_next()
+        self._set_acc_value(self._rd_mem(self._rd_mem(i_addr)))
+        self._set_status_reg(self._ZERO_FLAG_BIT, self._get_acc_value() == 0)
+
+    def _copyri(self):
+        mem_addr = self._read_next()
+        mem_addr_value = self._rd_mem(mem_addr)
+        i_addr = self._read_next()
+        self._wr_mem(self._rd_mem(self._rd_mem(i_addr)), mem_addr_value)
+        self._set_status_reg(self._ZERO_FLAG_BIT, mem_addr_value == 0) 
+        
+    def _copyir(self):
+        i_addr = self._read_next()
+        mem_addr = self._read_next()
+        i_addr_value = self._rd_mem(self._rd_mem(i_addr))
+        self._wr_mem(mem_addr,i_addr_value)
+        self._set_status_reg(self._ZERO_FLAG_BIT, i_addr_value == 0)
+    
+    def _copyii(self):
+        i_addr_l = self._read_next()
+        i_addr_r = self._read_next()
+        i_addr_l_value = self._rd_mem(self._rd_mem(i_addr_l))
+        self._wr_mem(self._rd_mem(self._rd_mem(i_addr_r)), i_addr_l_value)
+        self._set_status_reg(self._ZERO_FLAT_BIT, i_addr_l_value == 0)
+        
+    def _calli(self):
+        self._push_pc()
+        i_addr = self._read_next()
+        self._pc = self._rd_mem(self._rd_mem(i_addr))
+        
+    def _jumpi(self):
+        i_addr = self._read_next()
+        self._pc = self._rd_mem(self._rd_mem(i_addr))
         
     def _comout(self):
         if self._comout_callback is not None:
