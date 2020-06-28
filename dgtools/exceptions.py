@@ -45,6 +45,12 @@ class DgtoolsErrorDgbarchiveVersionIncompatible(DgtoolsError):
     
 class DgtoolsErrorProgramHalt(DgtoolsError):
     """
-    Raised to signify that execution has halted for whatever reason
+    Raised to signify that execution has halted for a specific reason (mentioned in the message of the exception)
+    """
+    pass
+    
+class DgtoolsErrorASMSyntaxError(DgtoolsError):
+    """
+    Raised to signify a syntax error in the ASM code listing
     """
     pass
