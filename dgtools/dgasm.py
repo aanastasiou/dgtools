@@ -21,7 +21,7 @@ import os
 import pyparsing
 import pickle
 import click
-from dgtools.exceptions import DgtoolsErrorSymbolAlreadyDefined, DgtoolsErrorSymbolUndefined
+from dgtools.exceptions import DgtoolsErrorSymbolAlreadyDefined, DgtoolsErrorSymbolUndefined, DgtoolsErrorASMSyntaxError
 from dgtools.dgb_archive import DGB_Archive
 from dgtools import Digirule, Digirule2U
 from dgtools.assembler import DgAssembler
