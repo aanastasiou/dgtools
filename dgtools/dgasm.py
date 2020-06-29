@@ -21,7 +21,7 @@ import os
 import pyparsing
 import pickle
 import click
-from dgtools.exceptions import DgtoolsErrorSymbolAlreadyDefined, DgtoolsErrorSymbolUndefined
+from dgtools.exceptions import DgtoolsErrorSymbolAlreadyDefined, DgtoolsErrorSymbolUndefined, DgtoolsErrorASMSyntaxError
 from dgtools.dgb_archive import DGB_Archive
 from dgtools import Digirule, Digirule2U
 from dgtools.assembler import DgAssembler
@@ -61,7 +61,7 @@ def dgasm(input_file, output_file, target):
     try:
         asm_code_ast = assembler.text_to_ast(asm_code_text)
     except DgtoolsErrorASMSyntaxError as deas:
-        print("Syntax error")
+        print(f"File {input_file} {deas}")
         sys.exit(-1)
 
     try:
