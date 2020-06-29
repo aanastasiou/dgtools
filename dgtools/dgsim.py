@@ -58,7 +58,7 @@ from dgtools.exceptions import (DgtoolsErrorOpcodeNotSupported,
 from dgtools.output_render_html import Output_Render_HTML
 from dgtools.dgb_archive import DGB_Archive
 from dgtools.callbacks import DigiruleCallbackInputUserInteraction
-from dgtools.digirule import Digirule
+from dgtools.digirule import Digirule, Digirule2U
     
     
 def trace_program(program, output_file, max_n=200, trace_title="", in_interactive_mode=False, extra_symbols=[], with_mem_dump=True):
@@ -82,8 +82,9 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
     :rtype: Digirule
     """
     # Setup the VM
-    machine = Digirule()
-    machine.load_program(program)
+    # TODO: HIGH, This has to become centralised
+    machine = {"2A":Digirule, "2U":Digirule2U}[program.version]()
+    machine.load_program(program.program)
     
     if in_interactive_mode:
         machine.interactive_callback = DigiruleCallbackInputUserInteraction("Binary button Input (e.g. '010010' wihout " 
@@ -296,7 +297,7 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
                     list(map(lambda x:(x[0],compiled_program.labels[x[0]], int(x[1])), 
                              filter(lambda x:len(x)==3, symbols_to_trace)))
                              
-    machine_after_execution = trace_program(compiled_program.program, 
+    machine_after_execution = trace_program(compiled_program, 
                                             output_trace_file, 
                                             max_n = max_n, 
                                             trace_title = title, 

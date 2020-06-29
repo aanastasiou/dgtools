@@ -489,90 +489,6 @@ class Digirule:
 
         return asm_statement
 
-    @staticmethod
-    def get_asm_parser():
-        """
-        Returns the assembly parser that the Digirule2A understands.
-        
-        Notes:
-            
-            * See inline comments for specification of the grammar
-        """
-        # TODO: HIGH, The parser should also be physically separated between directive and ASM commands.
-        # Action functions to convert valid string literals to numbers
-        uchar2num = lambda toks:int(toks[0])
-        buchar2num = lambda toks:int(toks[0],2)
-        xuchar2num = lambda toks:int(toks[0],16)
-        # An identifier for labels and symbols. It must be at least 1 character, start with a letter or number and
-        # can include the underscore.
-        identifier = pyparsing.Regex(r"[a-zA-Z_][a-zA-Z0-9_]*")
-        # A literal can be a decimal number (4,14,52), a binary number (0b100, 0b1110, 0b110100) or a hexadecimal number
-        # (0x4, 0x0E, 0x34). 
-        literal_uchar = pyparsing.Regex(r"[-]?[0-9][0-9]?[0-9]?").setParseAction(uchar2num)
-        literal_buchar = pyparsing.Regex(r"0b[0|1]+").setParseAction(buchar2num)
-        literal_xuchar = pyparsing.Regex(r"0x[0-9A-F][0-9A-F]?").setParseAction(xuchar2num)
-        literal = literal_uchar ^ literal_buchar ^ literal_xuchar
-        # Opcodes can accept literals or identifiers (.EQU or labels) as opcodes.
-        literal_or_identifier = pyparsing.Group(literal("literal") ^ identifier("symbol"))("value_type")
-        # Digirule ASM commands
-        # Each succesfully parsed command is tagged by its opcode.
-        asm_halt = pyparsing.Group(pyparsing.Regex(r"HALT")("cmd"))("0:0")
-        asm_nop = pyparsing.Group(pyparsing.Regex(r"NOP")("cmd"))("1:0")
-        asm_speed = pyparsing.Group(pyparsing.Regex(r"SPEED")("cmd") + literal_or_identifier("value"))("2:1")
-        asm_copylr = pyparsing.Group(pyparsing.Regex("COPYLR")("cmd") + literal_or_identifier("value") + literal_or_identifier("addr"))("3:2")
-        asm_copyla = pyparsing.Group(pyparsing.Regex(r"COPYLA")("cmd") + literal_or_identifier("value"))("4:1")
-        asm_copyar = pyparsing.Group(pyparsing.Regex("COPYAR")("cmd") + literal_or_identifier("addr"))("5:1")
-        asm_copyra = pyparsing.Group(pyparsing.Regex("COPYRA")("cmd") + literal_or_identifier("addr"))("6:1")
-        asm_copyrr = pyparsing.Group(pyparsing.Regex("COPYRR")("cmd") + literal_or_identifier("addr_from") + literal_or_identifier("addr_to"))("7:2")
-        asm_addla = pyparsing.Group(pyparsing.Regex("ADDLA")("cmd") + literal_or_identifier("value"))("8:1")
-        asm_addra = pyparsing.Group(pyparsing.Regex("ADDRA")("cmd") + literal_or_identifier("addr"))("9:1")
-        asm_subla = pyparsing.Group(pyparsing.Regex("SUBLA")("cmd") + literal_or_identifier("value"))("10:1")
-        asm_subra = pyparsing.Group(pyparsing.Regex("SUBRA")("cmd") + literal_or_identifier("value"))("11:1")
-        asm_andla = pyparsing.Group(pyparsing.Regex("ANDLA")("cmd") + literal_or_identifier("value"))("12:1")
-        asm_andra = pyparsing.Group(pyparsing.Regex("ANDRA")("cmd") + literal_or_identifier("addr"))("13:1")
-        asm_orla = pyparsing.Group(pyparsing.Regex("ORLA")("cmd") + literal_or_identifier("value"))("14:1")
-        asm_orra = pyparsing.Group(pyparsing.Regex("ORRA")("cmd") + literal_or_identifier("addr"))("15:1")
-        asm_xorla = pyparsing.Group(pyparsing.Regex("XORLA")("cmd") + literal_or_identifier("value"))("16:1")
-        asm_xorra = pyparsing.Group(pyparsing.Regex("XORRA")("cmd") + literal_or_identifier("addr"))("17:1")
-        asm_decr = pyparsing.Group(pyparsing.Regex("DECR")("cmd") + literal_or_identifier("addr"))("18:1")
-        asm_incr = pyparsing.Group(pyparsing.Regex("INCR")("cmd") + literal_or_identifier("addr"))("19:1")
-        asm_decrjz = pyparsing.Group(pyparsing.Regex("DECRJZ")("cmd") + literal_or_identifier("addr"))("20:1")
-        asm_incrjz = pyparsing.Group(pyparsing.Regex("INCRJZ")("cmd") + literal_or_identifier("addr"))("21:1")
-        asm_shiftrl = pyparsing.Group(pyparsing.Regex("SHIFTRL")("cmd") + literal_or_identifier("addr"))("22:1")
-        asm_shiftrr = pyparsing.Group(pyparsing.Regex("SHIFTRR")("cmd") + literal_or_identifier("addr"))("23:1")
-        asm_cbr = pyparsing.Group(pyparsing.Regex("CBR")("cmd") + literal_or_identifier("n_bit") + literal_or_identifier("addr"))("24:2")
-        asm_sbr = pyparsing.Group(pyparsing.Regex("SBR")("cmd") + literal_or_identifier("n_bit") + literal_or_identifier("addr"))("25:2")
-        asm_bcrsc = pyparsing.Group(pyparsing.Regex("BCRSC")("cmd") + literal_or_identifier("n_bit") + literal_or_identifier("addr"))("26:2")
-        asm_bcrss = pyparsing.Group(pyparsing.Regex("BCRSS")("cmd") + literal_or_identifier("n_bit") + literal_or_identifier("addr"))("27:2")
-        asm_jump = pyparsing.Group(pyparsing.Regex("JUMP")("cmd") + literal_or_identifier("addr"))("28:1")
-        asm_call = pyparsing.Group(pyparsing.Regex("CALL")("cmd") + literal_or_identifier("addr"))("29:1")
-        asm_retla = pyparsing.Group(pyparsing.Regex("RETLA")("cmd") + literal_or_identifier("value"))("30:1")
-        asm_return = pyparsing.Group(pyparsing.Regex("RETURN")("cmd"))("31:0")
-        asm_addrpc = pyparsing.Group(pyparsing.Regex("ADDRPC")("cmd") + literal_or_identifier("value"))("32:1")
-        asm_command = pyparsing.Group(asm_halt ^ asm_nop ^ asm_speed ^ asm_copylr ^ asm_copyla ^ asm_copyar ^ asm_copyra ^ asm_copyrr ^ \
-                  asm_addla ^ asm_addra ^ asm_subla ^ asm_subra ^ asm_andla ^ asm_andra ^ asm_subla ^ asm_subra ^ \
-                  asm_andla ^ asm_andra ^ asm_orla ^ asm_orra ^ asm_xorla ^ asm_xorra ^ asm_decr ^ asm_incr ^ \
-                  asm_decrjz ^ asm_incrjz ^ asm_shiftrl ^ asm_shiftrr ^ asm_cbr ^ asm_sbr ^ asm_bcrsc ^ asm_bcrss ^ \
-                  asm_jump ^ asm_call ^ asm_retla ^ asm_return ^ asm_addrpc)
-        asm_statement = asm_command
-        # Assembler directives
-        # .DB A static space delimited list of byte defs
-        # label: Defines a label
-        # .EQU A "symbol" (that in the future would be able to evaluate to anything.
-        dir_label = pyparsing.Group(identifier("idf") + pyparsing.Suppress(":"))("def_label")
-        dir_db = pyparsing.Group(pyparsing.Regex(".DB")("cmd") + pyparsing.delimitedList(literal_or_identifier)("values"))("def_db")
-        dir_equ = pyparsing.Group(pyparsing.Regex(".EQU")("cmd") + identifier("idf") + pyparsing.Suppress("=") + literal("value"))("def_equ")
-        # Comments
-        # A line of ASM code is either a comment or code with an optional inline comment
-        prog_or_dir_statement = pyparsing.Group(asm_statement ^ pyparsing.Group(dir_label ^ dir_db ^ dir_equ))("prog_dir_statement")
-        dir_comment = pyparsing.Group(pyparsing.Suppress("#") + pyparsing.Regex(r".*?\n")("text"))("def_comment")
-        dir_code_comment = pyparsing.Group(dir_comment ^ (prog_or_dir_statement + pyparsing.Optional(dir_comment)))
-        program = pyparsing.OneOrMore(dir_code_comment)
-        # In the end, ignore the comments.
-        program.ignore(dir_comment)
-        return program 
-
-               
 
 class Digirule2U(Digirule):
     """
@@ -760,3 +676,79 @@ class Digirule2U(Digirule):
         # Comms is always "ready" in emulation.
         # TODO: MED, Maybe this can be matched to a more realistic behaviour once comout, comin are connected to real files.
         self._set_status_reg(self._ZERO_FLAG_BIT, 0)
+
+    @staticmethod
+    def get_asm_statement_def(existing_defs):
+        """
+        Returns the assembly parser that the Digirule2U understands.
+        
+        Notes:
+            
+            * See inline comments for specification of the grammar
+        """
+        # NOTE: The instruction set on the 2U is so different that it is more practical to 
+        #       write the whole definition as if from scratch.
+        
+        # Digirule 2U ASM instructions
+        asm_halt = pyparsing.Group(pyparsing.Regex(r"HALT")("cmd"))("0:0")
+        asm_nop = pyparsing.Group(pyparsing.Regex(r"NOP")("cmd"))("1:0")
+        asm_speed = pyparsing.Group(pyparsing.Regex(r"SPEED")("cmd") + existing_defs["literal_or_identifier"]("value"))("2:1")
+        asm_initsp = pyparsing.Group(pyparsing.Regex(r"INITSP")("cmd"))("3:0")
+        asm_copyla = pyparsing.Group(pyparsing.Regex(r"COPYLA")("cmd") + existing_defs["literal_or_identifier"]("value"))("4:1")
+        asm_copylr = pyparsing.Group(pyparsing.Regex("COPYLR")("cmd") + existing_defs["literal_or_identifier"]("value") + existing_defs["literal_or_identifier"]("addr"))("5:2")
+        asm_copyli = pyparsing.Group(pyparsing.Regex("COPYLI")("cmd") + existing_defs["literal_or_identifier"]("value") + existing_defs["literal_or_identifier"]("iaddr"))("6:2")
+        asm_copyar = pyparsing.Group(pyparsing.Regex("COPYAR")("cmd") + existing_defs["literal_or_identifier"]("addr"))("7:1")
+        asm_copyai = pyparsing.Group(pyparsing.Regex("COPYAI")("cmd") + existing_defs["literal_or_identifier"]("iaddr"))("8:1")
+        asm_copyra = pyparsing.Group(pyparsing.Regex("COPYRA")("cmd") + existing_defs["literal_or_identifier"]("addr"))("9:1")
+        asm_copyrr = pyparsing.Group(pyparsing.Regex("COPYRR")("cmd") + existing_defs["literal_or_identifier"]("addr_from") + existing_defs["literal_or_identifier"]("addr_to"))("10:2")
+        asm_copyri = pyparsing.Group(pyparsing.Regex("COPYRI")("cmd") + existing_defs["literal_or_identifier"]("addr_from") + existing_defs["literal_or_identifier"]("iaddr_to"))("11:2")
+        asm_copyia = pyparsing.Group(pyparsing.Regex("COPYIA")("cmd") + existing_defs["literal_or_identifier"]("iaddr_from"))("12:1")
+        asm_copyir = pyparsing.Group(pyparsing.Regex("COPYIR")("cmd") + existing_defs["literal_or_identifier"]("iaddr_from") + existing_defs["literal_or_identifier"]("addr_to"))("13:2")
+        asm_copyii = pyparsing.Group(pyparsing.Regex("COPYII")("cmd") + existing_defs["literal_or_identifier"]("iaddr_from") + existing_defs["literal_or_identifier"]("iaddr_to"))("14:2")
+        asm_swapra = pyparsing.Group(pyparsing.Regex("SWAPRA")("cmd") + existing_defs["literal_or_identifier"]("addr_from"))("15:1")
+        asm_swaprr = pyparsing.Group(pyparsing.Regex("SWAPRR")("cmd") + existing_defs["literal_or_identifier"]("addr_from") + existing_defs["literal_or_identifier"]("addr_to"))("16:2")
+        asm_addla = pyparsing.Group(pyparsing.Regex("ADDLA")("cmd") + existing_defs["literal_or_identifier"]("value"))("17:1")
+        asm_addra = pyparsing.Group(pyparsing.Regex("ADDRA")("cmd") + existing_defs["literal_or_identifier"]("addr"))("18:1")
+        asm_subla = pyparsing.Group(pyparsing.Regex("SUBLA")("cmd") + existing_defs["literal_or_identifier"]("value"))("19:1")
+        asm_subra = pyparsing.Group(pyparsing.Regex("SUBRA")("cmd") + existing_defs["literal_or_identifier"]("value"))("20:1")
+        asm_mul = pyparsing.Group(pyparsing.Regex("MUL")("cmd") + existing_defs["literal_or_identifier"]("addr_left") + existing_defs["literal_or_identifier"]("addr_right"))("21:2")
+        asm_div = pyparsing.Group(pyparsing.Regex("DIV")("cmd") + existing_defs["literal_or_identifier"]("addr_left") + existing_defs["literal_or_identifier"]("addr_right"))("22:2")
+        asm_andla = pyparsing.Group(pyparsing.Regex("ANDLA")("cmd") + existing_defs["literal_or_identifier"]("value"))("23:1")
+        asm_andra = pyparsing.Group(pyparsing.Regex("ANDRA")("cmd") + existing_defs["literal_or_identifier"]("addr"))("24:1")
+        asm_orla = pyparsing.Group(pyparsing.Regex("ORLA")("cmd") + existing_defs["literal_or_identifier"]("value"))("25:1")
+        asm_orra = pyparsing.Group(pyparsing.Regex("ORRA")("cmd") + existing_defs["literal_or_identifier"]("addr"))("26:1")
+        asm_xorla = pyparsing.Group(pyparsing.Regex("XORLA")("cmd") + existing_defs["literal_or_identifier"]("value"))("27:1")
+        asm_xorra = pyparsing.Group(pyparsing.Regex("XORRA")("cmd") + existing_defs["literal_or_identifier"]("addr"))("28:1")
+        asm_decr = pyparsing.Group(pyparsing.Regex("DECR")("cmd") + existing_defs["literal_or_identifier"]("addr"))("29:1")
+        asm_incr = pyparsing.Group(pyparsing.Regex("INCR")("cmd") + existing_defs["literal_or_identifier"]("addr"))("30:1")
+        asm_decrjz = pyparsing.Group(pyparsing.Regex("DECRJZ")("cmd") + existing_defs["literal_or_identifier"]("addr"))("31:1")
+        asm_incrjz = pyparsing.Group(pyparsing.Regex("INCRJZ")("cmd") + existing_defs["literal_or_identifier"]("addr"))("32:1")
+        asm_shiftrl = pyparsing.Group(pyparsing.Regex("SHIFTRL")("cmd") + existing_defs["literal_or_identifier"]("addr"))("33:1")
+        asm_shiftrr = pyparsing.Group(pyparsing.Regex("SHIFTRR")("cmd") + existing_defs["literal_or_identifier"]("addr"))("34:1")
+        asm_cbr = pyparsing.Group(pyparsing.Regex("CBR")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("35:2")
+        asm_sbr = pyparsing.Group(pyparsing.Regex("SBR")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("36:2")
+        asm_bcrsc = pyparsing.Group(pyparsing.Regex("BCRSC")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("37:2")
+        asm_bcrss = pyparsing.Group(pyparsing.Regex("BCRSS")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("38:2")
+        asm_jump = pyparsing.Group(pyparsing.Regex("JUMP")("cmd") + existing_defs["literal_or_identifier"]("addr"))("39:1")
+        asm_jumpi = pyparsing.Group(pyparsing.Regex("JUMPI")("cmd") + existing_defs["literal_or_identifier"]("iaddr"))("40:1")
+        asm_call = pyparsing.Group(pyparsing.Regex("CALL")("cmd") + existing_defs["literal_or_identifier"]("addr"))("41:1")
+        asm_calli = pyparsing.Group(pyparsing.Regex("CALLI")("cmd") + existing_defs["literal_or_identifier"]("iaddr"))("42:1")
+        asm_return = pyparsing.Group(pyparsing.Regex("RETURN")("cmd"))("43:0")
+        asm_retla = pyparsing.Group(pyparsing.Regex("RETLA")("cmd") + existing_defs["literal_or_identifier"]("value"))("44:1")
+        asm_addrpc = pyparsing.Group(pyparsing.Regex("ADDRPC")("cmd") + existing_defs["literal_or_identifier"]("value"))("45:1")
+        asm_randa = pyparsing.Group(pyparsing.Regex("RANDA")("cmd"))("46:0")
+        asm_comout = pyparsing.Group(pyparsing.Regex("COMOUT")("cmd"))("192:0")
+        asm_comin = pyparsing.Group(pyparsing.Regex("COMIN")("cmd"))("193:0")
+        asm_comrdy = pyparsing.Group(pyparsing.Regex("COMRDY")("cmd"))("194:0")
+        
+        asm_statement = pyparsing.Group(asm_halt ^ asm_nop ^ asm_speed ^ asm_initsp ^ asm_copyla ^ asm_copylr ^ \
+                                        asm_copyli ^ asm_copyar ^ asm_copyai ^ asm_copyra ^ asm_copyrr ^ asm_copyri ^ \
+                                        asm_copyia ^ asm_copyir ^ asm_copyii ^ asm_swapra ^ asm_swaprr ^ asm_addla ^ \
+                                        asm_addra ^ asm_subla ^ asm_subra ^ asm_mul ^ asm_div ^ asm_andla ^ \
+                                        asm_andra ^ asm_orla ^ asm_orra ^ asm_xorla ^ asm_xorra ^ asm_decr ^ \
+                                        asm_incr ^ asm_decrjz ^ asm_incrjz ^ asm_shiftrl ^ asm_shiftrr ^ asm_cbr ^ \
+                                        asm_sbr ^ asm_bcrsc ^ asm_bcrss ^ asm_jump ^ asm_jumpi ^ asm_call ^ \
+                                        asm_calli ^ asm_return ^ asm_retla ^ asm_addrpc ^ asm_randa ^ asm_comout ^ \
+                                        asm_comin ^ asm_comrdy)
+
+        return asm_statement

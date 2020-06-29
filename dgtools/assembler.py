@@ -60,6 +60,7 @@ class DgAssembler:
         
         self._parser = program
         
+    
     def text_to_ast(self, asm_code_text):
         try:
             parsed_code = self._parser.parseString(asm_code_text, parseAll=True)
@@ -70,6 +71,7 @@ class DgAssembler:
                                              
         return parsed_code
 
+    
     def asm_ast_to_obj(self, parsed_code):
         """
         Transforms the parsed AST to a binary for the Digirule target architecture
