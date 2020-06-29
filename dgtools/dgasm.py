@@ -61,7 +61,7 @@ def dgasm(input_file, output_file, target):
     try:
         asm_code_ast = assembler.text_to_ast(asm_code_text)
     except DgtoolsErrorASMSyntaxError as deas:
-        print("Syntax error")
+        print(f"File {input_file} {deas}")
         sys.exit(-1)
 
     try:

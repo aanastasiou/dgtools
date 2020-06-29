@@ -65,7 +65,7 @@ class DgAssembler:
         try:
             parsed_code = self._parser.parseString(asm_code_text, parseAll=True)
         except pyparsing.ParseException as e:
-            raise DgtoolsErrorASMSyntaxError(f"File \"{input_file}\", line {e.lineno}, col {e.col}\n"
+            raise DgtoolsErrorASMSyntaxError(f"line {e.lineno}, col {e.col}\n"
                                              f"    {e.line}\n"
                                              f"Syntax Error: {e.args[2]}")
                                              
