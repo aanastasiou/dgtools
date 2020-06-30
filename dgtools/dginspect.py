@@ -104,6 +104,8 @@ def dginspect(input_file, list_binary, get_mem, set_mem, no_backup):
         sys.exit(1)
     
     if list_binary:
+        sys.stdout.write(f"Inspecting {input_file}\n")
+        sys.stdout.write(f"Model:{compiled_program.version}\n\n")
         sys.stdout.write(f"\n{binary_listing(compiled_program.program)}\n")
     else:
         # TODO: MID, Reduce code duplication by packaging this validation in a function
@@ -128,9 +130,10 @@ def dginspect(input_file, list_binary, get_mem, set_mem, no_backup):
                         list(map(lambda x:(x[0],compiled_program.labels[x[0]], int(x[1])), 
                                  filter(lambda x:len(x)==3, symbols_to_trace)))
                                      
-        sys.stdout.write(f"Inspecting {input_file}\n")
+        sys.stdout.write(f"Inspecting {input_file}\n\n")
         sys.stdout.write(f"Program:\n{compiled_program.program}\n\n")
         sys.stdout.write(f"Label offsets:\n{compiled_program.labels}\n\n")
+        sys.stdout.write(f"Model:\n{compiled_program.version}\n\n")
         
         if len(get_mem)>0:
             # Build the get mem symbols here
