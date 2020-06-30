@@ -3,13 +3,16 @@
 
 Usage: dgasm.py [OPTIONS] INPUT_FILE
 
-  Command line tool to produce Digirule 2 binaries (.dgb).
+  Command line tool to produce Digirule binaries (.dgb).
 
   The script produces a `.dgb` file with the same name as the `.asm` in its
   input, see option `-o` to set the output file explicitly.
 
 Options:
   -o, --output-file PATH
+  -g, --target [2A|2U]    Selects the target digirule model to generate code
+                          for
+
   --help                  Show this message and exit.
 
 :author: Athanasios Anastasiou
