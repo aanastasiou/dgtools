@@ -17,10 +17,12 @@ class DigiruleASMLexer(RegexLexer):
     tokens = {
         'root': [
             (r'#.*?$', Comment),
-            (words(("ADDLA", "ADDRA", "ADDRPC", "ANDLA", "ANDRA", "BCRSC", "BCRSS", "CALL", "CBR", "COPYAR", "COPYLA",
-                    "COPYLR", "COPYRA", "COPYRR", "DECR", "DECRJZ", "HALT", "INCR", "INCRJZ", "JUMP", "NOP", "ORLA", 
-                    "ORRA", "RETLA", "RETURN", "SBR", "SHIFTRL", "SHIFTRR", "SPEED", "SUBLA", "SUBRA", "XORLA", 
-                    "XORRA"), suffix=r" ?"), Keyword.Reserved),
+            (words(("HALT", "NOP", "SPEED", "INITSP", "COPYLA", "COPYLR", "COPYLI", "COPYAR", "COPYAI", "COPYRA", 
+                    "COPYRR", "COPYRI", "COPYIA", "COPYIR", "COPYII", "SWAPRA", "SWAPRR", "ADDLA", "ADDRA", "SUBLA", 
+                    "SUBRA", "MUL", "DIV", "ANDLA", "ANDRA", "ORLA", "ORRA", "XORLA", "XORRA", "DECR", "INCR", 
+                    "DECRJZ", "INCRJZ", "SHIFTRL", "SHIFTRR", "CBR", "SBR", "BCRSC", "BCRSS", "JUMP", "JUMPI", "CALL", 
+                    "CALLI", "RETURN", "RETLA", "ADDRPC", "RANDA", "COMOUT", "COMIN", 
+                    "COMRDY" ), suffix=r" ?"), Keyword.Reserved),
             (r'^[a-zA-Z_][a-zA-Z0-9_]*\:$', Name.Label),
             (r'[a-zA-Z_][a-zA-Z0-9_]*', Name.Variable),
             (r'\.(DB|EQU) ?', Keyword.Declaration),

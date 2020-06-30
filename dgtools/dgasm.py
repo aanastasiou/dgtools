@@ -18,18 +18,15 @@ Options:
 """
 import sys
 import os
-import pyparsing
-import pickle
 import click
-from dgtools.exceptions import DgtoolsErrorSymbolAlreadyDefined, DgtoolsErrorSymbolUndefined, DgtoolsErrorASMSyntaxError
-from dgtools.dgb_archive import DGB_Archive
-from dgtools import Digirule, Digirule2U
-from dgtools.assembler import DgAssembler
-       
+from dgtools import (DgtoolsErrorSymbolAlreadyDefined, DgtoolsErrorSymbolUndefined, DgtoolsErrorASMSyntaxError,
+                     DGB_Archive, Digirule, Digirule2U, BUILTIN_MODELS, DgAssembler)
+                     
 @click.command()
 @click.argument("input-file",type=click.Path(exists=True))
 @click.option("--output-file","-o", type=click.Path())
-@click.option("--target", "-g", type=click.Choice(["2A", "2U"],case_sensitive=False), default="2A")
+@click.option("--target", "-g", type=click.Choice(["2A", "2U"],case_sensitive=False), default="2A",
+              help="Selects the target digirule model to generate code for")
 def dgasm(input_file, output_file, target):
     """
     Command line tool to produce Digirule binaries (.dgb).
@@ -45,10 +42,8 @@ def dgasm(input_file, output_file, target):
     :param target: The Digirule model to generate code for, default is 2A.
     :type target: str [2A,2B,2U]
     """
-    
-    #TODO: HIGH, The model lookup table should be shared between dgasm, dgsim
     # Pick up the digirule model
-    target_digirule = {"2A":Digirule, "2U":Digirule2U}[target]
+    target_digirule = BUILTIN_MODELS[target]
     # Instantiate an assembler
     assembler = DgAssembler(target_digirule)
     

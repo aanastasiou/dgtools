@@ -1,3 +1,11 @@
+"""
+
+Callback functions for events such as user input and serial I/O
+
+:author: Athanasios Anastasiou
+:date: Jun 2020
+"""
+
 class DigiruleCallbackBase:
     """
     Base class for all interactions with the Digirule.

@@ -47,18 +47,20 @@ Options:
 """
 
 import sys
-import pickle
 import click
 import os
 import types
-from dgtools.exceptions import (DgtoolsErrorOpcodeNotSupported, 
-                                DgtoolsErrorDgbarchiveCorrupted, 
-                                DgtoolsErrorSymbolUndefined,
-                                DgtoolsErrorProgramHalt)
-from dgtools.output_render_html import Output_Render_HTML
-from dgtools.dgb_archive import DGB_Archive
-from dgtools.callbacks import DigiruleCallbackInputUserInteraction
-from dgtools.digirule import Digirule, Digirule2U
+from dgtools import (DgtoolsErrorOpcodeNotSupported, 
+                     DgtoolsErrorDgbarchiveCorrupted, 
+                     DgtoolsErrorSymbolUndefined,
+                     DgtoolsErrorProgramHalt, 
+                     Output_Render_HTML,
+                     DGB_Archive,
+                     DigiruleCallbackInputUserInteraction,
+                     Digirule, 
+                     Digirule2U, 
+                     BUILTIN_MODELS)
+from dgtools.exceptions import DgtoolsError
     
     
 def trace_program(program, output_file, max_n=200, trace_title="", in_interactive_mode=False, extra_symbols=[], with_mem_dump=True):
@@ -82,8 +84,7 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
     :rtype: Digirule
     """
     # Setup the VM
-    # TODO: HIGH, This has to become centralised
-    machine = {"2A":Digirule, "2U":Digirule2U}[program.version]()
+    machine = BUILTIN_MODELS[program.version]()
     machine.load_program(program.program)
     
     if in_interactive_mode:
@@ -181,10 +182,23 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
             dgen.ruler()
             try:
                 machine._exec_next()
-            except DgtoolsErrorProgramHalt:
+            except DgtoolsError as de:
                 done = True
+                halt_reason = de
                 
             n+=1
+        # The program terminated for a reason at this point. Mention it
+        dgen.open_tag("section", {"class":"program_halt"})
+        dgen.named_anchor(f"program_halt")
+        dgen.open_tag("header")
+        dgen.heading(f"Program stopped at n={n-1}",2)
+        dgen.close_tag("header")
+        if done:
+            dgen._write_tag("p", str(halt_reason))
+        else:
+            dgen._write_tag("p", f"Program exceeded max_n of {max_n}")
+        dgen.close_tag("section")
+        
         dgen.close_tag("article")
     return machine
 

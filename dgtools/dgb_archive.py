@@ -9,7 +9,7 @@ Archive to store Digirule2 binaries
 import sys
 import json
 import copy
-from dgtools.exceptions import DgtoolsErrorDgbarchiveCorrupted
+from .exceptions import DgtoolsErrorDgbarchiveCorrupted
 
 class DGB_Archive:
     """

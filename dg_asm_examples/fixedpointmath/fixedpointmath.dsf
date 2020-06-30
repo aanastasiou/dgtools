@@ -1,9 +1,12 @@
 # -1 * -1 = 1
 
 MUL R0 R1
+DIV R0 R2
 HALT
 
 R0:
 .DB 255
 R1:
 .DB 255
+R2:
+.DB 0

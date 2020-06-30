@@ -1,6 +1,6 @@
 """
 
-The main Digirule VM class.
+Built-in Digirule models supported by dgtools.
 
 :author: Athanasios Anastasiou
 :date: Mar 2020
@@ -13,11 +13,9 @@ import pyparsing
 class Digirule:
     """
     Abstracts the Digirule 2 hardware.
-    
     Maps all registers, flags and memory spaces accessible.
     
     Notes:
-    
         * Functions that change the state of the VM but do not return values, should return `self`
         
     """
@@ -174,7 +172,11 @@ class Digirule:
         return self
         
     def _pop_pc(self):
-        self._pc = self._ppc.pop()
+        # TODO: HIGH, add the underflow exception
+        try:
+            self._pc = self._ppc.pop()
+        except IndexError:
+            raise DgtoolsErrorStackUnderflow("Program stack underflow.")
         return self
         
     def _set_acc_value(self, new_value):
@@ -185,8 +187,6 @@ class Digirule:
         :type new_value: uint8
         """
         self._acc = new_value & 0xFF
-        # self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
-        # self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
         return self
         
     def _get_acc_value(self):
@@ -200,11 +200,7 @@ class Digirule:
     def _get_status_reg(self, field_mask):
         return 1 if (self._mem[self._status_reg_ptr] & field_mask) == field_mask else 0
         
-    def _get_zero_flag(self):
-        return 1 if self._mem[self._status_reg_ptr] & self._ZERO_FLAG_BIT == self._ZERO_FLAG_BIT else 0
-        
     def _wr_mem(self, addr, value):
-        # TODO: MED, addr cannot go higher than 252 or it will overwrite peripherals. It should generate a warning.
         self._mem[addr & 0xFF] = value & 0xFF
         return self
         
@@ -222,7 +218,7 @@ class Digirule:
         return self._mem[addr]
         
     def _halt(self):
-        raise DgtoolsErrorProgramHalt()
+        raise DgtoolsErrorProgramHalt("Program terminated at HALT instruction.")
         
     def _nop(self):
         pass
@@ -424,7 +420,7 @@ class Digirule:
             cnt = self._exec_next()
             n+=1
             
-        raise DgtoolsErrorProgramHalt()
+        raise DgtoolsErrorProgramHalt(f"Program exceeded preset max_n={max_n}.")
             
     def step(self):
         return self._exec_next()
@@ -610,8 +606,7 @@ class Digirule2U(Digirule):
         mem_val_right = self._rd_mem(mem_addr_right)
         if mem_val_right == 0:
             # This is the default division by zero behaviour
-            # TODO: HIGH, The reason for terminating should also be visible to the program trace.
-            raise DgtoolsErrorProgramHalt()
+            raise DgtoolsErrorProgramHalt("Division by zero.")
         div_res = mem_val_left // mem_val_right
         self._wr_mem(mem_addr_left, div_res & 0xFF)
         self._set_acc_value(mem_val_left % mem_val_right)

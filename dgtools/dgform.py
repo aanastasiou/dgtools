@@ -17,7 +17,7 @@ from pygments import highlight
 from pygments.formatters import HtmlFormatter
 import sys
 import click 
-from dgtools.lexer import DigiruleASMLexer
+from dgtools import DigiruleASMLexer
 
 
 @click.command()
