@@ -1,5 +1,5 @@
 fixedpointmath_trace.html: fixedpointmath.dgb
-	dgsim.py fixedpointmath.dgb -ts R0 -ts R1
+	dgsim.py fixedpointmath.dgb -ts R0 -ts R1 -ts R2
 	
 fixedpointmath.dgb: fixedpointmath.dsf
 	dgasm.py fixedpointmath.dsf -g 2U
