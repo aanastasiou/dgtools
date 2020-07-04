@@ -1,12 +1,12 @@
 Notes on the instruction set
 ============================
 
-This section contains a few notes on modifying the instruction set of a Digirule, so that it becomes more efficient.
-Since the Digirule2 has limited memory, it does pay off to implement slightly more complex commands to save memory and 
-this is what is meant here by "efficiency". *Saving bytes of memory while achieving the same end result*.
+This section contains a few notes on modifying the instruction set of a Digirule2, so that it becomes more efficient.
+Since the Digirule2 has limited memory, it does pay off to implement slightly more complex instructions to save memory 
+and this is what is meant here by "efficiency". *Saving bytes of memory while achieving the same end result*.
 
-For example, the Digirule2 instruction set contains both a ``SUBLA`` and an ``ADDLA`` commands when it could only have
-offered an ``ADDLA`` and let the user perform subtractions in 
+For example, the Digirule2 instruction set contains both a ``SUBLA`` and an ``ADDLA`` instructions when it could only 
+have offered an ``ADDLA`` and let the user perform subtractions in 
 `two's complement <https://en.wikipedia.org/wiki/Two%27s_complement>`_ by inverting the second operand.
 
 Here is what this looks like when trying to calculate ``4-2``:
@@ -32,15 +32,15 @@ Here is what this looks like when trying to calculate ``4-2``:
 
 *Listing B*
 
-Listing A is 5 bytes but listing B is 7 bytes long. In this case, having a separate command for addition and subtraction 
-helps to fit more commands into the already limited memory space of the hardware.
+Listing A is 5 bytes but listing B is 7 bytes long. In this case, having a separate instruction for addition and 
+subtraction helps to fit more instructions into the already limited memory space of the hardware.
 
 This however is not always the case and the following sections offer some suggestions for improvement.
 
 Throughout those: 
 
 * The ``*`` character denotes "any character" when it is not used to denote multiplication. For example, 
-  ``SHIFTR*`` is meant to include both ``SHIFTRL, SHIFTRR`` commands.
+  ``SHIFTR*`` is meant to include both ``SHIFTRL, SHIFTRR`` instructions.
   
 * ``addr`` denotes an address within the address space of the Digirule2
 
@@ -53,10 +53,10 @@ Memory Operations
 Indirect Copy
 ^^^^^^^^^^^^^
 
-As demonstrated in section :ref:`advanced-topics`, there is a clear need for an indirect copy command. That is, a copy
-command that can copy between memory offsets stored in memory.
+As demonstrated in section :ref:`advanced-topics`, there is a clear need for an indirect copy instruction. That is, 
+a copy instruction that can copy between memory offsets stored in memory.
 
-Currently, ``COPYRR addr1 addr2`` is a 3 byte command that performs ``mem[addr2] = mem[addr1]``. Unless ``COPYRR`` 
+Currently, ``COPYRR addr1 addr2`` is a 3 byte instruction that performs ``mem[addr2] = mem[addr1]``. Unless ``COPYRR`` 
 is written as a subroutine, it is impossible to get it to copy between two ``addr1, addr2`` that are the result of 
 a calculation. However, doing so requires the following pattern:
 
@@ -85,8 +85,8 @@ variant that instead of implementing ``mem[addr2] = mem[addr1]``, it implements 
 In that case, the memory cost would be just 3 bytes.
 
 
-Arithmetic commands
--------------------
+Arithmetic Instructions
+-----------------------
 
 Target of ``SHIFT**, BCRS*``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -109,22 +109,22 @@ The suggestion here is to have variants of bit testing and shifting that can tar
 ``SHIFTRR, SHIFTRL``
 ^^^^^^^^^^^^^^^^^^^^
 
-These two commands shift bytes left or right and are equivalant to division or multiplication by 2, respectively.
+These two instructions shift bytes left or right and are equivalant to division or multiplication by 2, respectively.
 On the Digirule 2, shifting is performed **through** the Carry flag. If a program is performing
 a series of operations and it only calls for a plain right or left shift, the Carry flag has to be manually 
-cleared so that it does not interfere with the result of the calculation. This inserts 3 bytes for each ``CBR`` command
-that ensures that the Carry flag is clear prior to shifting.
+cleared so that it does not interfere with the result of the calculation. This inserts 3 bytes for each ``CBR`` 
+instruction that ensures that the Carry flag is clear prior to shifting.
 
 One practical example is provided in the Pseudorandom Number Generator (PRNG) that uses a plain Linear Feedback Shift 
 Register. In this technique, it is required to shift and XOR the current state of the PRNG to calculate the value of the
 bit at its input. 
 
-Therefore, in cases like these, where only a shift is required, offering a plain ``SH*`` command would help in
+Therefore, in cases like these, where only a shift is required, offering a plain ``SH*`` instruction would help in
 conserving memory.
 
 
-Flow control commands
----------------------
+Flow control instructions
+-------------------------
 
 Indirect ``JUMP`` and ``CALL``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -138,6 +138,6 @@ hint at a ``JUMP`` operation.
 Being able to transfer execution in such a way would also enable functions to be passed as parameters to other
 functions.
 
-Therefore, the suggestion here is to add indirect versions of these two commands.
+Therefore, the suggestion here is to add indirect versions of these two instructions.
 
 

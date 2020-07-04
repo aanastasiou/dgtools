@@ -278,7 +278,7 @@ def main(input_file, output_file):
                                                       align="center",
                                                       width=66,
                                                       valign="middle", 
-                                                      height=19), palette, 
+                                                      height=20), palette, 
                                                       unhandled_input=handle_esc,
                                                       pop_ups = True)
     loop.run()
