@@ -391,7 +391,7 @@ class Digirule:
         self._pop_pc()
 
     def _return(self):
-        self.pop_pc()
+        self._pop_pc()
         
     def _addrpc(self):
         self._pc += self._read_next()

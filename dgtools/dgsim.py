@@ -62,7 +62,6 @@ from dgtools import (DgtoolsErrorOpcodeNotSupported,
                      BUILTIN_MODELS)
 from dgtools.exceptions import DgtoolsError
     
-    
 def trace_program(program, output_file, max_n=200, trace_title="", in_interactive_mode=False, extra_symbols=[], with_mem_dump=True):
     """
     Produces a detailed trace of program execution in HTML form.
@@ -235,6 +234,7 @@ def validate_trace_symbol(ctx, param, value):
                     raise click.BadParameter(f"It should be Offset+Length<=255, received {a_value}")
     return value
 
+
 @click.command()
 @click.argument("input-file", type=click.Path(exists=True))
 @click.option("--output-trace_file","-otf", type=click.Path(), 
@@ -320,7 +320,7 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
                                             extra_symbols=extra_symbols)
                                             
     machine_after_execution_archive = DGB_Archive(machine_after_execution._mem, 
-                                                  compiled_program.labels)
+                                                  compiled_program.labels, version=compiled_program.version)
     
     machine_after_execution_archive.save(output_memdump_file)
         
