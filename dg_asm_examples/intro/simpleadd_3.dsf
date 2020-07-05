@@ -9,9 +9,9 @@
 
 COPYLA a
 ADDLA b
-COPYAR r3
+COPYAR R3
 COPYAR led_register
 HALT
-r3:
+R3:
 .DB 0
 

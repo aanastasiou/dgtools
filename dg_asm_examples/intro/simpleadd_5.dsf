@@ -4,7 +4,7 @@ COPYRA a
 ADDRA b
 COPYAR r3
 HALT
-r3:
+R3:
 .DB 0
 
 a:

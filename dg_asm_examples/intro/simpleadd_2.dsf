@@ -1,14 +1,15 @@
 # Implements the addition of two variables.
 # This is equivalent to the statement `r3 = r0 + r1`.
 
-COPYRA r0
-ADDRA r1
-COPYAR r3
+COPYRA R0
+ADDRA R1
+COPYAR R3
 HALT
-r0:
+
+R0:
 .DB 1
-r1:
+R1:
 .DB 1
-r3:
+R3:
 .DB 0
 
