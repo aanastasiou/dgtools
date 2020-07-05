@@ -47,6 +47,14 @@ confirm the value that the accumulator holds.
     
     The final state of the "Hello World" program trace. The result of the computation (2) 
     is in the Accumulator.
+    
+
+.. note::
+
+    This introduction to compilation via ``dgtools`` applies to any Digirule2 hardware. By default ``dgasm`` will 
+    produce a ``2A`` executable but if you happen to have a different firmware installed (for example ``2U``) just 
+    specify it with parameter ``-g``. For more information, please see 
+    the :ref:`detailed script description <detailed_script_descriptions>`.
 
 
 .. _simple_add_with_mem:
