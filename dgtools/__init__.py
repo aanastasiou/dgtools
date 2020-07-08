@@ -14,7 +14,8 @@ from .exceptions import (DgtoolsErrorSymbolUndefined, DgtoolsErrorSymbolAlreadyD
                          DgtoolsErrorDgbarchiveVersionIncompatible, DgtoolsErrorProgramHalt, 
                          DgtoolsErrorASMSyntaxError, DgtoolsErrorStackUnderflow, DgtoolsErrorStackOverflow)
 from .output_render_html import Output_Render_HTML
-from .callbacks import DigiruleCallbackInputUserInteraction, DigiruleCallbackComOut
+from .callbacks import (DigiruleCallbackComOutStdout, DigiruleCallbackComOutStoreMem, 
+                        DigiruleCallbackComInUserInteraction, DigiruleCallbackInputUserInteraction)
 from .lexer import DigiruleASMLexer
                                 
 BUILTIN_MODELS = {"2A":Digirule, "2U":Digirule2U}

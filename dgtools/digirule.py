@@ -6,7 +6,8 @@ Built-in Digirule models supported by dgtools.
 :date: Mar 2020
 """
 from .exceptions import DgtoolsErrorOpcodeNotSupported, DgtoolsErrorProgramHalt
-from .callbacks import DigiruleCallbackInputBase
+from .callbacks import (DigiruleCallbackInputBase, DigiruleCallbackInputUserInteraction, DigiruleCallbackComOutStdout, 
+                        DigiruleCallbackComInUserInteraction)
 import random
 import pyparsing
 
@@ -117,6 +118,20 @@ class Digirule:
             raise TypeError(f".speed() setter expects int, received {type(new_value)}")
         self._speed_setting = new_value & 0xFF
                 
+    def set_default_callbacks(self):
+        """
+        Sets the callbacks that are used to link a Digirule object to the outside world, to a 
+        reasonable set of defaults
+        """
+        self._interactive_callback = DigiruleCallbackInputUserInteraction("Binary button Input (e.g. '010010' wihout " 
+                                                                          "quotes):")
+
+    def clear_callbacks(self):
+        """
+        Completely resets any callbacks to None.
+        """
+        self._interactive_callback = None
+        
     def load_program(self, a_program):
         """
         Loads a program starting from the specified address.
@@ -554,6 +569,16 @@ class Digirule2U(Digirule):
         self._comout_callback = None
         self._comin_callback = None
         
+    def set_default_callbacks(self):
+        super().set_default_callbacks()
+        self._comin_callback = DigiruleCallbackComInUserInteraction("Serial Input:")
+        self._comout_callback = DigiruleCallbackComOutStdout()
+        
+    def clear_callbacks(self):
+        super().clear_callbacks()
+        self._comin_callback = None
+        self._comout_callback = None
+        
     @property 
     def comout_callback(self):
         return self._comout_callback
@@ -673,7 +698,7 @@ class Digirule2U(Digirule):
         
     def _comin(self):
         if self._comin_callback is not None:
-            self._comin_callback(self._acc)
+            self._set_acc_value(self._comin_callback())
         
     def _comrdy(self):
         # Comms is always "ready" in emulation.

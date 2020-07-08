@@ -1,0 +1,6 @@
+# A very simple loopback that simply echoes back any 
+# character that is sent to the D2U.
+com_again:
+COMIN
+COMOUT
+JUMP com_again

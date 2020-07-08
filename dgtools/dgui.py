@@ -311,6 +311,7 @@ def main(input_file, output_file):
             sys.stdout.write(dgasm_process.stdout.read())
         else:
             sys.stdout.write("Compilation succesful.\n")
+            # TODO: MED, Revise stdin,stdout rerouting here.
             # If that was succesful, run the simulator
             dgsim_process = subprocess.Popen(dgsim_params, stdout=subprocess.PIPE, text=True)
             if dgsim_process.wait()!=0:

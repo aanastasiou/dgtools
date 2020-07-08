@@ -6,6 +6,8 @@ Callback functions for events such as user input and serial I/O
 :date: Jun 2020
 """
 
+import sys
+
 class DigiruleCallbackBase:
     """
     Base class for all interactions with the Digirule.
@@ -29,13 +31,13 @@ class DigiruleCallbackInputBase:
     
     def __call__(self):
         done = False
-        input_value = self.get_input()
         while not done:
+            input_value = self.get_input()
             try:
                 input_value = self.validate_input(input_value)
                 done = True
             except ValueError as e:
-                print(e.message)
+                print(str(e))
                 
         return input_value
     
@@ -81,9 +83,30 @@ class DigiruleCallbackInputUserInteraction(DigiruleCallbackInputBase):
         if user_input_numeric>255:
             raise ValueError("User input greater than 255")                
         return user_input_numeric
+        
 
+class DigiruleCallbackComInUserInteraction(DigiruleCallbackInputUserInteraction):
+    """
+    Prompts the user for serial port input.
+    """
+    def validate_input(self, input_value):
+        if len(input_value) == 0:
+            raise ValueError("User input required")
+        
+        if input_value[0] == "\\":
+            # User tries to enter a byte value
+            byte_value = int(input_value[1:])
+            if byte_value < 0 or byte_value>255:
+                raise ValueError(f"COM Input must be a byte value (0-255). Entered {input_value}.")
+            return byte_value
+        else:
+            # User enters a simple character
+            if len(input_value)>1:
+                raise ValueError(f"COM Input must be a single ASCII character. Entered {input_value}.")
+            return ord(input_value)
+            
 
-class DigiruleCallbackComOut(DigiruleCallbackOutputBase):
+class DigiruleCallbackComOutStoreMem(DigiruleCallbackOutputBase):
     """
     Stores output from comout.
     """
@@ -92,3 +115,12 @@ class DigiruleCallbackComOut(DigiruleCallbackOutputBase):
         
     def on_new_data(self, a_new_value):
         self._value.append(a_new_value)
+
+
+class DigiruleCallbackComOutStdout(DigiruleCallbackOutputBase):
+    """
+    Sends output directly to stdout
+    """
+    # TODO: MED, It would be more informative if this had a configurable prompt too
+    def on_new_data(self, a_new_value):
+        sys.stdout.write(chr(a_new_value))

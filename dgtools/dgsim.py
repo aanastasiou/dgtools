@@ -87,8 +87,8 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
     machine.load_program(program.program)
     
     if in_interactive_mode:
-        machine.interactive_callback = DigiruleCallbackInputUserInteraction("Binary button Input (e.g. '010010' wihout " 
-                                                                            "quotes):")
+        machine.set_default_callbacks()
+        
     done = False
     n=0
     # Headings for the memory space dump
