@@ -17,8 +17,8 @@ from .output_render_html import Output_Render_HTML
 from .callbacks import (DigiruleCallbackComOutStdout, DigiruleCallbackComOutStoreMem, 
                         DigiruleCallbackComInUserInteraction, DigiruleCallbackInputUserInteraction)
 from .lexer import DigiruleASMLexer
-from .digirule_visualise import *
-from .simulator import *
+from .digirule_visualise import DgVisualiseDigirule2A, DgVisualiseDigirule2U
+from .simulator import DgSimulator
                                 
 
 
