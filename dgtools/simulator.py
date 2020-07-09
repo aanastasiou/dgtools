@@ -33,18 +33,19 @@ class DgSimulator:
         """
         Called at the start of the trace procedure
         """
-        self._digirule_visualiser.on_init(self._digirule, rend_obj)
+        self._digirule_visualiser.on_init(self._current_n, self._digirule, rend_obj)
 
     def on_step(self, rend_obj):
-        self._digirule_visualiser.on_step(self._digirule, rend_obj)
+        self._digirule_visualiser.on_step(self._current_n, self._digirule, rend_obj)
         
     def on_finalise(self, rend_obj, halt_exception):
         # TODO: HIGH, Add similar type checking to the two points above
         if not issubclass(halt_exception, DgtoolsError):
             raise TypeError(f"Expected DgtoolsError, received {type(halt_exception)}")
-        self._digirule_visualiser.on_finalise(self._digirule, rend_obj, halt_exception)
+        self._digirule_visualiser.on_finalise(self._current_n, self._digirule, rend_obj, halt_exception)
         
     def __call__(self, output_file):
+        done = False
         with Output_Render_HTML(output_file) as dgen:
             self.on_init(dgen)
             while not done:
@@ -57,3 +58,5 @@ class DgSimulator:
                 except DgtoolsError as de:
                     self.on_finalise(dgen, de)
                     done = True
+                # TODO: HIGH, Need to catch anything else too
+        return self._digirule

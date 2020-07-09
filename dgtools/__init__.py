@@ -17,5 +17,10 @@ from .output_render_html import Output_Render_HTML
 from .callbacks import (DigiruleCallbackComOutStdout, DigiruleCallbackComOutStoreMem, 
                         DigiruleCallbackComInUserInteraction, DigiruleCallbackInputUserInteraction)
 from .lexer import DigiruleASMLexer
+from .digirule_visualise import *
+from .simulator import *
                                 
-BUILTIN_MODELS = {"2A":Digirule, "2U":Digirule2U}
+
+
+BUILTIN_MODELS = {"2A":Digirule,  
+                  "2U":Digirule2U}

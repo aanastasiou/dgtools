@@ -10,36 +10,67 @@ class DgVisualiseBase:
     Digirule visualiser objects are responsible for generating human readable representations for the state 
     of the Digirule as it evolves through program execution.
     """
-    def on_init(self, current_digirule, rend_obj):
-        raise NotImplementedError("Cannot instantiate directly.")
+    def __init__(self):
+        self._init_layout = []
+        self._step_layout = []
+        self._final_layout = []
+        self.on_setup_layouts()
         
-    def on_step(self, current_digirule, rend_obj):
-        raise NotImplementedError("Cannot instantiate directly.")
+    def on_setup_layouts(self):
+        """
+        Sets up the layout for each section.
+        
+        A section layout is a list of class functions that are identical, in terms of signature, to 
+        init, step, finalise and each one is supposed to handle a part of the output.
+        """
+        pass
+        
+    def _render_section_layout(self, a_section_layout, current_n, current_digirule, rend_obj):
+        for a_layout in a_section_layout:
+            a_layout(current_n, current_digirule, rend_obj)
+        
+    def on_init(self, current_n, current_digirule, rend_obj):
+        self._render_section_layout(self._init_layout, current_n, current_digirule, rend_obj)
+                
+    def on_step(self, current_n, current_digirule, rend_obj):
+        self._render_section_layout(self._step_layout, current_n, current_digirule, rend_obj)
         
     def on_finalise(self, current_digirule, rend_obj, halt_exception):
-        raise NotImplementedError("Cannot instantiate directly.")
+        self._render_section_layout(self._final_layout, current_n, current_digirule, rend_obj)
         
 
 class DgVisualiseDigirule2A(DgVisualiseBase):
     def __init__(self, trace_title="", extra_symbols=[], with_mem_dump=False):
+        super().__init__()
         self._trace_title = trace_title
         self._extra_symbols = extra_symbols
-        self._with_mem_dump = self._with_mem_dump
+        self._with_mem_dump = with_mem_dump
         
-    def on_init(self, current_digirule, rend_obj):
+    def on_setup_layouts(self):
+        self._init_layout = [self.start_trace]
+        self._step_layout = [self.step_heading, 
+                             self.step_machine_registers, 
+                             self.step_mem_space, 
+                             self.step_extra_symbols,
+                             self.step_onboard_io]
+        self._final_layout = [self.end_trace]
+        
+        
+    def start_trace(self, current_n, current_digirule, rend_obj):
         rend_obj.open_tag("article")
         rend_obj.open_tag("header")
         rend_obj.heading(f"Program Trace {self._trace_title}", 1)
         rend_obj.close_tag("header")
         
-    def on_step(self, current_digirule, rend_obj):
-        # Machine registers
+    def step_heading(self, current_n, current_digirule, rend_obj):
         rend_obj.open_tag("section")
-        rend_obj.named_anchor(f"n{n}")
+        rend_obj.named_anchor(f"n{current_n}")
         rend_obj.open_tag("header")
-        rend_obj.heading(f"Machine State at n={n}",2)
+        rend_obj.heading(f"Machine State at n={current_n}",2)
         rend_obj.close_tag("header")
         
+    def step_machine_registers(self, current_n, current_digirule, rend_obj):
+        # Machine registers
         rend_obj.open_tag("section")
         rend_obj.open_tag("header")
         rend_obj.heading(f"Machine Registers",3)
@@ -58,6 +89,7 @@ class DgVisualiseDigirule2A(DgVisualiseBase):
                          attrs={"class":"table_machine_state"})
         rend_obj.close_tag("section")
         
+    def step_mem_space(self, current_n, current_digirule, rend_obj):
         # Memory space
         if self._with_mem_dump:
             rend_obj.open_tag("section")
@@ -70,7 +102,8 @@ class DgVisualiseDigirule2A(DgVisualiseBase):
                               attrs={"class":"table_memory_space"},
                               cell_attrs={(current_digirule._pc // 16,current_digirule._pc-(current_digirule._pc // 16)):{"class":"current_pc"}})
             rend_obj.close_tag("section")
-        
+
+    def step_extra_symbols(self, current_n, current_digirule, rend_obj):
         # Extra symbols
         if len(self._extra_symbols):
             rend_obj.open_tag("section")
@@ -79,7 +112,7 @@ class DgVisualiseDigirule2A(DgVisualiseBase):
             rend_obj.close_tag("header")
             
             symbol_values = []
-            for a_symbol in extra_symbols:
+            for a_symbol in self._extra_symbols:
                 raw_bytes = current_digirule._mem[a_symbol[1]:(a_symbol[1]+a_symbol[2])]
                 if len(raw_bytes)>1:
                     chr_bytes = "".join(map(lambda x:chr(x), raw_bytes))
@@ -91,10 +124,11 @@ class DgVisualiseDigirule2A(DgVisualiseBase):
                              list(map(lambda x:[x[0][0],
                                                 f"0x{x[0][1]:02X}",
                                                 x[1][0],x[1][1]],
-                                      zip(extra_symbols,symbol_values))), 
+                                      zip(self._extra_symbols,symbol_values))), 
                              attrs={"class":"table_spec_sym"})
             rend_obj.close_tag("section")
-        
+
+    def step_onboard_io(self, current_n, current_digirule, rend_obj):
         # Onboard IO
         rend_obj.open_tag("section")
         rend_obj.open_tag("header")
@@ -108,16 +142,13 @@ class DgVisualiseDigirule2A(DgVisualiseBase):
         rend_obj.close_tag("section")
         rend_obj.ruler()
         
-    def on_finalise(self, current_digirule, rend_obj, halt_exception):
+    def end_trace(self, current_n, current_digirule, rend_obj, halt_exception):
         rend_obj.open_tag("section", {"class":"program_halt"})
         rend_obj.named_anchor(f"program_halt")
         rend_obj.open_tag("header")
         rend_obj.heading(f"Program stopped at n={n-1}",2)
         rend_obj.close_tag("header")
-        if done:
-            rend_obj._write_tag("p", str(halt_reason))
-        else:
-            rend_obj._write_tag("p", f"Program exceeded max_n of {max_n}")
+        rend_obj._write_tag("p", str(halt_exception))
         rend_obj.close_tag("section")
         
         rend_obj.close_tag("article")

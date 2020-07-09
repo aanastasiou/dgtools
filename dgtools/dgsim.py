@@ -50,156 +50,14 @@ import sys
 import click
 import os
 import types
-from dgtools import (DgtoolsErrorOpcodeNotSupported, 
-                     DgtoolsErrorDgbarchiveCorrupted, 
+from dgtools import (DgtoolsErrorDgbarchiveCorrupted, 
                      DgtoolsErrorSymbolUndefined,
-                     DgtoolsErrorProgramHalt, 
-                     Output_Render_HTML,
                      DGB_Archive,
-                     DigiruleCallbackInputUserInteraction,
-                     Digirule, 
-                     Digirule2U, 
+                     DgSimulator, 
+                     DgVisualiseDigirule2A,
                      BUILTIN_MODELS)
 from dgtools.exceptions import DgtoolsError
     
-def trace_program(program, output_file, max_n=200, trace_title="", in_interactive_mode=False, extra_symbols=[], with_mem_dump=True):
-    """
-    Produces a detailed trace of program execution in HTML form.
-    
-    :param program: A fully compiled Digirule2 binary.
-    :type program: List<uint8>[256]
-    :param output_file: The HTML filename.
-    :type output_file: str
-    :param max_n: Maximum number of steps to allow the VM to run for.
-    :type max_n: int
-    :param trace_title: A very simple title for the trace.
-    :type trace_title: str
-    :param in_interactive_mode: Whether to execute the program in interactive mode.
-    :type in_interactive_mode: bool
-    :param with_mem_dump: Whether to be producing a full memory dump at each time step of execution.
-    :param exra_symbols: A list of symbol name, offset, length to explicitly monitor during execution
-    :type extra_symbols: List<str, int, int>
-    :returns: A Digirule2 object at its final state when the last command was executed.
-    :rtype: Digirule
-    """
-    # Setup the VM
-    machine = BUILTIN_MODELS[program.version]()
-    machine.load_program(program.program)
-    
-    if in_interactive_mode:
-        machine.set_default_callbacks()
-        
-    done = False
-    n=0
-    # Headings for the memory space dump
-    mem_space_heading_h = ["Offset (h)"]+[f"{x:02X}" for x in range(0,16)]
-    mem_space_heading_v = [f"{x:02X}" for x in range(0,256,16)]
-    # This function could simply be returning a data structure with all data required by a template to produce the 
-    # actual output. But that would increase dependencies and possibly required memory too. This is why the file is 
-    # created here on the fly.
-    with Output_Render_HTML(output_file) as dgen:
-        dgen.open_tag("article")
-        dgen.open_tag("header")
-        dgen.heading(f"Program Trace {trace_title}", 1)
-        dgen.close_tag("header")
-        while not done and n<max_n:
-            # Machine registers
-            dgen.open_tag("section")
-            dgen.named_anchor(f"n{n}")
-            dgen.open_tag("header")
-            dgen.heading(f"Machine State at n={n}",2)
-            dgen.close_tag("header")
-            
-            dgen.open_tag("section")
-            dgen.open_tag("header")
-            dgen.heading(f"Machine Registers",3)
-            dgen.close_tag("header")
-            dgen.table_h(["Program Counter:","Accumulator:", "Status Reg:","Button Register:", "Addr.Led Register:",
-                          "Data Led Register:", "Speed setting:", "Program counter stack:"],
-                         [[f"0x{machine._pc:02X}"], 
-                          [machine._acc],
-                          [machine._mem[machine._status_reg_ptr]], 
-                          [machine._mem[machine._bt_reg_ptr]], 
-                          [machine._mem[machine._addrled_reg_ptr]], 
-                          [machine._mem[machine._dataled_reg_ptr]], 
-                          [machine._speed_setting], 
-                          # [machine._ppc]],
-                          [",".join(list(map(lambda x:f"0x{x:02X}",machine._ppc)))]],
-                          attrs={"class":"table_machine_state"})
-            dgen.close_tag("section")
-            
-            # Memory space
-            if with_mem_dump:
-                dgen.open_tag("section")
-                dgen.open_tag("header")
-                dgen.heading(f"Full memory dump:",3)
-                dgen.close_tag("header")
-                dgen.table_hv([[f"{machine._mem[n]:02X}" for n in range(m,m+16)] for m in range(0,256,16)],
-                              mem_space_heading_h, 
-                              mem_space_heading_v,
-                              attrs={"class":"table_memory_space"},
-                              cell_attrs={(machine._pc // 16,machine._pc-(machine._pc // 16)):{"class":"current_pc"}})
-                dgen.close_tag("section")
-            
-            # Extra symbols
-            if len(extra_symbols):
-                dgen.open_tag("section")
-                dgen.open_tag("header")
-                dgen.heading(f"Specific Symbols",3)
-                dgen.close_tag("header")
-                
-                # symbol_names = list(map(lambda x:x[0],extra_symbols))
-                
-                symbol_values = []
-                for a_symbol in extra_symbols:
-                    raw_bytes = machine._mem[a_symbol[1]:(a_symbol[1]+a_symbol[2])]
-                    if len(raw_bytes)>1:
-                        chr_bytes = "".join(map(lambda x:chr(x), raw_bytes))
-                    else:
-                        chr_bytes = ""
-                    symbol_values.append([str(raw_bytes),chr_bytes])
-                # dgen.table_h(symbol_names,symbol_values, attrs={"class":"table_spec_sym"})
-                dgen.table_v(["Symbol","Offset","Value(s)", "Value as string"],
-                             list(map(lambda x:[x[0][0],
-                                                f"0x{x[0][1]:02X}",
-                                                x[1][0],x[1][1]],
-                                      zip(extra_symbols,symbol_values))), 
-                             attrs={"class":"table_spec_sym"})
-                dgen.close_tag("section")
-            
-            # Onboard IO
-            dgen.open_tag("section")
-            dgen.open_tag("header")
-            dgen.heading("Onboard I/O",3)
-            dgen.close_tag("header")
-            dgen.table_h(["Address LEDs","Data LEDs","Button Switches"],
-                         [machine.addr_led, machine.data_led, machine.button_sw],
-                         attrs={"class":"table_onboard_io"})
-            dgen.close_tag("section")
-            
-            dgen.close_tag("section")
-            dgen.ruler()
-            try:
-                machine._exec_next()
-            except DgtoolsError as de:
-                done = True
-                halt_reason = de
-                
-            n+=1
-        # The program terminated for a reason at this point. Mention it
-        dgen.open_tag("section", {"class":"program_halt"})
-        dgen.named_anchor(f"program_halt")
-        dgen.open_tag("header")
-        dgen.heading(f"Program stopped at n={n-1}",2)
-        dgen.close_tag("header")
-        if done:
-            dgen._write_tag("p", str(halt_reason))
-        else:
-            dgen._write_tag("p", f"Program exceeded max_n of {max_n}")
-        dgen.close_tag("section")
-        
-        dgen.close_tag("article")
-    return machine
 
 def validate_trace_symbol(ctx, param, value):
     """
@@ -310,19 +168,25 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
                              filter(lambda x:len(x)==2, symbols_to_trace))) + \
                     list(map(lambda x:(x[0],compiled_program.labels[x[0]], int(x[1])), 
                              filter(lambda x:len(x)==3, symbols_to_trace)))
-                             
-    machine_after_execution = trace_program(compiled_program, 
-                                            output_trace_file, 
-                                            max_n = max_n, 
-                                            trace_title = title, 
-                                            in_interactive_mode=interactive_mode, 
-                                            with_mem_dump=with_dump, 
-                                            extra_symbols=extra_symbols)
-                                            
-    machine_after_execution_archive = DGB_Archive(machine_after_execution._mem, 
-                                                  compiled_program.labels, version=compiled_program.version)
+    # Create the visualiser
+    dg_vis = DgVisualiseDigirule2A(title, extra_symbols, with_dump)
+    # Create the machine    
+    dg_machine = BUILTIN_MODELS[compiled_program.version]()
+    # Load the program
+    dg_machine.load_program(compiled_program.program)
+    # Set interactive mode
+    if interactive_mode:
+        dg_machine.set_default_callbacks()
     
-    machine_after_execution_archive.save(output_memdump_file)
+    # Finally, create the simulator
+    dg_sim = DgSimulator(dg_machine, dg_vis, max_n)
+    dg_machine_final = dg_sim(output_trace_file)
+    
+    dg_machine_final_archive = DGB_Archive(dg_machine_final._mem, 
+                                           compiled_program.labels, 
+                                           version=compiled_program.version)
+    
+    dg_machine_final_archive.save(output_memdump_file)
         
 if __name__ == "__main__":
     dgsim()
