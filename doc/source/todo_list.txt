@@ -1,4 +1,4 @@
-TODO List as of Wed Jul 8 22:55:53 BST 2020
+TODO List as of Thu Jul 9 23:14:45 BST 2020
 ../dgtools/callbacks.py:124 TODO: MED, It would be more informative if this had a configurable prompt too
 ../dgtools/dginspect.py:99 TODO: HIGH, Add a mode that only generates an update of the VM state when the state of one of the tracked symbols changes
 ../dgtools/dginspect.py:111 TODO: MID, Reduce code duplication by packaging this validation in a function
@@ -11,3 +11,6 @@ TODO List as of Wed Jul 8 22:55:53 BST 2020
 ../dgtools/digirule.py:405 TODO: MED, If you get a RETLA without first having called CALL, it should raise an exception at compile time.
 ../dgtools/digirule.py:635 TODO: MED, This can raise a divide by zero warning / exception too
 ../dgtools/digirule.py:705 TODO: MED, Maybe this can be matched to a more realistic behaviour once comout, comin are connected to real files.
+../dgtools/digirule_visualise.py:29 TODO: HIGH, Need to revise the parameter passing here
+../dgtools/simulator.py:42 TODO: HIGH, Add similar type checking to the two points above
+../dgtools/simulator.py:61 TODO: HIGH, Need to catch anything else too
