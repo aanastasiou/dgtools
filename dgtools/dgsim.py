@@ -169,9 +169,9 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
                     list(map(lambda x:(x[0],compiled_program.labels[x[0]], int(x[1])), 
                              filter(lambda x:len(x)==3, symbols_to_trace)))
     # Create the visualiser
-    dg_vis = DgVisualiseDigirule2A(title, extra_symbols, with_dump)
+    dg_vis = BUILTIN_MODELS[compiled_program.version]["machine_vis"](title, extra_symbols, with_dump)
     # Create the machine    
-    dg_machine = BUILTIN_MODELS[compiled_program.version]()
+    dg_machine = BUILTIN_MODELS[compiled_program.version]["machine_cls"]()
     # Load the program
     dg_machine.load_program(compiled_program.program)
     # Set interactive mode

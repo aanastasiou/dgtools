@@ -22,5 +22,5 @@ from .simulator import *
                                 
 
 
-BUILTIN_MODELS = {"2A":Digirule,  
-                  "2U":Digirule2U}
+BUILTIN_MODELS = {"2A":{"machine_cls":Digirule, "machine_vis":DgVisualiseDigirule2A},  
+                  "2U":{"machine_cls":Digirule2U, "machine_vis":DgVisualiseDigirule2U}}

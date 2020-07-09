@@ -25,9 +25,13 @@ class DgVisualiseBase:
         """
         pass
         
-    def _render_section_layout(self, a_section_layout, current_n, current_digirule, rend_obj):
+    def _render_section_layout(self, a_section_layout, current_n, current_digirule, rend_obj, halt_exception=None):
+        # TODO: HIGH, Need to revise the parameter passing here
         for a_layout in a_section_layout:
-            a_layout(current_n, current_digirule, rend_obj)
+            if halt_exception:
+                a_layout(current_n, current_digirule, rend_obj, halt_exception)
+            else:
+                a_layout(current_n, current_digirule, rend_obj)
         
     def on_init(self, current_n, current_digirule, rend_obj):
         self._render_section_layout(self._init_layout, current_n, current_digirule, rend_obj)
@@ -35,8 +39,8 @@ class DgVisualiseBase:
     def on_step(self, current_n, current_digirule, rend_obj):
         self._render_section_layout(self._step_layout, current_n, current_digirule, rend_obj)
         
-    def on_finalise(self, current_digirule, rend_obj, halt_exception):
-        self._render_section_layout(self._final_layout, current_n, current_digirule, rend_obj)
+    def on_finalise(self, current_n, current_digirule, rend_obj, halt_exception):
+        self._render_section_layout(self._final_layout, current_n, current_digirule, rend_obj, halt_exception)
         
 
 class DgVisualiseDigirule2A(DgVisualiseBase):
@@ -90,6 +94,10 @@ class DgVisualiseDigirule2A(DgVisualiseBase):
         rend_obj.close_tag("section")
         
     def step_mem_space(self, current_n, current_digirule, rend_obj):
+        
+        mem_space_heading_h = ["Offset (h)"]+[f"{x:02X}" for x in range(0,16)]
+        mem_space_heading_v = [f"{x:02X}" for x in range(0,256,16)]
+
         # Memory space
         if self._with_mem_dump:
             rend_obj.open_tag("section")
@@ -146,7 +154,7 @@ class DgVisualiseDigirule2A(DgVisualiseBase):
         rend_obj.open_tag("section", {"class":"program_halt"})
         rend_obj.named_anchor(f"program_halt")
         rend_obj.open_tag("header")
-        rend_obj.heading(f"Program stopped at n={n-1}",2)
+        rend_obj.heading(f"Program stopped at n={current_n-1}",2)
         rend_obj.close_tag("header")
         rend_obj._write_tag("p", str(halt_exception))
         rend_obj.close_tag("section")

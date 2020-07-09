@@ -40,7 +40,7 @@ class DgSimulator:
         
     def on_finalise(self, rend_obj, halt_exception):
         # TODO: HIGH, Add similar type checking to the two points above
-        if not issubclass(halt_exception, DgtoolsError):
+        if not isinstance(halt_exception, DgtoolsError):
             raise TypeError(f"Expected DgtoolsError, received {type(halt_exception)}")
         self._digirule_visualiser.on_finalise(self._current_n, self._digirule, rend_obj, halt_exception)
         

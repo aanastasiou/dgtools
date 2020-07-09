@@ -48,7 +48,7 @@ def dgasm(input_file, output_file, target):
     :type target: str [2A,2B,2U]
     """
     # Pick up the digirule model
-    target_digirule = BUILTIN_MODELS[target]
+    target_digirule = BUILTIN_MODELS[target]["machine_cls"]
     # Instantiate an assembler
     assembler = DgAssembler(target_digirule)
     
