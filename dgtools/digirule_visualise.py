@@ -7,8 +7,17 @@ Default visualisers for the Digirule2A and Digirule2U models.
 
 class DgVisualiseBase:
     """
-    Digirule visualiser objects are responsible for generating human readable representations for the state 
-    of the Digirule as it evolves through program execution.
+    Generates human readable representations given the state of a Digirule.
+    
+    Notes:
+        * A program trace document has three parts: Beginning, Main, End
+        * Each part is composed of one or more sections
+        * Each section can be composed of different parts
+        * The way parts are arranged in a section makes its layout.
+        
+        * The visualiser is meant to be initialised with all its parameters and then 
+          "called" with the current simulation parameters (e.g. current simulation step 
+          and machine state) and produce its output.
     """
     def __init__(self):
         self._init_layout = []
@@ -26,7 +35,7 @@ class DgVisualiseBase:
         pass
         
     def _render_section_layout(self, a_section_layout, current_n, current_digirule, rend_obj, halt_exception=None):
-        # TODO: HIGH, Need to revise the parameter passing here
+        # TODO: LOW, Need to revise the parameter passing here
         for a_layout in a_section_layout:
             if halt_exception:
                 a_layout(current_n, current_digirule, rend_obj, halt_exception)
@@ -44,6 +53,9 @@ class DgVisualiseBase:
         
 
 class DgVisualiseDigirule2A(DgVisualiseBase):
+    """
+    Renders the state of a Digirule2A.
+    """
     def __init__(self, trace_title="", extra_symbols=[], with_mem_dump=False):
         super().__init__()
         self._trace_title = trace_title
@@ -61,12 +73,18 @@ class DgVisualiseDigirule2A(DgVisualiseBase):
         
         
     def start_trace(self, current_n, current_digirule, rend_obj):
+        """
+        Begins the trace document with the supplied title of the trace.
+        """
         rend_obj.open_tag("article")
         rend_obj.open_tag("header")
         rend_obj.heading(f"Program Trace {self._trace_title}", 1)
         rend_obj.close_tag("header")
         
     def step_heading(self, current_n, current_digirule, rend_obj):
+        """
+        Produces the heading of each main execution step within the main section.
+        """
         rend_obj.open_tag("section")
         rend_obj.named_anchor(f"n{current_n}")
         rend_obj.open_tag("header")
@@ -74,6 +92,9 @@ class DgVisualiseDigirule2A(DgVisualiseBase):
         rend_obj.close_tag("header")
         
     def step_machine_registers(self, current_n, current_digirule, rend_obj):
+        """
+        Produces the "Machine Registers" part of the main section.
+        """
         # Machine registers
         rend_obj.open_tag("section")
         rend_obj.open_tag("header")
@@ -94,7 +115,13 @@ class DgVisualiseDigirule2A(DgVisualiseBase):
         rend_obj.close_tag("section")
         
     def step_mem_space(self, current_n, current_digirule, rend_obj):
-        
+        """
+        Produces the mem-dump part of the main section (if enabled)
+        """
+        # If this section is not "enabled" then immediately return.
+        if not self._with_mem_dump:
+            return
+            
         mem_space_heading_h = ["Offset (h)"]+[f"{x:02X}" for x in range(0,16)]
         mem_space_heading_v = [f"{x:02X}" for x in range(0,256,16)]
 
@@ -112,31 +139,40 @@ class DgVisualiseDigirule2A(DgVisualiseBase):
             rend_obj.close_tag("section")
 
     def step_extra_symbols(self, current_n, current_digirule, rend_obj):
+        """
+        Produces the "Extra Symbols" part of the main section
+        """
         # Extra symbols
-        if len(self._extra_symbols):
-            rend_obj.open_tag("section")
-            rend_obj.open_tag("header")
-            rend_obj.heading(f"Specific Symbols",3)
-            rend_obj.close_tag("header")
+        # If there are no extra symbols specified then return immediately.
+        if len(self._extra_symbols) == 0:
+            return
             
-            symbol_values = []
-            for a_symbol in self._extra_symbols:
-                raw_bytes = current_digirule._mem[a_symbol[1]:(a_symbol[1]+a_symbol[2])]
-                if len(raw_bytes)>1:
-                    chr_bytes = "".join(map(lambda x:chr(x), raw_bytes))
-                else:
-                    chr_bytes = ""
-                symbol_values.append([str(raw_bytes),chr_bytes])
-            # dgen.table_h(symbol_names,symbol_values, attrs={"class":"table_spec_sym"})
-            rend_obj.table_v(["Symbol","Offset","Value(s)", "Value as string"],
-                             list(map(lambda x:[x[0][0],
-                                                f"0x{x[0][1]:02X}",
-                                                x[1][0],x[1][1]],
-                                      zip(self._extra_symbols,symbol_values))), 
-                             attrs={"class":"table_spec_sym"})
-            rend_obj.close_tag("section")
+        rend_obj.open_tag("section")
+        rend_obj.open_tag("header")
+        rend_obj.heading(f"Specific Symbols",3)
+        rend_obj.close_tag("header")
+        
+        symbol_values = []
+        for a_symbol in self._extra_symbols:
+            raw_bytes = current_digirule._mem[a_symbol[1]:(a_symbol[1]+a_symbol[2])]
+            if len(raw_bytes)>1:
+                chr_bytes = "".join(map(lambda x:chr(x), raw_bytes))
+            else:
+                chr_bytes = ""
+            symbol_values.append([str(raw_bytes),chr_bytes])
+        # dgen.table_h(symbol_names,symbol_values, attrs={"class":"table_spec_sym"})
+        rend_obj.table_v(["Symbol","Offset","Value(s)", "Value as string"],
+                         list(map(lambda x:[x[0][0],
+                                            f"0x{x[0][1]:02X}",
+                                            x[1][0],x[1][1]],
+                                  zip(self._extra_symbols,symbol_values))), 
+                         attrs={"class":"table_spec_sym"})
+        rend_obj.close_tag("section")
 
     def step_onboard_io(self, current_n, current_digirule, rend_obj):
+        """
+        Produces the "Onboard IO" section of the main part.
+        """
         # Onboard IO
         rend_obj.open_tag("section")
         rend_obj.open_tag("header")
@@ -151,6 +187,9 @@ class DgVisualiseDigirule2A(DgVisualiseBase):
         rend_obj.ruler()
         
     def end_trace(self, current_n, current_digirule, rend_obj, halt_exception):
+        """
+        Produces the ending section which usually includes the reason for program termination.
+        """
         rend_obj.open_tag("section", {"class":"program_halt"})
         rend_obj.named_anchor(f"program_halt")
         rend_obj.open_tag("header")

@@ -180,12 +180,12 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
     
     # Finally, create the simulator
     dg_sim = DgSimulator(dg_machine, dg_vis, max_n)
+    # Run the simulation
     dg_machine_final = dg_sim(output_trace_file)
-    
+    # Save the final machine state
     dg_machine_final_archive = DGB_Archive(dg_machine_final._mem, 
                                            compiled_program.labels, 
                                            version=compiled_program.version)
-    
     dg_machine_final_archive.save(output_memdump_file)
         
 if __name__ == "__main__":

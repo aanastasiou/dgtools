@@ -6,8 +6,25 @@ A very basic HTML renderer.
 :date: April 2020
 """
 
-class Output_Render_HTML():
+class Output_Render_HTML:
+    """
+    An extremely simple HTML renderer.
+    
+    Notes:
+    
+        * The class includes a small set of convenience functions that could apply to any markup language but 
+          here are adapted to HTML.
+          
+        * The renderer includes enter, exit functions and is meant to be used in a "with" code block.
+        
+    """
     def __init__(self, filename):
+        """
+        Initialises the renderer with a filename that becomes the target of all output.
+        
+        :param filename: The filename to send all output to.
+        :type filename: str<path>
+        """
         self._filename = filename
         self._fd = None
         self._indent_level = 0

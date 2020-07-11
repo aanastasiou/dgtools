@@ -183,11 +183,11 @@ class Digirule:
         return self
         
     def _push_pc(self):
+        # TODO: HIGH, add the overflow exception
         self._ppc.append(self._pc + 1)
         return self
         
     def _pop_pc(self):
-        # TODO: HIGH, add the underflow exception
         try:
             self._pc = self._ppc.pop()
         except IndexError:
@@ -196,7 +196,7 @@ class Digirule:
         
     def _set_acc_value(self, new_value):
         """
-        Sets the accumulator value, taking care of the zero and carry flags.
+        Sets the accumulator value.
         
         :param new_value: The value to set the Accumulator to.
         :type new_value: uint8
@@ -211,6 +211,12 @@ class Digirule:
         current_value = self._mem[self._status_reg_ptr]
         self._mem[self._status_reg_ptr] ^= (-value ^ current_value) & field_mask
         return self
+        
+    def _set_zero_flag(self, new_value):
+        self._set_status_reg(self._ZERO_FLAG_BIT, new_value)
+        
+    def _set_carry_flag(self, new_value):
+        self._set_status_reg(self._CARRY_FLAG_BIT, new_value)
         
     def _get_status_reg(self, field_mask):
         return 1 if (self._mem[self._status_reg_ptr] & field_mask) == field_mask else 0
