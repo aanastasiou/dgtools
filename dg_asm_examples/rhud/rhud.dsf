@@ -1,0 +1,67 @@
+# Implements a simple two bar Heads Up Display
+# To use the two LED display bars on the Digirule as HUDs send the following
+# message to the COM port:
+# /<display><number>
+# For example: /0128 sets display 0 to 128 and /1128 sets display 1 to 128
+
+.EQU led_reg=255
+.EQU addrled_reg=254
+.EQU status_reg=252
+.EQU zero_bit=0
+.EQU carry_bit=1
+.EQU addrd_bit=2
+
+SBR addrd_bit status_reg
+check_input:
+COMRDY
+BCRSS zero_bit status_reg
+JUMP load_new_values
+display_values:
+COPYRR M1 led_reg
+COPYRR M2 addrled_reg
+JUMP check_input
+
+load_new_values:
+COMIN
+SUBLA 47 # Is it /?
+BCRSS zero_bit status_reg
+JUMP display_values
+COMIN
+SUBLA 48
+BCRSC carry_bit status_reg # Is the display a positive number?
+JUMP display_values
+ADDLA M1
+COPYAR R0
+COMIN
+SUBLA 48
+COPYAR R1
+COPYLR 100 R2
+MUL R1 R2
+COMIN
+SUBLA 48
+COPYAR R2
+COPYRA R1
+COPYLR 10 R1
+MUL R2 R1
+ADDRA R2
+COPYAR R2
+COMIN
+SUBLA 48
+ADDRA R2
+COPYAI R0
+JUMP display_values
+
+
+R0:
+.DB 0
+
+R1:
+.DB 0
+
+R2:
+.DB 0
+
+M1:
+.DB 0
+M2:
+.DB 0
