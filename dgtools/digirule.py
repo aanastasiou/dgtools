@@ -653,7 +653,7 @@ class Digirule2U(Digirule):
         self._set_status_reg(self._ZERO_FLAG_BIT, (product & 0xFF) == 0)
         
     def _div(self):
-        # TODO: MED, This can raise a divide by zero warning / exception too
+        # TODO: LOW, This can raise a divide by zero warning / exception too
         mem_addr_left = self._read_next()
         mem_val_left = self._rd_mem(mem_addr_left)
         mem_addr_right = self._read_next()
