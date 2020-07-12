@@ -106,6 +106,19 @@ class DigiruleCallbackComInUserInteraction(DigiruleCallbackInputUserInteraction)
             return ord(input_value)
             
 
+class DigiruleCallbackComRdyUserInteraction(DigiruleCallbackInputUserInteraction):
+    """
+    Prompts the user on whether the serial port is ready to receive data.
+    """
+    def validate_input(self, input_value):
+        if len(input_value) == 0:
+            raise ValueError("User input required")
+        user_value = int(input_value)
+        if user_value not in (0,1):
+            raise ValueError(f"Please specify READY(1), NOT READY(0). Received {user_value}.")
+        return user_value
+
+
 class DigiruleCallbackComOutStoreMem(DigiruleCallbackOutputBase):
     """
     Stores output from comout.

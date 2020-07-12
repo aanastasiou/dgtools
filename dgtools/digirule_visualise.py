@@ -201,5 +201,5 @@ class DgVisualiseDigirule2A(DgVisualiseBase):
         rend_obj.close_tag("article")
     
         
-class DgVisualiseDigirule2U:
+class DgVisualiseDigirule2U(DgVisualiseDigirule2A):
     pass

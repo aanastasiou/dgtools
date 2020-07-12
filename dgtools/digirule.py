@@ -7,7 +7,7 @@ Built-in Digirule models supported by dgtools.
 """
 from .exceptions import DgtoolsErrorOpcodeNotSupported, DgtoolsErrorProgramHalt
 from .callbacks import (DigiruleCallbackInputBase, DigiruleCallbackInputUserInteraction, DigiruleCallbackComOutStdout, 
-                        DigiruleCallbackComInUserInteraction)
+                        DigiruleCallbackComInUserInteraction, DigiruleCallbackComRdyUserInteraction)
 import random
 import pyparsing
 
@@ -83,7 +83,7 @@ class Digirule:
         
     @property
     def addr_led(self):
-        return f"{self._pc:08b}"
+        return f"{self._pc:08b}" if not self._get_status_reg(self._ADDRLED_FLAG_BIT) else f"{self._mem[self._addrled_reg_ptr]:08b}"
         
     @property
     def data_led(self):
@@ -574,16 +574,19 @@ class Digirule2U(Digirule):
                                
         self._comout_callback = None
         self._comin_callback = None
+        self._comrdy_callback = None
         
     def set_default_callbacks(self):
         super().set_default_callbacks()
         self._comin_callback = DigiruleCallbackComInUserInteraction("Serial Input:")
         self._comout_callback = DigiruleCallbackComOutStdout()
+        self._comrdy_callback = DigiruleCallbackComRdyUserInteraction("Serial Ready to Receive?(0:No, 1:Yes):")
         
     def clear_callbacks(self):
         super().clear_callbacks()
         self._comin_callback = None
         self._comout_callback = None
+        self._comrdy_callback = None
         
     @property 
     def comout_callback(self):
@@ -591,20 +594,32 @@ class Digirule2U(Digirule):
         
     @comout_callback.setter
     def comout_callback(self, new_callback):
-        if not isinstance(new_callback, DigiruleCallbackInputBase):
-            raise TypeError(f"comout_callback() setter expected descendant of DigiruleCallbackInputBase, "
+        if not isinstance(new_callback, DigiruleCallbackOutputBase):
+            raise TypeError(f"comout_callback() setter expected descendant of DigiruleCallbackOutputBase, "
                             f"received {type(new_callback)}")
         self._comout_callback = new_callback
-        
+
     @property 
     def comin_callback(self):
         return self._comin_callback
         
     @comin_callback.setter
     def comin_callback(self, new_callback):
-        if type(new_callback) is not types.FunctionType:
-            raise TypeError(f"comin_callback() setter expected a function, received {type(new_callback)}")
+        if not isinstance(new_callback, DigiruleCallbackInputBase):
+            raise TypeError(f"comin_callback() setter expected descendant of DigiruleCallbackInputBase, "
+                            f"received {type(new_callback)}")
         self._comin_callback = new_callback
+
+    @property
+    def comrdy_callback(self):
+        return self._comrdy_callback
+
+    @comrdy_callback.setter
+    def comrdy_callback(self, new_callback):
+        if not isinstance(new_callback, DigiruleCallbackInputBase):
+            raise TypeError(f"comrdy_callback() setter expected descendant of DigiruleCallbackInputBase, "
+                            f"received {type(new_callback)}")
+        self._comrdy_callback = new_callback
 
     def _initsp(self):
         self._ppc = []
@@ -707,9 +722,11 @@ class Digirule2U(Digirule):
             self._set_acc_value(self._comin_callback())
         
     def _comrdy(self):
-        # Comms is always "ready" in emulation.
-        # TODO: MED, Maybe this can be matched to a more realistic behaviour once comout, comin are connected to real files.
-        self._set_status_reg(self._ZERO_FLAG_BIT, 0)
+        if self._comrdy_callback is not None:
+            self._set_status_reg(self._ZERO_FLAG_BIT,self._comrdy_callback()==0)
+        else:
+            # In the absence of a callback, COMRDY always returns READY (ZF=0)
+            self._set_status_reg(self._ZERO_FLAG_BIT, 0)
 
     @staticmethod
     def get_asm_statement_def(existing_defs):

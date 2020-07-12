@@ -15,7 +15,8 @@ from .exceptions import (DgtoolsErrorSymbolUndefined, DgtoolsErrorSymbolAlreadyD
                          DgtoolsErrorASMSyntaxError, DgtoolsErrorStackUnderflow, DgtoolsErrorStackOverflow)
 from .output_render_html import Output_Render_HTML
 from .callbacks import (DigiruleCallbackComOutStdout, DigiruleCallbackComOutStoreMem, 
-                        DigiruleCallbackComInUserInteraction, DigiruleCallbackInputUserInteraction)
+                        DigiruleCallbackComInUserInteraction, DigiruleCallbackInputUserInteraction,
+                        DigiruleCallbackComRdyUserInteraction)
 from .lexer import DigiruleASMLexer
 from .digirule_visualise import DgVisualiseDigirule2A, DgVisualiseDigirule2U
 from .simulator import DgSimulator
