@@ -1,0 +1,60 @@
+.EQU status_reg=252
+.EQU zero_bit=0
+.EQU carry_bit=1
+
+COPYLR 1 requested_page
+COPYLR 9 page_len
+COPYLR memory_page page_ptr
+CALL send_page
+COPYLR 0 requested_page
+COPYLR 1 current_page
+COPYLR 9 page_len
+COPYLR memory_page page_ptr
+CALL send_page
+HALT
+
+process_page:
+COPYIA page_ptr
+process_page_rep:
+INCR page_ptr
+COPYIR page_ptr R0
+ADDRA R0
+DECRJZ page_len
+JUMP process_page_rep
+RETURN
+
+
+send_page:
+COPYRA requested_page
+COMOUT
+COPYRA current_page
+COMOUT
+txrx_page_block:
+COPYIA page_ptr
+COMOUT
+COMIN
+COPYAI page_ptr
+INCR page_ptr
+DECRJZ page_len
+JUMP txrx_page_block
+RETURN
+
+R0:
+.DB 0
+page_len:
+.DB 0
+page_ptr:
+.DB 0
+requested_page:
+.DB 0
+current_page:
+.DB 0
+memory_page:
+.DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.DB 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
