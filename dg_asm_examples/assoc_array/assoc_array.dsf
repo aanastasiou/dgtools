@@ -1,6 +1,7 @@
+.EQU carry_bit=1
 .EQU zero_bit=0
 .EQU status_reg=252
-COPYLA 4
+COPYLA 18
 COPYLR assoc_array R0
 CALL assoc_array_get_value
 HALT
@@ -14,7 +15,6 @@ ADDRA R1
 INCR R0
 INCR R0
 COPYIA R0
-SUBLA 255
 BCRSS zero_bit status_reg
 JUMP assoc_array_get_value
 SBR carry_bit status_reg
@@ -36,4 +36,6 @@ assoc_array:
 R0:
 .DB 0
 R1:
+.DB 0
+R2:
 .DB 0
