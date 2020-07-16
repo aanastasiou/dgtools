@@ -1,0 +1,11 @@
+bf_code.asm:bf_code.bfc
+	cat bf_code.bfc|./brainfuck_to_asm.py ->bf_code.asm
+	
+bf_code.dgb:bf_code.asm
+	dgasm.py bf_code.asm -g 2U
+	
+bf_code_trace.html:bf_code.dgb
+	dgsim.py bf_code.dgb --with-dump -I -ts dp -ts tape:4
+	
+html:bf_code_trace.html
+	xdg-open bf_code_trace.html
