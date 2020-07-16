@@ -666,7 +666,8 @@ class Digirule2U(Digirule):
         mem_addr = self._read_next()
         mem_addr_value = self._rd_mem(mem_addr)
         i_addr = self._read_next()
-        self._wr_mem(self._rd_mem(self._rd_mem(i_addr)), mem_addr_value)
+        #self._wr_mem(self._rd_mem(self._rd_mem(i_addr)), mem_addr_value)
+        self._wr_mem(self._rd_mem(i_addr), mem_addr_value)
         self._set_status_reg(self._ZERO_FLAG_BIT, mem_addr_value == 0) 
         
     def _copyir(self):
@@ -680,17 +681,17 @@ class Digirule2U(Digirule):
         i_addr_l = self._read_next()
         i_addr_r = self._read_next()
         i_addr_l_value = self._rd_mem(self._rd_mem(i_addr_l))
-        self._wr_mem(self._rd_mem(self._rd_mem(i_addr_r)), i_addr_l_value)
-        self._set_status_reg(self._ZERO_FLAT_BIT, i_addr_l_value == 0)
+        self._wr_mem(self._rd_mem(i_addr_r), i_addr_l_value)
+        self._set_status_reg(self._ZERO_FLAG_BIT, i_addr_l_value == 0)
         
     def _calli(self):
         self._push_pc()
         i_addr = self._read_next()
-        self._pc = self._rd_mem(self._rd_mem(i_addr))
+        self._pc = self._rd_mem(i_addr)
         
     def _jumpi(self):
         i_addr = self._read_next()
-        self._pc = self._rd_mem(self._rd_mem(i_addr))
+        self._pc = self._rd_mem(i_addr)
         
     def _comout(self):
         if self._comout_callback is not None:
