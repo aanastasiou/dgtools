@@ -1,0 +1,39 @@
+.EQU zero_bit=0
+.EQU status_reg=252
+COPYLA 4
+COPYLR assoc_array R0
+CALL assoc_array_get_value
+HALT
+
+assoc_array_get_value:
+COPYIR R0 R1
+SUBRA R1
+BCRSC zero_bit status_reg
+JUMP assoc_array_found_it
+ADDRA R1
+INCR R0
+INCR R0
+COPYIA R0
+SUBLA 255
+BCRSS zero_bit status_reg
+JUMP assoc_array_get_value
+SBR carry_bit status_reg
+COPYLA 0
+RETURN
+assoc_array_found_it:
+INCR R0
+COPYIA R0
+RETURN
+
+
+assoc_array:
+.DB 0,65
+.DB 1,66
+.DB 4,67
+.DB 32,68
+.DB 255,255
+
+R0:
+.DB 0
+R1:
+.DB 0
