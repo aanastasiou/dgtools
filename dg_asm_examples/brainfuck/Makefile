@@ -9,3 +9,8 @@ bf_code_trace.html:bf_code.dgb
 	
 html:bf_code_trace.html
 	xdg-open bf_code_trace.html
+
+clean:
+	rm bf_code_trace.html
+	rm *.dgb
+	rm bf_code.dsf
