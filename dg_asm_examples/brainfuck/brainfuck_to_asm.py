@@ -27,11 +27,19 @@ def get_bf_parser():
             return f"DECR dp\n"
             
     def inc_dv(s, loc, toks):
-        return f"COPYIA dp\nADDLA {len(toks[0][0])}\nCOPYAI dp\n" 
-        
+        reps = len(toks)
+        if reps>1:
+            return f"COPYIA dp\nADDLA {len(toks[0][0])}\nCOPYAI dp\n" 
+        else:
+            return f"COPYLR 30 handle_dv_i\nCALL handle_dv_i\n"
+            
     def dec_dv(s, loc, toks):
-        return f"COPYIA dp\nSUBLA {len(toks[0][0])}\nCOPYAI dp\n"        
-    
+        reps = len(toks)
+        if reps>1:
+            return f"COPYIA dp\nSUBLA {len(toks[0][0])}\nCOPYAI dp\n"        
+        else:
+            return f"COPYLR 29 handle_dv_i\nCALL handle_dv_i\n"
+            
     def out_dv(s, loc, toks):
         return f"COPYIR dp out_dev\n"
                 
@@ -44,7 +52,7 @@ def get_bf_parser():
         
     def emit_asm(s, loc, toks):
         return f".EQU status_reg=252\n.EQU in_dev=253\n.EQU out_dev=255\n.EQU zero_bit=0\nCOPYLR tape dp\nstart_program:\n" \
-               f"{''.join([m for m in toks])}HALT\ndp:\n.DB 0\ntape:\n.DB 0"
+               f"{''.join([m for m in toks])}HALT\nhandle_dv_i:\n.DB 0\ndp:\n.DB 0\nRETURN\ntape:\n.DB 0"
         
     bf_inc_data_p = pyparsing.Group(pyparsing.Regex("[>]+"))("INC_DP").setParseAction(inc_dp)
     bf_dec_data_p = pyparsing.Group(pyparsing.Regex("[<]+"))("DEC_DP").setParseAction(dec_dp)
