@@ -1,1 +1,1 @@
-1 1 add output
+0 1 if dup output dup cycle add fi
