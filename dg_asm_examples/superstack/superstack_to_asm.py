@@ -100,13 +100,12 @@ def get_superstack_parser():
     def _rcycle(s, loc, toks):
         return {"statements": f"DECR head_ptr\nCOPYRR head_ptr head_val_1\nCOPYLR stack head_val\nCOPYLR 10 f_custom_ins\nCALL f_custom_ins\nINCR head_ptr\n",
                 "dependencies": set()}
-    
         
     def _emit_asm(s, loc, toks):
         precode = ".EQU status_reg=252\n.EQU in_dev=253\n.EQU out_dev=255\n.EQU zero_bit=0\nCOPYLR stack head_ptr\nstart_program:\n"
         postcode = "f_push:\nCOPYRI head_val head_ptr\nINCR head_ptr\nRETURN\n\nf_pop:\nDECR head_ptr\nCOPYIR head_val head_ptr\nRETURN\n\nf_custom_ins:\n.DB 0\nhead_val:\n.DB 0\nhead_val_1:\n.DB 0\nRETURN\nhead_ptr:\n.DB 0\nstack:\n.DB 0\n"
         deps_code = {"f_rand": "f_rand:\nRANDA\nCOPYAR head_val_1\nSUBRA head_val\nBCRSC carry_bit status_reg\nJUMP f_rand\nCOPYRA head_val\nRETURN\n", 
-                     "f_rev":"f_rev:\nCOPYRA head_ptr\nSUBLA stack\nCOPYRR head_ptr head_val # Save the head pointer\nCOPYLR stack head_val_1\nCOPYLR 16 f_custom_ins # SWAPRR\nswap_again:\nCALL f_custom_ins\nSUBLA 1\nBCRSS zero_bit status_reg\nJUMP f_rev_adjust_and_loop\nRETURN\nf_rev_adjust:\nINCR head_val\nDECR head_val_1\nJUMP swap_again\n",
+                     "f_rev":"f_rev:\nCOPYRA head_ptr\nSUBLA stack\nCOPYRR head_ptr head_val # Save the head pointer\nCOPYLR stack head_val_1\nCOPYLR 16 f_custom_ins # SWAPRR\nswap_again:\nCALL f_custom_ins\nSUBLA 1\nBCRSS zero_bit status_reg\nJUMP f_rev_adjust_and_loop\nRETURN\nf_rev_adjust_and_loop:\nINCR head_val\nDECR head_val_1\nJUMP swap_again\n",
                      "f_peek":"f_peek:\nDECR head_ptr\nCOPYIR head_ptr head_val\nINCR head_ptr\nRETURN\n"}
         # Collect dependencies and leave just compiled code
         deps = set()
