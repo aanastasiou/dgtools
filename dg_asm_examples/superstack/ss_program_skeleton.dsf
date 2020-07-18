@@ -1,0 +1,59 @@
+.EQU status_reg=252
+.EQU in_dev=253
+.EQU out_dev=255
+.EQU zero_bit=0
+COPYLR stack head_ptr
+
+f_push:
+COPYRI head_val head_ptr
+INCR head_ptr
+RETURN
+
+f_pop:
+DECR head_ptr
+COPYIR head_val head_ptr
+RETURN
+
+f_rand:
+RANDA
+COPYAR head_val_1
+SUBRA head_val
+BCRSC carry_bit status_reg
+JUMP f_rand
+COPYRA head_val
+RETURN 
+
+f_rev:
+COPYRA head_ptr
+SUBLA stack
+COPYRR head_ptr head_val # Save the head pointer
+COPYLR stack head_val_1
+COPYLR 16 f_custom_ins # SWAPRR
+swap_again:
+CALL f_custom_ins
+SUBLA 1
+BCRSS zero_bit status_reg
+JUMP f_rev_adjust_and_loop
+RETURN
+f_rev_adjust:
+INCR head_val
+DECR head_val_1
+JUMP swap_again
+
+f_peek:
+DECR head_ptr
+COPYIR head_ptr head_val
+INCR head_ptr
+RETURN
+
+f_custom_ins:
+.DB 0
+head_val:
+.DB 0
+head_val_1:
+.DB 0
+RETURN
+head_ptr:
+.DB 0
+stack:
+.DB 0
