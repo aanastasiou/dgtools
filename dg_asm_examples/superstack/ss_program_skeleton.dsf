@@ -26,7 +26,12 @@ RETURN
 f_rev:
 COPYRA head_ptr
 SUBLA stack
+SWAPRA head_ptr
+CBR carry_bit status_reg
+SHIFTRR head_ptr
+SWAPRA head_ptr
 COPYRR head_ptr head_val # Save the head pointer
+DECR head_val
 COPYLR stack head_val_1
 COPYLR 16 f_custom_ins # SWAPRR
 swap_again:
@@ -35,9 +40,9 @@ SUBLA 1
 BCRSS zero_bit status_reg
 JUMP f_rev_adjust_and_loop
 RETURN
-f_rev_adjust:
-INCR head_val
-DECR head_val_1
+f_rev_adjust_and_loop:
+DECR head_val
+INCR head_val_1
 JUMP swap_again
 
 f_peek:
