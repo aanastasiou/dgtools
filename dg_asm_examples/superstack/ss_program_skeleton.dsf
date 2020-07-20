@@ -4,15 +4,27 @@
 .EQU zero_bit=0
 COPYLR stack head_ptr
 
+
 f_push:
+COPYRA head_ptr
+SUBLA 252
+BCRSC zero_bit status_reg
+JUMP f_stack_error
 COPYRI head_val head_ptr
 INCR head_ptr
 RETURN
 
 f_pop:
+COPYRA head_ptr
+SUBLA stack
+BCRSC zero_bit status_reg
+JUMP f_stack_error
 DECR head_ptr
 COPYIR head_val head_ptr
 RETURN
+
+f_stack_error:
+HALT
 
 f_rand:
 RANDA

@@ -1,1 +1,1 @@
-128 random dup random quit
+0 1 if pop 0 1 add fi output 

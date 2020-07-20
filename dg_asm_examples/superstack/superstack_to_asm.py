@@ -21,11 +21,11 @@ def get_superstack_parser():
         return {"statements":f"COPYLR {num} head_val\nCALL f_push\n", "dependencies":set()}
         
     def _add(s, loc, toks):
-        return {"statements":"CALL f_pop\nCOPYRA head_val\nCALL f_pop\nADDRA head_val\nCOPYAR head_val\nCALL f_push\n",
+        return {"statements":"CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val_1\nCBR carry_bit status_reg\nADDRA head_val\nCOPYAR head_val\nCALL f_push\n",
                 "dependencies":set()}
     
     def _sub(s, loc, toks):
-        return {"statements":"CALL f_pop\nCOPYRA head_val\nCALL f_pop\nSUBRA head_val\nCOPYAR head_val\nCALL f_push\n",
+        return {"statements":"CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val_1\nCBR carry_bit status_reg\nSUBRA head_val\nCOPYAR head_val\nCALL f_push\n",
                 "dependencies":set()}
 
     def _mul(s, loc, toks):
@@ -45,15 +45,15 @@ def get_superstack_parser():
                 "dependencies":{"f_rand"}}
 
     def _and(s, loc, toks):
-        return {"statements":"CALL f_pop\nCOPYRA head_val\nCALL f_pop\nANDRA head_val\nCOPYAR head_val\nCALL f_push\n",
+        return {"statements":"CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val_1\nANDRA head_val\nCOPYAR head_val\nCALL f_push\n",
                 "dependencies":set()}
 
     def _or(s, loc, toks):
-        return {"statements":"CALL f_pop\nCOPYRA head_val\nCALL f_pop\nORRA head_val\nCOPYAR head_val\nCALL f_push\n",
+        return {"statements":"CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val_1\nORRA head_val\nCOPYAR head_val\nCALL f_push\n",
                 "dependencies":set()}
 
     def _xor(s, loc, toks):
-        return {"statements":"CALL f_pop\nCOPYRA head_val\nCALL f_pop\nXORRA head_val\nCALL f_push\n",
+        return {"statements":"CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val_1\nXORRA head_val\nCOPYAR head_val\nCALL f_push\n",
                 "dependencies":set()}
 
     def _output(s, loc, toks):
@@ -66,6 +66,10 @@ def get_superstack_parser():
 
     def _inputascii(s, loc, toks):
         return {"statements": "COMIN\nCOPYAR head_val\nCALL f_push\n",
+                "dependencies": set()}
+
+    def _outputascii(s, loc, toks):
+        return {"statements": "CALL f_pop\nCOPYRA head_val\nCOMOUT\n",
                 "dependencies": set()}
 
     def _pop(s, loc, toks):
@@ -103,7 +107,8 @@ def get_superstack_parser():
         
     def _emit_asm(s, loc, toks):
         precode = ".EQU status_reg=252\n.EQU in_dev=253\n.EQU out_dev=255\n.EQU zero_bit=0\n.EQU carry_bit=1\nCOPYLR stack head_ptr\nstart_program:\n"
-        postcode = "f_push:\nCOPYRI head_val head_ptr\nINCR head_ptr\nRETURN\n\nf_pop:\nDECR head_ptr\nCOPYIR head_ptr head_val\nRETURN\n\nf_custom_ins:\n.DB 0\nhead_val:\n.DB 0\nhead_val_1:\n.DB 0\nRETURN\nhead_ptr:\n.DB 0\nstack:\n.DB 0\n"
+        # postcode = "f_push:\nCOPYRI head_val head_ptr\nINCR head_ptr\nRETURN\n\nf_pop:\nDECR head_ptr\nCOPYIR head_ptr head_val\nRETURN\n\nf_custom_ins:\n.DB 0\nhead_val:\n.DB 0\nhead_val_1:\n.DB 0\nRETURN\nhead_ptr:\n.DB 0\nstack:\n.DB 0\n"
+        postcode = "f_push:\nCOPYRA head_ptr\nSUBLA 253\nBCRSC zero_bit status_reg\nJUMP f_stack_error\nCOPYRI head_val head_ptr\nINCR head_ptr\nRETURN\n\nf_pop:\nCOPYRA head_ptr\nCBR carry_bit status_reg\nSUBLA stack\nBCRSC zero_bit status_reg\nJUMP f_stack_error\nDECR head_ptr\nCOPYIR head_ptr head_val\nRETURN\n\nf_stack_error:\nCOPYLR 0xFF out_dev\nJUMP f_stack_error\nf_custom_ins:\n.DB 0\nhead_val:\n.DB 0\nhead_val_1:\n.DB 0\nRETURN\nhead_ptr:\n.DB 0\nstack:\n.DB 0\n"
         deps_code = {"f_rand": "f_rand:\nRANDA\nCOPYAR head_val_1\nCOPYRA head_val\nCBR carry_bit status_reg\nSUBRA head_val_1\nBCRSC carry_bit status_reg\nJUMP f_rand\nCOPYRR head_val_1 head_val\nRETURN\n", 
                      "f_rev":"f_rev:\nCOPYRA head_ptr\nSUBLA stack\nSWAPRA head_ptr\nCBR carry_bit status_reg\nSHIFTRR head_ptr\nSWAPRA head_ptr\nCOPYRR head_ptr head_val\nDECR head_val\nCOPYLR stack head_val_1\nCOPYLR 16 f_custom_ins\nswap_again:\nCALL f_custom_ins\nCBR carry_bit status_reg\nSUBLA 1\nBCRSS zero_bit status_reg\nJUMP f_rev_adjust_and_loop\nRETURN\nf_rev_adjust_and_loop:\nDECR head_val\nINCR head_val_1\nJUMP swap_again\n",
                      "f_peek":"f_peek:\nDECR head_ptr\nCOPYIR head_ptr head_val_1\nINCR head_ptr\nRETURN\n"}
@@ -132,8 +137,8 @@ def get_superstack_parser():
     sust_not = pyparsing.Group(pyparsing.Regex("[Nn][Oo][Tt]"))("NOT")
     sust_output = pyparsing.Group(pyparsing.Regex("[Oo][Uu][Tt][Pp][Uu][Tt]"))("OUTPUT").setParseAction(_output)
     sust_input = pyparsing.Group(pyparsing.Regex("[Ii][Nn][Pp][Uu][Tt]"))("INPUT").setParseAction(_input)
-    sust_outputascii = pyparsing.Group(pyparsing.Regex("[Oo][Uu][Tt][Pp][Uu][Tt][Aa][Ss][Cc][Ii]"))("OUTPUT_ASCII")
-    sust_inputascii = pyparsing.Group(pyparsing.Regex("[Ii][Nn][Pp][Uu][Tt][Aa][Ss][Cc][Ii]"))("INPUT_ASCII").setParseAction(_inputascii)
+    sust_outputascii = pyparsing.Group(pyparsing.Regex("[Oo][Uu][Tt][Pp][Uu][Tt][Aa][Ss][Cc][Ii][Ii]"))("OUTPUT_ASCII").setParseAction(_outputascii)
+    sust_inputascii = pyparsing.Group(pyparsing.Regex("[Ii][Nn][Pp][Uu][Tt][Aa][Ss][Cc][Ii][Ii]"))("INPUT_ASCII").setParseAction(_inputascii)
     sust_pop = pyparsing.Group(pyparsing.Regex("[Pp][Oo][Pp]"))("POP").setParseAction(_pop)
     sust_swap = pyparsing.Group(pyparsing.Regex("[Ss][Ww][Aa][Pp]"))("SWAP").setParseAction(_swap)
     sust_cycle = pyparsing.Group(pyparsing.Regex("[Cc][Yy][Cc][Ll][Ee]"))("CYCLE").setParseAction(_cycle)
