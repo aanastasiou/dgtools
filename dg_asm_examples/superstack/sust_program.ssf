@@ -1,1 +1,1 @@
-0 1 if pop 0 1 add fi output 
+255 1 add if output fi quit

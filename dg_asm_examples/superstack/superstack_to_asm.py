@@ -77,7 +77,7 @@ def get_superstack_parser():
                 "dependencies": set()}
 
     def _swap(s, loc, toks):
-        return {"statements": "CALL f_pop\nCOPYRA head_val\nCALL f_pop\nSWAPRA head_val\nCALL f_push\nCOPYAR head_val\nCALL f_push\n",
+        return {"statements": "CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nSWAPRR head_val head_val_1\nCALL f_push\nCOPYRR head_val_1 head_val\nCALL f_push\n",
                 "dependencies": set()}
 
     def _dup(s, loc, toks):
@@ -94,7 +94,7 @@ def get_superstack_parser():
         
     def _iteration_block(s, loc, toks):
         label_tag = _get_label_tag()
-        return {"statements":f"label_{label_tag}:\n{''.join([s['statements'] for s in toks[0][1:-1]])}CALL f_peek\nCOPYRA head_val_1\nBCRSS zero_bit status_reg\nJUMP label_{label_tag}\n", 
+        return {"statements":f"label_{label_tag}:\nCALL f_peek\nCOPYRA head_val_1\nBCRSC zero_bit status_reg\nJUMP label_continue_{label_tag}\n{''.join([s['statements'] for s in toks[0][1:-1]])}\nJUMP label_{label_tag}\nlabel_continue_{label_tag}:\n", 
                 "dependencies":functools.reduce(lambda x,y:x.union(y["dependencies"]), toks[0][1:-1], set()).union({"f_peek"})}
 
     def _cycle(s, loc, toks):
