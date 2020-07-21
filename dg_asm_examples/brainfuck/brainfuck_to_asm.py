@@ -48,7 +48,8 @@ def get_bf_parser():
         
     def iteration_block(s, loc, toks):
         label_tag = _get_label_tag()
-        return f"label_{label_tag}:\n{''.join(toks[0][1:-1])}COPYIA dp\nBCRSS zero_bit status_reg\nJUMP label_{label_tag}\n"
+        #return f"label_{label_tag}:\n{''.join(toks[0][1:-1])}COPYIA dp\nBCRSS zero_bit status_reg\nJUMP label_{label_tag}\n"
+        return f"label_{label_tag}:\nCOPYIA dp\nBCRSC zero_bit status_reg\nJUMP label_continue_{label_tag}\n{''.join(toks[0][1:-1])}JUMP label_{label_tag}\nlabel_continue_{label_tag}:\n"
         
     def emit_asm(s, loc, toks):
         return f".EQU status_reg=252\n.EQU in_dev=253\n.EQU out_dev=255\n.EQU zero_bit=0\nCOPYLR tape dp\nstart_program:\n" \
