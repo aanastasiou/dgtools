@@ -1,1 +1,1 @@
-255 1 add if output fi quit
+5 3 sub 128 and if output fi quit
