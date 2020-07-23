@@ -1,1 +1,1 @@
-5 3 sub 128 and if output fi quit
+0 0 4 1 dup cycle pop swap dup dup rcycle sub 128 and 128 div dup rcycle mul cycle pop sub 128 and 128 div dup

@@ -25,7 +25,7 @@ def get_superstack_parser():
                 "dependencies":set()}
     
     def _sub(s, loc, toks):
-        return {"statements":"CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val_1\nCBR carry_bit status_reg\nSUBRA head_val\nCOPYAR head_val\nCALL f_push\n",
+        return {"statements":"CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val\nCBR carry_bit status_reg\nSUBRA head_val_1\nCOPYAR head_val\nCALL f_push\n",
                 "dependencies":set()}
 
     def _mul(s, loc, toks):
@@ -41,7 +41,7 @@ def get_superstack_parser():
                 "dependencies":set()}
 
     def _random(s, loc, toks):
-        return {"statements":"CALL f_rand\nCALL f_push\n",
+        return {"statements":"CALL f_pop\nCALL f_rand\nCALL f_push\n",
                 "dependencies":{"f_rand"}}
 
     def _and(s, loc, toks):
