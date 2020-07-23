@@ -17,76 +17,78 @@ def get_superstack_parser():
         try:
             num = int(toks[0][0]) & 0xFF
         except ValueError:
+            # TODO: HIGH, Needs to return proper message.
             pass
-        return {"statements":f"COPYLR {num} head_val\nCALL f_push\n", "dependencies":set()}
+        return {"statements":f"COPYLR {num} head_val\nCALL f_push\n", 
+                "dependencies":{"f_push", "f_stack_error"}}
         
     def _add(s, loc, toks):
         return {"statements":"CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val_1\nCBR carry_bit status_reg\nADDRA head_val\nCOPYAR head_val\nCALL f_push\n",
-                "dependencies":set()}
+                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error"}}
     
     def _sub(s, loc, toks):
         return {"statements":"CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val\nCBR carry_bit status_reg\nSUBRA head_val_1\nCOPYAR head_val\nCALL f_push\n",
-                "dependencies":set()}
+                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error"}}
 
     def _mul(s, loc, toks):
         return {"statements":"CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nMUL head_val head_val_1\nCALL f_push\n",
-                "dependencies":set()}
+                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error"}}
 
     def _div(s, loc, toks):
         return {"statements":"CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nDIV head_val head_val_1\nCALL f_push\n",
-                "dependencies":set()}
+                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error"}}
 
     def _mod(s, loc, toks):
         return {"statements":"CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nDIV head_val head_val_1\nCOPYAR head_val\nCALL f_push\n",
-                "dependencies":set()}
+                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error"}}
 
     def _random(s, loc, toks):
         return {"statements":"CALL f_pop\nCALL f_rand\nCALL f_push\n",
-                "dependencies":{"f_rand"}}
+                "dependencies":{"f_rand", "f_pop", "f_push", "f_custom_ins", "f_stack_error"}}
 
     def _and(s, loc, toks):
         return {"statements":"CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val_1\nANDRA head_val\nCOPYAR head_val\nCALL f_push\n",
-                "dependencies":set()}
+                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error"}}
 
     def _or(s, loc, toks):
         return {"statements":"CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val_1\nORRA head_val\nCOPYAR head_val\nCALL f_push\n",
-                "dependencies":set()}
+                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error"}}
 
     def _xor(s, loc, toks):
         return {"statements":"CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val_1\nXORRA head_val\nCOPYAR head_val\nCALL f_push\n",
-                "dependencies":set()}
+                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error"}}
 
     def _output(s, loc, toks):
         return {"statements":"CALL f_pop\nCOPYRR head_val out_dev\n",
-                "dependencies":set()}
+                "dependencies":{"f_pop", "f_stack_error"}}
 
     def _input(s, loc, toks):
         return {"statements":"COPYRR in_dev head_val\nCALL f_push\n",
-                "dependencies":set()}
+                "dependencies":{"f_push", "f_stack_error"}}
 
     def _inputascii(s, loc, toks):
         return {"statements": "COMIN\nCOPYAR head_val\nCALL f_push\n",
-                "dependencies": set()}
+                "dependencies": {"f_push", "f_stack_error"}}
 
     def _outputascii(s, loc, toks):
         return {"statements": "CALL f_pop\nCOPYRA head_val\nCOMOUT\n",
-                "dependencies": set()}
+                "dependencies": {"f_pop", "f_stack_error"}}
 
     def _pop(s, loc, toks):
         return {"statements": "CALL f_pop\n",
-                "dependencies": set()}
+                "dependencies": {"f_pop", "f_stack_error"}}
 
     def _swap(s, loc, toks):
         return {"statements": "CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nSWAPRR head_val head_val_1\nCALL f_push\nCOPYRR head_val_1 head_val\nCALL f_push\n",
-                "dependencies": set()}
+                "dependencies": {"f_push", "f_pop", "f_stack_error", "f_custom_ins"}}
 
     def _dup(s, loc, toks):
         return {"statements": "CALL f_pop\nCALL f_push\nCALL f_push\n",
-                "dependencies": set()}
+                "dependencies": {"f_pop", "f_push", "f_stack_error"}}
 
     def _rev(s, loc, toks):
         return {"statements": "CALL f_rev\n", 
-                "dependencies": {"f_rev"}}
+                "dependencies": {"f_rev", "f_custom_ins"}}
 
     def _quit(s, loc, toks):
         return {"statements":"HALT\n",
@@ -95,35 +97,48 @@ def get_superstack_parser():
     def _iteration_block(s, loc, toks):
         label_tag = _get_label_tag()
         return {"statements":f"label_{label_tag}:\nCALL f_peek\nCOPYRA head_val_1\nBCRSC zero_bit status_reg\nJUMP label_continue_{label_tag}\n{''.join([s['statements'] for s in toks[0][1:-1]])}\nJUMP label_{label_tag}\nlabel_continue_{label_tag}:\n", 
-                "dependencies":functools.reduce(lambda x,y:x.union(y["dependencies"]), toks[0][1:-1], set()).union({"f_peek"})}
+                "dependencies":functools.reduce(lambda x,y:x.union(y["dependencies"]), toks[0][1:-1], set()).union({"f_peek", "f_custom_ins"})}
 
     def _cycle(s, loc, toks):
         return {"statements": f"DECR head_ptr\nCOPYRR head_ptr head_val\nCOPYLR stack head_val_1\nCOPYLR 10 f_custom_ins\nCALL f_custom_ins\nINCR head_ptr\n",
-                "dependencies": set()}
+                "dependencies": {"f_custom_ins"}}
 
     def _rcycle(s, loc, toks):
         return {"statements": f"DECR head_ptr\nCOPYRR head_ptr head_val_1\nCOPYLR stack head_val\nCOPYLR 10 f_custom_ins\nCALL f_custom_ins\nINCR head_ptr\n",
-                "dependencies": set()}
+                "dependencies": {"f_custom_ins"}}
         
     def _emit_asm(s, loc, toks):
-        precode = ".EQU status_reg=252\n.EQU in_dev=253\n.EQU out_dev=255\n.EQU zero_bit=0\n.EQU carry_bit=1\nCOPYLR stack head_ptr\nstart_program:\n"
-        # postcode = "f_push:\nCOPYRI head_val head_ptr\nINCR head_ptr\nRETURN\n\nf_pop:\nDECR head_ptr\nCOPYIR head_ptr head_val\nRETURN\n\nf_custom_ins:\n.DB 0\nhead_val:\n.DB 0\nhead_val_1:\n.DB 0\nRETURN\nhead_ptr:\n.DB 0\nstack:\n.DB 0\n"
-        postcode = "f_push:\nCOPYRA head_ptr\nSUBLA 253\nBCRSC zero_bit status_reg\nJUMP f_stack_error\nCOPYRI head_val head_ptr\nINCR head_ptr\nRETURN\n\nf_pop:\nCOPYRA head_ptr\nCBR carry_bit status_reg\nSUBLA stack\nBCRSC zero_bit status_reg\nJUMP f_stack_error\nDECR head_ptr\nCOPYIR head_ptr head_val\nRETURN\n\nf_stack_error:\nCOPYLR 0xFF out_dev\nJUMP f_stack_error\nf_custom_ins:\n.DB 0\nhead_val:\n.DB 0\nhead_val_1:\n.DB 0\nRETURN\nhead_ptr:\n.DB 0\nstack:\n.DB 0\n"
+        config_code = ".EQU status_reg=252\n.EQU in_dev=253\n.EQU out_dev=255\n.EQU zero_bit=0\n.EQU carry_bit=1\n"
         deps_code = {"f_rand": "f_rand:\nRANDA\nCOPYAR head_val_1\nCOPYRA head_val\nCBR carry_bit status_reg\nSUBRA head_val_1\nBCRSC carry_bit status_reg\nJUMP f_rand\nCOPYRR head_val_1 head_val\nRETURN\n", 
                      "f_rev":"f_rev:\nCOPYRA head_ptr\nSUBLA stack\nSWAPRA head_ptr\nCBR carry_bit status_reg\nSHIFTRR head_ptr\nSWAPRA head_ptr\nCOPYRR head_ptr head_val\nDECR head_val\nCOPYLR stack head_val_1\nCOPYLR 16 f_custom_ins\nswap_again:\nCALL f_custom_ins\nCBR carry_bit status_reg\nSUBLA 1\nBCRSS zero_bit status_reg\nJUMP f_rev_adjust_and_loop\nRETURN\nf_rev_adjust_and_loop:\nDECR head_val\nINCR head_val_1\nJUMP swap_again\n",
-                     "f_peek":"f_peek:\nDECR head_ptr\nCOPYIR head_ptr head_val_1\nINCR head_ptr\nRETURN\n"}
+                     "f_peek":"f_peek:\nDECR head_ptr\nCOPYIR head_ptr head_val_1\nINCR head_ptr\nRETURN\n",
+                     "f_push":"f_push:\nCOPYRA head_ptr\nSUBLA 253\nBCRSC zero_bit status_reg\nJUMP f_stack_error\nCOPYRI head_val head_ptr\nINCR head_ptr\nRETURN\n\n",
+                     "f_pop":"f_pop:\nCOPYRA head_ptr\nCBR carry_bit status_reg\nSUBLA stack\nBCRSC zero_bit status_reg\nJUMP f_stack_error\nDECR head_ptr\nCOPYIR head_ptr head_val\nRETURN\n\n",
+                     "f_stack_error":"f_stack_error:\nCOPYLR 0xFF out_dev\nJUMP f_stack_error\n",
+                     "f_custom_ins":"f_custom_ins:\n.DB 0\nhead_val:\n.DB 0\nhead_val_1:\n.DB 0\nRETURN\n"}
+        
+        if "STACK_DATA" in toks:
+            precode = "COPYLR stack_offset head_ptr\nstart_program:\n"
+            postcode = f"head_ptr:\n.DB 0\nstack:\n.DB {','.join(map(str, toks['STACK_DATA']))}\nstack_offset:\n"
+            compiled_toks = toks[1:]
+        else:
+            precode = "COPYLR stack head_ptr\nstart_program:\n"
+            postcode = "head_ptr:\n.DB 0\nstack:\n.DB 0\n"
+            compiled_toks = toks
+            
         # Collect dependencies and leave just compiled code
-        deps = set()
-        for a_tok in toks:
+        deps = {"f_custom_ins"}
+        for a_tok in compiled_toks:
             deps = deps.union(a_tok["dependencies"])
                 
-        return precode + \
-               f"{''.join([m['statements'] for m in toks])}" +\
+        return config_code + precode + \
+               f"{''.join([m['statements'] for m in compiled_toks])}" +\
                "HALT\n" + \
                "".join([deps_code[k] for k in deps])+ \
                postcode
         
     sust_literal = pyparsing.Group(pyparsing.Regex("[0-9]+"))("LITERAL").setParseAction(_push_literal)
+    sust_stack_data = pyparsing.Group(pyparsing.OneOrMore(pyparsing.Regex("[0-9]+").setParseAction(lambda s, loc, toks:int(toks[0]))))("STACK_DATA").setParseAction(list)
     sust_add = pyparsing.Group(pyparsing.Regex("[Aa][Dd][Dd]"))("ADD").setParseAction(_add)
     sust_sub = pyparsing.Group(pyparsing.Regex("[Ss][Uu][Bb]"))("SUB").setParseAction(_sub)
     sust_mul = pyparsing.Group(pyparsing.Regex("[Mm][Uu][Ll]"))("MUL").setParseAction(_mul)
@@ -153,7 +168,7 @@ def get_superstack_parser():
                        sust_or ^ sust_xor ^ sust_nand ^ sust_not ^ sust_output ^ sust_input ^ sust_outputascii ^
                        sust_inputascii ^ sust_pop ^ sust_swap ^ sust_cycle ^ sust_rcycle ^ sust_dup ^ sust_rev ^  
                        sust_quit ^ sust_debug ^ sust_if_block)
-    sust_program = pyparsing.OneOrMore(sust_statement).setParseAction(_emit_asm)
+    sust_program = (pyparsing.Optional(sust_stack_data) + pyparsing.OneOrMore(sust_statement)).setParseAction(_emit_asm)
     sust_program.ignore(sust_debug)
     return sust_program
     
