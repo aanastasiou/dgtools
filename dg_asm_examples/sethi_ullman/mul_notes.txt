@@ -1,0 +1,66 @@
+# Example 1
+
+## Current
+
+a*b + c*d
+
+COPYRR a R0
+CBR 1 status_reg
+MUL R0 b
+SWAPRA R0
+COPYRR c R0
+CBR 1 status_reg
+MUL R0 d
+CBR 1 status_reg
+ADDRA f_mulr_op1 (23 bytes + 1 "register")
+
+R0:
+.DB 0
+
+## Suggested:
+
+a*b + c*d
+
+COPYRA a
+CBR 1 status_reg
+MULRA b
+SWAPRA R0
+COPYRA c
+CBR 1 status_reg
+MULRA d
+CBR 1 status_reg
+ADDRA R0 (12 bytes)
+
+# Example 2
+
+## Current
+
+(a-b)/2
+
+COPYRA a
+CBR 1 status_reg
+SUBRA b
+SWAPRA R0
+COPYLR 2 R3
+CBR 1 status_reg
+DIV R0 R3
+SWAPRA R0 (20 bytes + 2 "registers")
+
+COPYRA a
+CBR 1 status_reg
+SUBRA b
+SWAPRA R0
+CBR 1 status_reg
+SHIFTRR R0
+SWAPRA R0 (16 bytes + 1 "register")
+
+
+## Suggested
+
+(a-b)/2
+
+COPYRA a
+CBR 1 status_reg
+SUBRA b
+CBR 1 status_reg
+DIVLA 2 (12 bytes + 0 "registers")
