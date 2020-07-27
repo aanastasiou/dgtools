@@ -1,1 +1,1 @@
-0 0 if output fi quit
+6 2 mul 8 9 mul add output quit
