@@ -1,1 +1,1 @@
-6 2 mul 8 9 mul add output quit
+0 0 1 5 7 4 2 3 if swap cycle swap dup rcycle swap sub 128 and 128 div if add 0 fi pop pop fi 
