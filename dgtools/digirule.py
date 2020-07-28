@@ -5,7 +5,7 @@ Built-in Digirule models supported by dgtools.
 :author: Athanasios Anastasiou
 :date: Mar 2020
 """
-from .exceptions import DgtoolsErrorOpcodeNotSupported, DgtoolsErrorProgramHalt
+from .exceptions import DgtoolsErrorOpcodeNotSupported, DgtoolsErrorProgramHalt, DgtoolsErrorOutOfMemory
 from .callbacks import (DigiruleCallbackInputBase, DigiruleCallbackInputUserInteraction, DigiruleCallbackComOutStdout, 
                         DigiruleCallbackComInUserInteraction)
 import random
@@ -145,7 +145,7 @@ class Digirule:
             raise TypeError(f"Expected a_program as list received {type(a_program)}")
         
         if len(a_program) > 256:
-            raise ValueError(f"Expected length of program to be at most 256, received {len(a_program)}")
+            raise DgtoolsErrorOutOfMemory(f"Expected length of program to be at most 256, received {len(a_program)}")
             
         for k in enumerate(a_program):
             self._mem[k[0]] = k[1]            

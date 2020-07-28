@@ -54,6 +54,12 @@ class DgtoolsErrorProgramHalt(DgtoolsError):
     Raised to signify that execution has halted for a specific reason (mentioned in the message of the exception)
     """
     pass
+
+class DgtoolsErrorOutOfMemory(DgtoolsError):
+    """
+    Raised to signify that an operation has exhausted all available memory.
+    """
+    pass
     
     
 class DgtoolsErrorASMSyntaxError(DgtoolsError):

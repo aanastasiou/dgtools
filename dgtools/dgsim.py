@@ -287,42 +287,44 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
         
     try:
         compiled_program = DGB_Archive.load(input_file)       
-    except DgtoolsErrorDgbarchiveCorrupted as e:
-        print(e.args[0])
+
+        symbols_to_trace = list(map(lambda x:x.split(":"), trace_symbol))
+        # Validate trace_symbol if any
+        # Create a set of autodiscovery symbols. The symbol is always element 0 and autodiscoverable symbols have a 
+        # length <=2 (i.e. Either Symbol or Symbol:Length)
+        symbols_to_validate = set(map(lambda x:x[0],filter(lambda x:len(x)<=2, symbols_to_trace)))
+        # Check if there are any symbols that are undefined
+        undefined_symbols = symbols_to_validate - set(compiled_program.labels)
+        if len(undefined_symbols)>0:
+            raise DgtoolsErrorSymbolUndefined(f"Symbol(s) undefined: {undefined_symbols}")
+        # If all is well, format the table of TITLE:OFFSET:LENGTH to be sent to trace_program
+        # Extra symbols is the union of all combinations of forms (just symbol, symbol:len, symbol:len:offset)
+        # This is further "decoded" here, because extra_symbols only understands name,start_addr,stop_addr.
+        # The resolution of symbols takes place externally.
+        extra_symbols = list(map(lambda x:(x[0],compiled_program.labels[x[0]],1),
+                                 filter(lambda x:len(x)==1, symbols_to_trace))) + \
+                        list(map(lambda x:(x[0],compiled_program.labels[x[0]], int(x[1])), 
+                                 filter(lambda x:len(x)==2, symbols_to_trace))) + \
+                        list(map(lambda x:(x[0],compiled_program.labels[x[0]], int(x[1])), 
+                                 filter(lambda x:len(x)==3, symbols_to_trace)))
+                                 
+        machine_after_execution = trace_program(compiled_program, 
+                                                output_trace_file, 
+                                                max_n = max_n, 
+                                                trace_title = title, 
+                                                in_interactive_mode=interactive_mode, 
+                                                with_mem_dump=with_dump, 
+                                                extra_symbols=extra_symbols)
+                                                
+        machine_after_execution_archive = DGB_Archive(machine_after_execution._mem, 
+                                                      compiled_program.labels, version=compiled_program.version)
+        
+        machine_after_execution_archive.save(output_memdump_file)
+    
+    except Exception as e:
+        print(f"ERROR: {str(e)}")
         sys.exit(1)
 
-    symbols_to_trace = list(map(lambda x:x.split(":"), trace_symbol))
-    # Validate trace_symbol if any
-    # Create a set of autodiscovery symbols. The symbol is always element 0 and autodiscoverable symbols have a 
-    # length <=2 (i.e. Either Symbol or Symbol:Length)
-    symbols_to_validate = set(map(lambda x:x[0],filter(lambda x:len(x)<=2, symbols_to_trace)))
-    # Check if there are any symbols that are undefined
-    undefined_symbols = symbols_to_validate - set(compiled_program.labels)
-    if len(undefined_symbols)>0:
-        raise DgtoolsErrorSymbolUndefined(f"Symbol(s) undefined: {undefined_symbols}")
-    # If all is well, format the table of TITLE:OFFSET:LENGTH to be sent to trace_program
-    # Extra symbols is the union of all combinations of forms (just symbol, symbol:len, symbol:len:offset)
-    # This is further "decoded" here, because extra_symbols only understands name,start_addr,stop_addr.
-    # The resolution of symbols takes place externally.
-    extra_symbols = list(map(lambda x:(x[0],compiled_program.labels[x[0]],1),
-                             filter(lambda x:len(x)==1, symbols_to_trace))) + \
-                    list(map(lambda x:(x[0],compiled_program.labels[x[0]], int(x[1])), 
-                             filter(lambda x:len(x)==2, symbols_to_trace))) + \
-                    list(map(lambda x:(x[0],compiled_program.labels[x[0]], int(x[1])), 
-                             filter(lambda x:len(x)==3, symbols_to_trace)))
-                             
-    machine_after_execution = trace_program(compiled_program, 
-                                            output_trace_file, 
-                                            max_n = max_n, 
-                                            trace_title = title, 
-                                            in_interactive_mode=interactive_mode, 
-                                            with_mem_dump=with_dump, 
-                                            extra_symbols=extra_symbols)
-                                            
-    machine_after_execution_archive = DGB_Archive(machine_after_execution._mem, 
-                                                  compiled_program.labels, version=compiled_program.version)
-    
-    machine_after_execution_archive.save(output_memdump_file)
         
 if __name__ == "__main__":
     dgsim()

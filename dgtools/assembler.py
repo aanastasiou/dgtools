@@ -81,8 +81,7 @@ class DgAssembler:
         :returns: A dictionary of compiled code, symbols and variable offsets or the parsexception at failure
         :rtype: dict<"program":list<uint8>, "labels":dict<str, int>>, "symbols":dict<str,int>>, pyparsing.ParseException
         """
-        mem = [0 for k in range(0,256)]
-        mem_ptr = 0
+        mem = []
         labels = {}
         symbols = {}
         # Read through the code and load it to memory
@@ -93,15 +92,14 @@ class DgAssembler:
             if command == "def_label":
                 # Tie the label to where it points to
                 if arguments["idf"] not in labels:
-                    labels[arguments["idf"]] = mem_ptr
+                    labels[arguments["idf"]] = len(mem)
                 else:
                     raise DgtoolsErrorSymbolAlreadyDefined(f"Label {arguments['idf']} is getting redefined.")
             elif command == "def_db":
                 # .DB simply defines raw data that are simply dumped where they appear. If a label is not set to a 
                 # data block, it cannot be referenced.
                 value_data = list(map(lambda x:x[0],arguments["values"]))
-                mem[mem_ptr:mem_ptr+len(value_data)] = value_data
-                mem_ptr+=len(value_data)
+                mem.extend(value_data)
             elif command == "def_equ":
                 if arguments["idf"] not in symbols:
                     symbols[arguments["idf"]] = arguments["value"]
@@ -114,12 +112,8 @@ class DgAssembler:
                 instruction_code = int(inst_data[0])
                 instruction_num_op = int(inst_data[1])
                             
-                mem[mem_ptr] = instruction_code
-                mem_ptr+=1
-                if instruction_num_op>0:
-                    mem[mem_ptr:(mem_ptr+instruction_num_op)] = list(map(lambda x:x[0], 
-                                                                         arguments[1:(1+instruction_num_op)])) 
-                    mem_ptr+=instruction_num_op
+                mem.append(instruction_code)
+                mem.extend(list(map(lambda x:x[0], arguments[1:(1+instruction_num_op)]))) 
         # The first pass produces an intermediate object that still contains symbolic references.
         # This second pass here substitutes those references and produces the final object.
         symbol_offsets = {}
@@ -137,5 +131,4 @@ class DgAssembler:
                 mem[an_entry[0]] = symbols[an_entry[1]]
             else:
                 raise DgtoolsErrorSymbolUndefined(f"Symbol {an_entry[1]} not found.")
-                
         return {"program":mem, "labels":labels}
