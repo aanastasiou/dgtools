@@ -15,47 +15,56 @@ def get_superstack_parser():
                 
     def _add(s, loc, toks):
         return {"statements":"COPYLR f_add f_custom_ins\nCALL f_pop_call_push\n",
-                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_add", "f_pop_call_push"}}
+                # "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_add", "f_pop_call_push"}}
+                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_add", "f_pop_call_push", "f_preamble"}}
     
     def _sub(s, loc, toks):
         return {"statements":"COPYLR f_sub f_custom_ins\nCALL f_pop_call_push\n",
-                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_sub", "f_pop_call_push"}}
+                # "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_sub", "f_pop_call_push"}}
+                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_sub", "f_pop_call_push", "f_preamble"}}
 
     def _mul(s, loc, toks):
-        return {"statements":"CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nMUL head_val head_val_1\nCALL f_push\n",
-                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error"}}
+        return {"statements":"COPYLR f_mul f_custom_ins\nCALL f_pop_call_push\n",
+                # "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_mul", "f_pop_call_push"}}
+                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_mul", "f_pop_call_push", "f_preamble"}}
 
     def _div(s, loc, toks):
-        return {"statements":"CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nDIV head_val head_val_1\nCALL f_push\n",
-                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error"}}
+        return {"statements":"COPYLR f_div f_custom_ins\nCALL f_pop_call_push\n",
+                # "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_div", "f_pop_call_push"}}
+                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_div", "f_pop_call_push", "f_preamble"}}
 
     def _mod(s, loc, toks):
-        return {"statements":"CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nDIV head_val head_val_1\nCOPYAR head_val\nCALL f_push\n",
-                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error"}}
+        return {"statements":"COPYLR f_mod f_custom_ins\nCALL f_pop_call_push\n",
+                # "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_mod", "f_pop_call_push"}}
+                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_mod", "f_pop_call_push", "f_preamble"}}
 
     def _random(s, loc, toks):
-        return {"statements":"CALL f_pop\nCALL f_rand\nCALL f_push\n",
-                "dependencies":{"f_rand", "f_pop", "f_push", "f_custom_ins", "f_stack_error"}}
+        return {"statements":"COPYLR f_rand f_custom_ins\nCALL f_pop_call_push\n",
+                "dependencies":{"f_rand", "f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_pop_call_push"}}
 
     def _and(s, loc, toks):
-        return {"statements":"CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val_1\nANDRA head_val\nCOPYAR head_val\nCALL f_push\n",
-                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error"}}
+        return {"statements":"COPYLR f_and f_custom_ins\nCALL f_pop_call_push\n",
+                # "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_and", "f_pop_call_push"}}
+                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_and", "f_pop_call_push", "f_preamble"}}
 
     def _or(s, loc, toks):
-        return {"statements":"CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val_1\nORRA head_val\nCOPYAR head_val\nCALL f_push\n",
-                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error"}}
+        return {"statements":"COPYLR f_or f_custom_ins\nCALL f_pop_call_push\n",
+                # "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_or", "f_pop_call_push"}}
+                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_or", "f_pop_call_push", "f_preamble"}}
 
     def _xor(s, loc, toks):
-        return {"statements":"CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val_1\nXORRA head_val\nCOPYAR head_val\nCALL f_push\n",
-                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error"}}
+        return {"statements":"COPYLR f_xor f_custom_ins\nCALL f_pop_call_push\n",
+                # "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_xor", "f_pop_call_push"}}
+                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_xor", "f_pop_call_push", "f_preamble"}}
 
     def _swap(s, loc, toks):
-        return {"statements": "CALL f_pop\nCOPYRR head_val head_val_1\nCALL f_pop\nSWAPRR head_val head_val_1\nCALL f_push\nCOPYRR head_val_1 head_val\nCALL f_push\n",
-                "dependencies": {"f_push", "f_pop", "f_stack_error", "f_custom_ins"}}
+        return {"statements": "COPYLR f_swap f_custom_ins\nCALL f_pop_call_push\n",
+                # "dependencies": {"f_push", "f_pop", "f_stack_error", "f_custom_ins", "f_swap", "f_pop_call_push"}}
+                "dependencies": {"f_push", "f_pop", "f_stack_error", "f_custom_ins", "f_swap", "f_pop_call_push", "f_preamble"}}
 
     def _dup(s, loc, toks):
-        return {"statements": "CALL f_pop\nCALL f_push\nCALL f_push\n",
-                "dependencies": {"f_pop", "f_push", "f_stack_error"}}
+        return {"statements": "COPYLR f_push f_custom_ins\nCALL f_pop_call_push\n",
+                "dependencies": {"f_pop", "f_push", "f_stack_error", "f_pop_call_push"}}
 
     def _push_literal(s, loc, toks):
         try:
@@ -119,9 +128,26 @@ def get_superstack_parser():
                      "f_cycle":"f_cycle:\nDECR head_ptr\nCOPYRR head_ptr head_val\nCOPYLR stack head_val_1\nCOPYLR 10 f_custom_ins\nCALL f_custom_ins\nINCR head_ptr\nRETURN\n",
                      "f_rcycle":"f_rcycle:\nDECR head_ptr\nCOPYRR head_ptr head_val_1\nCOPYLR stack head_val\nCOPYLR 10 f_custom_ins\nCALL f_custom_ins\nINCR head_ptr\nRETURN\n",
                      "f_pop_call_push":"f_pop_call_push:\nCALL f_pop\nf_call_push:\nCALLI f_custom_ins\nCALL f_push\nRETURN\n",
-                     "f_add":"f_add:\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val_1\nCBR carry_bit status_reg\nADDRA head_val\nCOPYAR head_val\nRETURN\n",
-                     "f_sub":"f_sub:\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val\nCBR carry_bit status_reg\nSUBRA head_val_1\nCOPYAR head_val\nRETURN\n"}
-        
+                     # "f_add":"f_add:\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val_1\nCBR carry_bit status_reg\nADDRA head_val\nCOPYAR head_val\nRETURN\n",
+                     # "f_sub":"f_sub:\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val\nCBR carry_bit status_reg\nSUBRA head_val_1\nCOPYAR head_val\nRETURN\n",
+                     # "f_mul":"f_mul:\nCOPYRR head_val head_val_1\nCALL f_pop\nMUL head_val head_val_1\nRETURN\n",
+                     # "f_div":"f_div:\nCOPYRR head_val head_val_1\nCALL f_pop\nDIV head_val head_val_1\nRETURN\n",
+                     # "f_mod":"f_mod:\nCOPYRR head_val head_val_1\nCALL f_pop\nDIV head_val head_val_1\nCOPYAR head_val\nRETURN\n",
+                     # "f_and":"f_and:\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val_1\nANDRA head_val\nCOPYAR head_val\nRETURN\n",
+                     # "f_or":"f_or:\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val_1\nORRA head_val\nCOPYAR head_val\nRETURN\n",
+                     # "f_xor":"f_xor:\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val_1\nXORRA head_val\nCOPYAR head_val\nRETURN\n",
+                     "f_add":"f_add:\nCALL f_preamble\nCOPYRA head_val_1\nCBR carry_bit status_reg\nADDRA head_val\nCOPYAR head_val\nRETURN\n",
+                     "f_sub":"f_sub:\nCALL f_preamble\nCOPYRA head_val\nCBR carry_bit status_reg\nSUBRA head_val_1\nCOPYAR head_val\nRETURN\n",
+                     "f_mul":"f_mul:\nCALL f_preamble\nMUL head_val head_val_1\nRETURN\n",
+                     "f_div":"f_div:\nCALL f_preamble\nDIV head_val head_val_1\nRETURN\n",
+                     "f_mod":"f_mod:\nCALL f_preamble\nDIV head_val head_val_1\nCOPYAR head_val\nRETURN\n",
+                     "f_and":"f_and:\nCALL f_preamble\nCOPYRA head_val_1\nANDRA head_val\nCOPYAR head_val\nRETURN\n",
+                     "f_or":"f_or:\nCALL f_preamble\nCOPYRA head_val_1\nORRA head_val\nCOPYAR head_val\nRETURN\n",
+                     "f_xor":"f_xor:\nCALL f_preamble\nCOPYRA head_val_1\nXORRA head_val\nCOPYAR head_val\nRETURN\n",
+                     "f_swap":"f_swap:\nCALL f_preamble\nSWAPRR head_val head_val_1\nCALL f_push\nCOPYRR head_val_1 head_val\nRETURN\n",
+                     "f_preamble":"f_preamble:\nCOPYRR head_val head_val_1\nCALL f_pop\nRETURN\n"}
+                     
+        # Pre load the stack if the program starts with data (which, it always does)
         if "STACK_DATA" in toks:
             precode = "COPYLR stack_offset head_ptr\nstart_program:\n"
             postcode = f"head_ptr:\n.DB 0\nstack:\n.DB {','.join(map(str, toks['STACK_DATA']))}\nstack_offset:\n"
