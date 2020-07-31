@@ -27,9 +27,9 @@ def get_bf_parser():
             return f"DECR dp\n"
             
     def inc_dv(s, loc, toks):
-        reps = len(toks)
+        reps = len(toks[0][0])
         if reps>1:
-            return f"COPYIA dp\nADDLA {len(toks[0][0])}\nCOPYAI dp\n" 
+            return f"COPYIA dp\nADDLA {reps}\nCOPYAI dp\n" 
         else:
             return f"COPYLR 30 handle_dv_i\nCALL handle_dv_i\n"
             
