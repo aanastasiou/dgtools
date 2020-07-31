@@ -1,0 +1,1 @@
+0 0 1 swap cycle swap dup rcycle swap cycle swap dup rcycle 255 xor and cycle pop swap 255 xor and dup rcycle or quit

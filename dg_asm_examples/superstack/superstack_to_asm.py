@@ -38,6 +38,16 @@ def get_superstack_parser():
                 # "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_mod", "f_pop_call_push"}}
                 "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_mod", "f_pop_call_push", "f_preamble"}}
 
+    def _shl(s, loc, toks):
+        return {"statements":"COPYLR f_shl f_custom_ins\nCALL f_pop_call_push\n",
+                # "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_add", "f_pop_call_push"}}
+                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_shl", "f_pop_call_push", "f_preamble"}}
+
+    def _shr(s, loc, toks):
+        return {"statements":"COPYLR f_shr f_custom_ins\nCALL f_pop_call_push\n",
+                # "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_add", "f_pop_call_push"}}
+                "dependencies":{"f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_shr", "f_pop_call_push", "f_preamble"}}
+
     def _random(s, loc, toks):
         return {"statements":"COPYLR f_rand f_custom_ins\nCALL f_pop_call_push\n",
                 "dependencies":{"f_rand", "f_pop", "f_push", "f_custom_ins", "f_stack_error", "f_pop_call_push"}}
@@ -136,6 +146,8 @@ def get_superstack_parser():
                      # "f_and":"f_and:\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val_1\nANDRA head_val\nCOPYAR head_val\nRETURN\n",
                      # "f_or":"f_or:\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val_1\nORRA head_val\nCOPYAR head_val\nRETURN\n",
                      # "f_xor":"f_xor:\nCOPYRR head_val head_val_1\nCALL f_pop\nCOPYRA head_val_1\nXORRA head_val\nCOPYAR head_val\nRETURN\n",
+                     "f_shl":"f_shl:\nCALL f_preamble\nf_shl_do_shl:\nCBR carry_bit status_reg\nSHIFTRL head_val\nDECRJZ head_val_1\nJUMP f_shl_do_shl\nRETURN\n",
+                     "f_shr":"f_shr:\nCALL f_preamble\nf_shr_do_shr:\nCBR carry_bit status_reg\nSHIFTRR head_val\nDECRJZ head_val_1\nJUMP f_shr_do_shr\nRETURN\n",
                      "f_add":"f_add:\nCALL f_preamble\nCOPYRA head_val_1\nCBR carry_bit status_reg\nADDRA head_val\nCOPYAR head_val\nRETURN\n",
                      "f_sub":"f_sub:\nCALL f_preamble\nCOPYRA head_val\nCBR carry_bit status_reg\nSUBRA head_val_1\nCOPYAR head_val\nRETURN\n",
                      "f_mul":"f_mul:\nCALL f_preamble\nMUL head_val head_val_1\nRETURN\n",
@@ -179,6 +191,10 @@ def get_superstack_parser():
     sust_and = pyparsing.Group(pyparsing.Regex("[Aa][Nn][Dd]"))("AND").setParseAction(_and)
     sust_or = pyparsing.Group(pyparsing.Regex("[Oo][Rr]"))("OR").setParseAction(_or)
     sust_xor = pyparsing.Group(pyparsing.Regex("[Xx][Oo][Rr]"))("XOR").setParseAction(_xor)
+    
+    sust_shl = pyparsing.Group(pyparsing.Regex("[Ss][Hh][Ll]"))("SHL").setParseAction(_shl)
+    sust_shr = pyparsing.Group(pyparsing.Regex("[Ss][Hh][Rr]"))("SHR").setParseAction(_shr)
+    
     sust_nand = pyparsing.Group(pyparsing.Regex("[Nn][Aa][Nn][Dd]"))("NAND")
     sust_not = pyparsing.Group(pyparsing.Regex("[Nn][Oo][Tt]"))("NOT")
     sust_output = pyparsing.Group(pyparsing.Regex("[Oo][Uu][Tt][Pp][Uu][Tt]"))("OUTPUT").setParseAction(_output)
@@ -195,10 +211,10 @@ def get_superstack_parser():
     sust_debug = pyparsing.Group(pyparsing.Regex("[Dd][Ee][Bb][Uu][Gg]"))("DEBUG")
     sust_statement = pyparsing.Forward()
     sust_if_block = pyparsing.Group(pyparsing.Regex("[Ii][Ff]")+pyparsing.ZeroOrMore(sust_statement)+pyparsing.Regex("[Ff][Ii]")).setParseAction(_iteration_block)
-    sust_statement << (sust_literal ^ sust_add ^ sust_sub ^ sust_mul ^ sust_div ^ sust_mod ^ sust_random ^ sust_and ^
-                       sust_or ^ sust_xor ^ sust_nand ^ sust_not ^ sust_output ^ sust_input ^ sust_outputascii ^
-                       sust_inputascii ^ sust_pop ^ sust_swap ^ sust_cycle ^ sust_rcycle ^ sust_dup ^ sust_rev ^  
-                       sust_quit ^ sust_debug ^ sust_if_block)
+    sust_statement << (sust_literal ^ sust_shl ^ sust_shr ^ sust_add ^ sust_sub ^ sust_mul ^ sust_div ^ sust_mod ^ 
+                       sust_random ^ sust_and ^ sust_or ^ sust_xor ^ sust_nand ^ sust_not ^ sust_output ^ sust_input ^ 
+                       sust_outputascii ^ sust_inputascii ^ sust_pop ^ sust_swap ^ sust_cycle ^ sust_rcycle ^ sust_dup ^ 
+                       sust_rev ^  sust_quit ^ sust_debug ^ sust_if_block)
     sust_program = (pyparsing.Optional(sust_stack_data) + pyparsing.OneOrMore(sust_statement)).setParseAction(_emit_asm)
     sust_program.ignore(sust_debug)
     return sust_program
