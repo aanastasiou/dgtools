@@ -1,1 +1,1 @@
-0 0 1 5 7 4 2 3 if swap cycle swap dup rcycle swap sub 128 and 128 div if add 0 fi pop pop fi 
+0 0 2 6 12 1 5 9 120 143 155 3 200 if swap cycle swap dup rcycle sub dup 128 and if pop pop 0 0 fi pop add swap fi
