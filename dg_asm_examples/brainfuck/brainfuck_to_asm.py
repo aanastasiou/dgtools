@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import functools
 import pyparsing
 import random
 import click
@@ -15,45 +16,50 @@ def get_bf_parser():
     def inc_dp(s, loc, toks):
         reps = len(toks[0][0])
         if reps>1:
-            return {"statements":f"COPYRA dp\nADDLA {reps}\nCOPYAR dp\n",
-                    "dependencies":""}
+            return f"COPYRA dp\nADDLA {reps}\nCOPYAR dp\n"
         else:
-            return f"INCR dp\n"
+            return "INCR dp\n"
     
     def dec_dp(s, loc, toks):
         reps = len(toks[0][0])
         if reps>1:
-            return f"COPYRA dp\nSUBLA {reps}\nCOPYAR dp\n" 
+            return f"COPYRA dp\nSUBLA {reps}\nCOPYAR dp\n"
         else:
-            return f"DECR dp\n"
+            return "DECR dp\n"
             
     def inc_dv(s, loc, toks):
         reps = len(toks[0][0])
         if reps>1:
-            return f"COPYIA dp\nADDLA {reps}\nCOPYAI dp\n" 
+            return f"COPYIA dp\nADDLA {reps}\nCOPYAI dp\n"
         else:
-            return f"COPYLR 30 handle_dv_i\nCALL handle_dv_i\n"
+            return "COPYLR 30 handle_dv_i\nCALL handle_dv_i\n"
             
     def dec_dv(s, loc, toks):
         reps = len(toks[0][0])
         if reps>1:
-            return f"COPYIA dp\nSUBLA {reps}\nCOPYAI dp\n"        
+            return f"COPYIA dp\nSUBLA {reps}\nCOPYAI dp\n"
         else:
-            return f"COPYLR 29 handle_dv_i\nCALL handle_dv_i\n"
-            
+            return "COPYLR 29 handle_dv_i\nCALL handle_dv_i\n"
+
     def out_dv(s, loc, toks):
-        return f"COPYIR dp out_dev\n"
+        return "COPYIR dp out_dev\n"
                 
     def in_dv(s, loc, toks):
-        return f"COPYRI in_dev dp\n"
+        return "COPYRI in_dev dp\n"
         
     def iteration_block(s, loc, toks):
         label_tag = _get_label_tag()
-        return f"label_{label_tag}:\nCOPYIA dp\nBCRSC zero_bit status_reg\nJUMP label_continue_{label_tag}\n{''.join(toks[0][1:-1])}JUMP label_{label_tag}\nlabel_continue_{label_tag}:\n"
+        return f"label_{label_tag}:\nCOPYIA dp\nBCRSC zero_bit status_reg\nJUMP label_continue_{label_tag}\n{''.join(toks[0][1:-1])}\nJUMP label_{label_tag}\nlabel_continue_{label_tag}:\n"
         
     def emit_asm(s, loc, toks):
-        return f".EQU status_reg=252\n.EQU in_dev=253\n.EQU out_dev=255\n.EQU zero_bit=0\nCOPYLR tape dp\nstart_program:\n" \
-               f"{''.join([m for m in toks])}HALT\nhandle_dv_i:\n.DB 0\ndp:\n.DB 0\nRETURN\ntape:\n.DB 0"
+        config_code = ".EQU status_reg=252\n.EQU in_dev=253\n.EQU out_dev=255\n.EQU zero_bit=0\n"
+        pre_code = "COPYLR tape dp\nstart_program:\n"
+        post_code = "HALT\nhandle_dv_i:\n.DB 0\ndp:\n.DB 0\nRETURN\ntape:\n"
+        
+        return config_code + pre_code + \
+               f"{''.join(toks)}" + \
+               "HALT\n" + \
+               post_code
         
     bf_inc_data_p = pyparsing.Group(pyparsing.Regex("[>]+"))("INC_DP").setParseAction(inc_dp)
     bf_dec_data_p = pyparsing.Group(pyparsing.Regex("[<]+"))("DEC_DP").setParseAction(dec_dp)
