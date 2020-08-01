@@ -15,7 +15,8 @@ def get_bf_parser():
     def inc_dp(s, loc, toks):
         reps = len(toks[0][0])
         if reps>1:
-            return f"COPYRA dp\nADDLA {reps}\nCOPYAR dp\n" 
+            return {"statements":f"COPYRA dp\nADDLA {reps}\nCOPYAR dp\n",
+                    "dependencies":""}
         else:
             return f"INCR dp\n"
     
@@ -34,9 +35,9 @@ def get_bf_parser():
             return f"COPYLR 30 handle_dv_i\nCALL handle_dv_i\n"
             
     def dec_dv(s, loc, toks):
-        reps = len(toks)
+        reps = len(toks[0][0])
         if reps>1:
-            return f"COPYIA dp\nSUBLA {len(toks[0][0])}\nCOPYAI dp\n"        
+            return f"COPYIA dp\nSUBLA {reps}\nCOPYAI dp\n"        
         else:
             return f"COPYLR 29 handle_dv_i\nCALL handle_dv_i\n"
             
@@ -48,7 +49,6 @@ def get_bf_parser():
         
     def iteration_block(s, loc, toks):
         label_tag = _get_label_tag()
-        #return f"label_{label_tag}:\n{''.join(toks[0][1:-1])}COPYIA dp\nBCRSS zero_bit status_reg\nJUMP label_{label_tag}\n"
         return f"label_{label_tag}:\nCOPYIA dp\nBCRSC zero_bit status_reg\nJUMP label_continue_{label_tag}\n{''.join(toks[0][1:-1])}JUMP label_{label_tag}\nlabel_continue_{label_tag}:\n"
         
     def emit_asm(s, loc, toks):
