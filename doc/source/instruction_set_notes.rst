@@ -47,6 +47,8 @@ Throughout those:
 * ``mem[addr]`` denotes the content of ``addr`` within the address space of Digirule2.
 
 
+.. _iset_notes_mem_ops:
+
 Memory Operations
 -----------------
 

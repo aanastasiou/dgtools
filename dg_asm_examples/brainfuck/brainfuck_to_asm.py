@@ -16,28 +16,28 @@ def get_bf_parser():
     def inc_dp(s, loc, toks):
         reps = len(toks[0][0])
         if reps>1:
-            return f"COPYRA dp\nADDLA {reps}\nCOPYAR dp\n"
+            return f"COPYRA dp\nCBR carry_bit status_reg\nADDLA {reps}\nCOPYAR dp\n"
         else:
             return "INCR dp\n"
     
     def dec_dp(s, loc, toks):
         reps = len(toks[0][0])
         if reps>1:
-            return f"COPYRA dp\nSUBLA {reps}\nCOPYAR dp\n"
+            return f"COPYRA dp\nCBR carry_bit status_reg\nSUBLA {reps}\nCOPYAR dp\n"
         else:
             return "DECR dp\n"
             
     def inc_dv(s, loc, toks):
         reps = len(toks[0][0])
         if reps>1:
-            return f"COPYIA dp\nADDLA {reps}\nCOPYAI dp\n"
+            return f"COPYIA dp\nCBR carry_bit status_reg\nADDLA {reps}\nCOPYAI dp\n"
         else:
             return "COPYLR 30 handle_dv_i\nCALL handle_dv_i\n"
             
     def dec_dv(s, loc, toks):
         reps = len(toks[0][0])
         if reps>1:
-            return f"COPYIA dp\nSUBLA {reps}\nCOPYAI dp\n"
+            return f"COPYIA dp\nCBR carry_bit status_reg\nSUBLA {reps}\nCOPYAI dp\n"
         else:
             return "COPYLR 29 handle_dv_i\nCALL handle_dv_i\n"
 
@@ -52,7 +52,7 @@ def get_bf_parser():
         return f"label_{label_tag}:\nCOPYIA dp\nBCRSC zero_bit status_reg\nJUMP label_continue_{label_tag}\n{''.join(toks[0][1:-1])}\nJUMP label_{label_tag}\nlabel_continue_{label_tag}:\n"
         
     def emit_asm(s, loc, toks):
-        config_code = ".EQU status_reg=252\n.EQU in_dev=253\n.EQU out_dev=255\n.EQU zero_bit=0\n"
+        config_code = ".EQU status_reg=252\n.EQU in_dev=253\n.EQU out_dev=255\n.EQU zero_bit=0\n.EQU carry_bit=2\n"
         pre_code = "COPYLR tape dp\nstart_program:\n"
         post_code = "HALT\nhandle_dv_i:\n.DB 0\ndp:\n.DB 0\nRETURN\ntape:\n"
         

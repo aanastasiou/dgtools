@@ -107,6 +107,8 @@ Here is how arrays are expressed on the Digirule.
     :linenos:
 
 
+.. _cond_branch:
+
 Conditional branching & the ``if`` command
 ------------------------------------------
 

@@ -86,8 +86,8 @@ Bear with me here however, because we will soon be writing Brainfuck programs th
 From Brainfuck to Digirule ASM
 ------------------------------
 
-Modelling the machine
-^^^^^^^^^^^^^^^^^^^^^
+Implementing the machine
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 A Brainfuck memory "tape" is quite simply an array. An array in Digirule Assembly can be represented by a base memory 
 address (the start of the array) and an offset to a particular memory cell. Let's call this array...``tape``. 
@@ -129,7 +129,9 @@ The naive implementation of the first is:
 However, notice that Brainfuck does not have literals. In plain simple Brainfuck, it is impossible to specify ``12`` 
 as the value somewhere along the "tape". So, the literal ``12``, in Brainfuck is ``++++++++++++`` which leads 
 to adding 12 units to the initial value of the memory tape cell. The 
-naive implementation therefore, leads to 12 calls to ``INCR`` and 24 bytes of memory.
+naive implementation therefore, leads to 12 calls to ``INCR`` and more generally :math:`\text{reps} \times 2` 
+bytes of memory. Here, :math:`\text{reps}` stands for repetitions or the number of times the ``+`` symbol appears at a 
+specific point in input.
 
 For this reason, the Brainfuck transpiler, "catches" the repeated application of ``+ - > <`` and converts it to the more
 efficient:
@@ -140,8 +142,144 @@ efficient:
     ADDLA {reps}
     COPYAR dp
     
-Where ``{reps}}`` is the number of times the symbol appears in the input. 
+Where ``{reps}`` is the number of times the symbol appears in the input. 
 
 This is just 6 bytes in Digirule ASM. The converse command (``<``) has ``SUBLA`` in the place of ``ADDLA``.
 
-Similarly, adding 1 to the value of where the ``dp`` points to, is a matter of
+Similarly, adding 1 to the value of where the ``dp`` points to, is a matter of executing the same commands **but**, over 
+the value the ``dp`` points at.
+
+Unfortunately, an indirect ``INCR`` is impossible with the "2U" Digirule firmware, which means that it would have to be 
+done via the usual :ref`self-modifying code trick <iset_notes_mem_ops>`:
+
+::
+
+    ...
+    COPYLR 30 handle_dv_i
+    CALL handle_dv_i
+    ...
+    ...
+    handle_dv_i:
+    .DB 0
+    dp:
+    .DB 0
+    RETURN
+    tape:
+    ...
+
+Notice here how the ``dp`` is between the instruction ``handle_dv_i`` and a byte for ``RETURN`` that is required 
+to return from the indirect ``INCR``. The combined result of this is to increase the value that the ``dp`` points to.
+
+Adding an arbitrary :math:`\text{reps}` number involves less steps since the 2U firmware now has indirect copy 
+instructions at least, *but*, it also requires the addition of a ``CBR`` because the ``ADD`` now is with-carry:
+
+::
+
+    COPYIA dp
+    CBR carry_bit status_reg
+    ADDLA {reps}
+    COPYAI dp
+    
+
+Finally, the iteration is equivalent to the usual ``while``. In other words, check a condition and execute the loop 
+until that condition does not hold.
+
+We have :ref:`seen how conditional branching works before <cond_branch>`, already using the 2A firmware and the 
+implementation of ``while`` is exactly the same thing with a bit more label management.
+
+Here is how a given pair of ``[ ]`` containing the block of instructions to be executed, would be transpiled:
+
+::
+    label_216276956994:
+    COPYIA dp
+    BCRSC zero_bit status_reg
+    JUMP label_continue_216276956994
+    
+    ...
+    ...
+    ...
+
+    JUMP label_216276956994
+    label_continue_216276956994:
+    
+    ...
+    ...
+    ...
+    
+Two labels are generated marking the start (``label_216276956994:``) and the end of the loop 
+(``label_continue_216276956994:``). In loop entry, we always check the current value that the ``dp`` points to and this 
+is achieved here via a ``COPYIA`` which on the 2U firmware also affects the zero flag which is tested with that 
+``BCRSC``. If that value becomes non-zero, execution jumps at the end of the loop.
+
+
+Prologue and Epilogue parts
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In addition to compiling a brainfuck program, we also need to do some housekeeping tasks on entry and exit to a given 
+program.
+
+On entry, we need to initialise ``dp`` to the start of the ``tape`` and this would be our "prologue".
+
+And at the end of the program we need to add the declarations for ``dp``, ``tape`` and the indirect ``INCR`` instruction.
+
+In the end, the "skeleton" of a given Brainfuck program always follows the following Digirule ASM structure:
+
+::
+
+    .EQU status_reg=252
+    .EQU in_dev=253
+    .EQU out_dev=255
+    .EQU zero_bit=0
+    COPYLR tape dp
+    start_program:
+    ...
+    ...
+    ...
+    ...
+    HALT
+    handle_dv_i:
+    .DB 0
+    dp:
+    .DB 0
+    RETURN
+    tape:
+    
+
+And this is it. A Brainfuck compiler by which we can program the Digirule.
+
+
+
+
+A ``Hello World`` in Brainfuck
+------------------------------
+
+There is a separate section devoted to the way of thinking about Brainfuck programs, along with a few examples, but it 
+would be worth to show here a minimal example of adding two user defined numbers.
+
+Here is the program:
+
+::
+
+    ,>,[-<+>]<.
+
+
+And here is what it does:
+
+#. ``,`` Ask user for input, put the value in the current ``dp``
+#. ``>`` Increase ``dp``, moving to the next cell
+#. ``,`` Ask user for input, put the value in the current ``dp``
+#. ``[`` If the current cell (the second cell in the tape) is zero go to step 10
+#. ``-`` Subtract 1
+#. ``<`` Move to the first cell
+#. ``+`` Add one
+#. ``>`` Move to the second cell
+#. ``]`` Go to step 4
+#. ``<`` Move to the first cell
+#. ``.`` Output the value to the data leds
+#. Stop
+
+And here is what that listing compiles down to:
+
+.. literalinclude:: ../../dg_asm_examples/brainfuck/add_two_nums.dsf
+    :language: DigiruleASM
+    :linenos:
