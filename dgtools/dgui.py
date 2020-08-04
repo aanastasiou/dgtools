@@ -306,17 +306,11 @@ def main(input_file, output_file):
             for a_symbol in params_dialog_box.extra_symbols:
                 dgsim_params.extend(["-ts", f"{a_symbol}"])
                 
-        dgasm_process = subprocess.Popen(dgasm_params, stdout=subprocess.PIPE, text=True)
-        if dgasm_process.wait()!=0:
-            sys.stdout.write(dgasm_process.stdout.read())
-        else:
+        dgasm_process = subprocess.Popen(dgasm_params, stdin=sys.stdin, stdout=sys.stdout, text=True)
+        if dgasm_process.wait()==0:
             sys.stdout.write("Compilation succesful.\n")
-            # TODO: MED, Revise stdin,stdout rerouting here.
-            # If that was succesful, run the simulator
-            dgsim_process = subprocess.Popen(dgsim_params, stdout=subprocess.PIPE, text=True)
-            if dgsim_process.wait()!=0:
-                sys.stdout.write(dgsim_process.stdout.read())
-            else:
+            dgsim_process = subprocess.Popen(dgsim_params, stdin=sys.stdin, stdout=sys.stdout, text=True)
+            if dgsim_process.wait()==0:
                 sys.stdout.write("Simulation succesful.\n")
                 if params_dialog_box.gen_makefile:
                     # And since this was succesful, let's write the makefile out
