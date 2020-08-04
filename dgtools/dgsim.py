@@ -35,11 +35,16 @@ Options:
                                   for a region of memory of Length bytes that
                                   starts at Offset.
 
+  -sn, --skip-n INTEGER           Number of steps to skip generating a dump
+                                  for. For example, if --skip-n 10, the first
+                                  10 steps will be executed and the HTML
+                                  report will start at n=10
+
   -mn, --max-n INTEGER            Maximum number of time steps to allow the
                                   sim to run for.
 
   --help                          Show this message and exit.
-
+  
 
 :author: Athanasios Anastasiou
 :date: Mar 2020.
@@ -62,7 +67,8 @@ from dgtools import (DgtoolsErrorOpcodeNotSupported,
                      BUILTIN_MODELS)
 from dgtools.exceptions import DgtoolsError
     
-def trace_program(program, output_file, max_n=200, trace_title="", in_interactive_mode=False, extra_symbols=[], with_mem_dump=True):
+def trace_program(program, output_file, skip_n=0, max_n=200, trace_title="", 
+                  in_interactive_mode=False, extra_symbols=[], with_mem_dump=True):
     """
     Produces a detailed trace of program execution in HTML form.
     
@@ -70,8 +76,10 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
     :type program: List<uint8>[256]
     :param output_file: The HTML filename.
     :type output_file: str
+    :param skip_n: Number of execution steps to omit producing a report on.
+    :type skip_n: int (>0)
     :param max_n: Maximum number of steps to allow the VM to run for.
-    :type max_n: int
+    :type max_n: int (>0)
     :param trace_title: A very simple title for the trace.
     :type trace_title: str
     :param in_interactive_mode: Whether to execute the program in interactive mode.
@@ -103,82 +111,83 @@ def trace_program(program, output_file, max_n=200, trace_title="", in_interactiv
         dgen.heading(f"Program Trace {trace_title}", 1)
         dgen.close_tag("header")
         while not done and n<max_n:
-            # Machine registers
-            dgen.open_tag("section")
-            dgen.named_anchor(f"n{n}")
-            dgen.open_tag("header")
-            dgen.heading(f"Machine State at n={n}",2)
-            dgen.close_tag("header")
-            
-            dgen.open_tag("section")
-            dgen.open_tag("header")
-            dgen.heading(f"Machine Registers",3)
-            dgen.close_tag("header")
-            dgen.table_h(["Program Counter:","Accumulator:", "Status Reg:","Button Register:", "Addr.Led Register:",
-                          "Data Led Register:", "Speed setting:", "Program counter stack:"],
-                         [[f"0x{machine._pc:02X}"], 
-                          [machine._acc],
-                          [machine._mem[machine._status_reg_ptr]], 
-                          [machine._mem[machine._bt_reg_ptr]], 
-                          [machine._mem[machine._addrled_reg_ptr]], 
-                          [machine._mem[machine._dataled_reg_ptr]], 
-                          [machine._speed_setting], 
-                          # [machine._ppc]],
-                          [",".join(list(map(lambda x:f"0x{x:02X}",machine._ppc)))]],
-                          attrs={"class":"table_machine_state"})
-            dgen.close_tag("section")
-            
-            # Memory space
-            if with_mem_dump:
+            if n>=skip_n:
+                # Machine registers
                 dgen.open_tag("section")
+                dgen.named_anchor(f"n{n}")
                 dgen.open_tag("header")
-                dgen.heading(f"Full memory dump:",3)
-                dgen.close_tag("header")
-                dgen.table_hv([[f"{machine._mem[n]:02X}" for n in range(m,m+16)] for m in range(0,256,16)],
-                              mem_space_heading_h, 
-                              mem_space_heading_v,
-                              attrs={"class":"table_memory_space"},
-                              cell_attrs={(machine._pc // 16,machine._pc-(machine._pc // 16)):{"class":"current_pc"}})
-                dgen.close_tag("section")
-            
-            # Extra symbols
-            if len(extra_symbols):
-                dgen.open_tag("section")
-                dgen.open_tag("header")
-                dgen.heading(f"Specific Symbols",3)
+                dgen.heading(f"Machine State at n={n}",2)
                 dgen.close_tag("header")
                 
-                # symbol_names = list(map(lambda x:x[0],extra_symbols))
-                
-                symbol_values = []
-                for a_symbol in extra_symbols:
-                    raw_bytes = machine._mem[a_symbol[1]:(a_symbol[1]+a_symbol[2])]
-                    if len(raw_bytes)>1:
-                        chr_bytes = "".join(map(lambda x:chr(x), raw_bytes))
-                    else:
-                        chr_bytes = ""
-                    symbol_values.append([str(raw_bytes),chr_bytes])
-                # dgen.table_h(symbol_names,symbol_values, attrs={"class":"table_spec_sym"})
-                dgen.table_v(["Symbol","Offset","Value(s)", "Value as string"],
-                             list(map(lambda x:[x[0][0],
-                                                f"0x{x[0][1]:02X}",
-                                                x[1][0],x[1][1]],
-                                      zip(extra_symbols,symbol_values))), 
-                             attrs={"class":"table_spec_sym"})
+                dgen.open_tag("section")
+                dgen.open_tag("header")
+                dgen.heading(f"Machine Registers",3)
+                dgen.close_tag("header")
+                dgen.table_h(["Program Counter:","Accumulator:", "Status Reg:","Button Register:", "Addr.Led Register:",
+                              "Data Led Register:", "Speed setting:", "Program counter stack:"],
+                             [[f"0x{machine._pc:02X}"], 
+                              [machine._acc],
+                              [machine._mem[machine._status_reg_ptr]], 
+                              [machine._mem[machine._bt_reg_ptr]], 
+                              [machine._mem[machine._addrled_reg_ptr]], 
+                              [machine._mem[machine._dataled_reg_ptr]], 
+                              [machine._speed_setting], 
+                              # [machine._ppc]],
+                              [",".join(list(map(lambda x:f"0x{x:02X}",machine._ppc)))]],
+                              attrs={"class":"table_machine_state"})
                 dgen.close_tag("section")
-            
-            # Onboard IO
-            dgen.open_tag("section")
-            dgen.open_tag("header")
-            dgen.heading("Onboard I/O",3)
-            dgen.close_tag("header")
-            dgen.table_h(["Address LEDs","Data LEDs","Button Switches"],
-                         [machine.addr_led, machine.data_led, machine.button_sw],
-                         attrs={"class":"table_onboard_io"})
-            dgen.close_tag("section")
-            
-            dgen.close_tag("section")
-            dgen.ruler()
+                
+                # Memory space
+                if with_mem_dump:
+                    dgen.open_tag("section")
+                    dgen.open_tag("header")
+                    dgen.heading(f"Full memory dump:",3)
+                    dgen.close_tag("header")
+                    dgen.table_hv([[f"{machine._mem[n]:02X}" for n in range(m,m+16)] for m in range(0,256,16)],
+                                  mem_space_heading_h, 
+                                  mem_space_heading_v,
+                                  attrs={"class":"table_memory_space"},
+                                  cell_attrs={(machine._pc // 16,machine._pc-(machine._pc // 16)):{"class":"current_pc"}})
+                    dgen.close_tag("section")
+                
+                # Extra symbols
+                if len(extra_symbols):
+                    dgen.open_tag("section")
+                    dgen.open_tag("header")
+                    dgen.heading(f"Specific Symbols",3)
+                    dgen.close_tag("header")
+                    
+                    # symbol_names = list(map(lambda x:x[0],extra_symbols))
+                    
+                    symbol_values = []
+                    for a_symbol in extra_symbols:
+                        raw_bytes = machine._mem[a_symbol[1]:(a_symbol[1]+a_symbol[2])]
+                        if len(raw_bytes)>1:
+                            chr_bytes = "".join(map(lambda x:chr(x), raw_bytes))
+                        else:
+                            chr_bytes = ""
+                        symbol_values.append([str(raw_bytes),chr_bytes])
+                    # dgen.table_h(symbol_names,symbol_values, attrs={"class":"table_spec_sym"})
+                    dgen.table_v(["Symbol","Offset","Value(s)", "Value as string"],
+                                 list(map(lambda x:[x[0][0],
+                                                    f"0x{x[0][1]:02X}",
+                                                    x[1][0],x[1][1]],
+                                          zip(extra_symbols,symbol_values))), 
+                                 attrs={"class":"table_spec_sym"})
+                    dgen.close_tag("section")
+                
+                # Onboard IO
+                dgen.open_tag("section")
+                dgen.open_tag("header")
+                dgen.heading("Onboard I/O",3)
+                dgen.close_tag("header")
+                dgen.table_h(["Address LEDs","Data LEDs","Button Switches"],
+                             [machine.addr_led, machine.data_led, machine.button_sw],
+                             attrs={"class":"table_onboard_io"})
+                dgen.close_tag("section")
+                
+                dgen.close_tag("section")
+                dgen.ruler()
             try:
                 machine._exec_next()
             except DgtoolsError as de:
@@ -254,10 +263,14 @@ def validate_trace_symbol(ctx, param, value):
                    "Symbol:Length is provided, it must have been defined in the program for its offset to be " 
                    "automatically determined.\nIf Symbol:Length:Offset is provided, Symbol does not have to have been"
                    "defined in the ASM program. In this case, Symbol is just a name for a region of memory of Length "
-                   "bytes that starts at Offset.")    
+                   "bytes that starts at Offset.")
+@click.option("--skip-n", "-sn", type=int, default=0, 
+              help="Number of steps to skip generating a dump for. For example, if --skip-n 10, the first 10 steps "
+                   "will be executed and the HTML report will start at n=10")
 @click.option("--max-n","-mn", type=int, default=200, 
               help="Maximum number of time steps to allow the sim to run for.")
-def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, interactive_mode, trace_symbol, max_n):
+def dgsim(input_file, output_trace_file, output_memdump_file, title, 
+          with_dump, interactive_mode, trace_symbol, skip_n, max_n):
     """
     Command line program that produces a trace of a Digirule2 binary on simulated hardware.
     
@@ -309,7 +322,8 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title, with_dump, 
                                  filter(lambda x:len(x)==3, symbols_to_trace)))
                                  
         machine_after_execution = trace_program(compiled_program, 
-                                                output_trace_file, 
+                                                output_trace_file,
+                                                skip_n = skip_n, 
                                                 max_n = max_n, 
                                                 trace_title = title, 
                                                 in_interactive_mode=interactive_mode, 

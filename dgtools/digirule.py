@@ -266,32 +266,23 @@ class Digirule:
 
     def _addla(self):
         new_value = self._get_acc_value() + self._read_next()
-        if self._get_status_reg(self._CARRY_FLAG_BIT):
-            new_value+=1
         self._set_acc_value(new_value)
         self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
         self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
 
     def _addra(self):
         new_value = self._get_acc_value() + self._rd_mem(self._read_next())
-        if self._get_status_reg(self._CARRY_FLAG_BIT):
-            new_value+=1
         self._set_acc_value(new_value)
         self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
-        self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
 
     def _subla(self):
         new_value = self._get_acc_value() - self._read_next()
-        if self._get_status_reg(self._CARRY_FLAG_BIT):
-            new_value-=1
         self._set_acc_value(new_value)
         self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
         self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
 
     def _subra(self):
         new_value = self._get_acc_value() - self._rd_mem(self._read_next())
-        if self._get_status_reg(self._CARRY_FLAG_BIT):
-            new_value-=1
         self._set_acc_value(new_value)
         self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
         self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
@@ -620,6 +611,38 @@ class Digirule2U(Digirule):
         mem_val_right = self._rd_mem(mem_addr_right)
         self._wr_mem(mem_addr_left, mem_val_right)
         self._wr_mem(mem_addr_right, mem_val_left)
+        
+    def _addla(self):
+        new_value = self._get_acc_value() + self._read_next()
+        if self._get_status_reg(self._CARRY_FLAG_BIT):
+            new_value+=1
+        self._set_acc_value(new_value)
+        self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
+        self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
+
+    def _addra(self):
+        new_value = self._get_acc_value() + self._rd_mem(self._read_next())
+        if self._get_status_reg(self._CARRY_FLAG_BIT):
+            new_value+=1
+        self._set_acc_value(new_value)
+        self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
+        self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
+
+    def _subla(self):
+        new_value = self._get_acc_value() - self._read_next()
+        if self._get_status_reg(self._CARRY_FLAG_BIT):
+            new_value-=1
+        self._set_acc_value(new_value)
+        self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
+        self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
+
+    def _subra(self):
+        new_value = self._get_acc_value() - self._rd_mem(self._read_next())
+        if self._get_status_reg(self._CARRY_FLAG_BIT):
+            new_value-=1
+        self._set_acc_value(new_value)
+        self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
+        self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
     
     def _mul(self):
         mem_addr_left = self._read_next()
