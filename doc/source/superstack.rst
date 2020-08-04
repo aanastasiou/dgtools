@@ -117,3 +117,15 @@ The complete set of commands is as follows:
 From SuperStack to Digirule ASM
 -------------------------------
 
+Implementing the Superstack "system"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Transpiling the commands
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Prologue and epilogue parts
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Putting it all together
+-----------------------
+
