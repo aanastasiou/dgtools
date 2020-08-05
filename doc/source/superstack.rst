@@ -40,7 +40,7 @@ The complete set of commands is as follows:
 +----------------------------------------+-------------------------------------------------------------------------+
 | Command                                |   Side effect                                                           |
 +========================================+=========================================================================+
-| Any literal BYTE value (1,42,255, etc) | Immediately pushed on to the stack.                                     |
+| Any literal BYTE value (1,42,255, etc) | Immediately pushed on to the stack. Equivalent to ``NUM push``          |
 +----------------------------------------+-------------------------------------------------------------------------+
 | **Arithmetic commands**                                                                                          |
 +----------------------------------------+-------------------------------------------------------------------------+
@@ -120,12 +120,186 @@ From SuperStack to Digirule ASM
 Implementing the Superstack "system"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+The Superstack "system" as it was described earlier corresponds to three I/O devices on the Digirule:
+
+#. The keyboard (``input``)
+#. The data LEDs (``output``)
+#. The Universal Asynchronous Rx/Tx (UART). That is, the serial port. (``inputascii``, ``outputascii``)
+
+These are all complementary calls and almost identical in structure. For example, the first two expand to:
+
+::
+
+    COPYRR in_dev some_symbol
+    
+and
+
+::
+
+    COPYRR some_symbol out_dev
+    
+Where ``in_dev, out_dev`` are the Digirule registers, here defined with dgasm directive ``.EQU``.
+
+Similarly, the ascii counterparts expand to:
+
+::
+
+    COMIN
+    COPYAR some_symbol
+    
+and
+
+::
+
+    COPYRA some_symbol
+    COMOUT
+    
+Where ``some_symbol`` is a one byte memory location.
+
+
 Transpiling the commands
 ^^^^^^^^^^^^^^^^^^^^^^^^
+
+Transpiling superstack to Digirule ASM is relatively straightforward but slightly more complicated than Brainfuck.
+
+It would be useful here to further classify commands by arity because it will help in explaining some basic patterns 
+that arise:
+
++---------+----------------------------------------------+
+| Arity   | Superstack commands                          |
++=========+==============================================+
+| Nullary | ``input``, ``inputascii``, ``rev``, ``pop``, |
+|         | ``quit``, ``rev``                            |
++---------+----------------------------------------------+
+| Unary   | ``push``, ``output``, ``outputascii``,       | 
+|         | ``random``, ``cycle``, ``rcycle``, ``dup``,  | 
+|         | ``if/fi``                                    |   
++---------+----------------------------------------------+
+| Binary  | ``add``, ``sub``, ``mul``, ``div``, ``mod``, |
+|         | ``and``, ``or``, ``xor``, ``swap``           |
++---------+----------------------------------------------+
+
+
+The vast majority of commands are binary. Which means that they need two operands and their general structure is:
+
+::
+
+    pop op1
+    pop op2
+    result=binary_function(op1,op2)
+    push result
+    
+These are followed, in number of commands, by the unary ones. These require only one operand and their structure is 
+exactly the same as above but only consisting of a single pop. And finally, we have the nullary commands. The result of 
+these functions is independent from the state of the stack. ``quit`` for example will simply interrupt program 
+execution and ``rev`` will reverse the stack whether it contains zero or more values.
+
+These similarities are exploited systematically in the transpiler to emit as efficient ASM as possible.
+
+For example, the general call to ``add`` is translated to:
+
+::
+
+    COPYLR f_add f_custom_ins
+    CALL f_pop_call_push        # This initiates a call to ``add``
+    
+    ...
+    f_pop_call_push:
+    CALL f_pop
+    f_call_push:
+    CALLI f_custom_ins
+    CALL f_push
+    RETURN
+    
+    ...
+    
+    f_add:
+    CALL f_preamble
+    COPYRA head_val_1
+    CBR carry_bit status_reg
+    ADDRA head_val
+    COPYAR head_val
+    RETURN
+    
+    ...
+    
+    f_preamble:
+    COPYRR head_val head_val_1
+    CALL f_pop
+    RETURN
+
+Similarly, a call to a unary command first pops a single value and then calls the function and finally, nullary commands
+are simply called directly.
+
+.. note::
+    You might notice here that ``cycle`` is included in the unary commands, although calling ``cycle`` does not require
+    that a value is poped. However, as a function, ``cycle`` requires one parameter from the stack. It could be 
+    re-written as ``pop cycle push``, to show that it does not modify the stack, but it could not be implemented like 
+    this, because calls to ``push`` and ``pop`` are costly.
+
 
 Prologue and epilogue parts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Every Digirule transpiled Superstack program includes a prologue with all ``.EQU`` directives and the standard 
+initialisation of the stack.
+
+Superstack programs almost always include some sort of data before commands. For example, to add two numbers the 
+superstack code is:
+
+::
+
+    1 1 add quit
+    
+Normally, the transpiler would emit code to push value 1 to the stack twice. Instead of wasting memory by emitting code 
+for pushing values, the transpiler catches this condition and simply pre-loads the stack with data.
+
+Finally, the epilogue part includes declarations for setting up the stack, its head pointer and concatenating together 
+the "dependencies" imposed by commands earlier in the program (e.g. the sub-routines that implement the Superstack 
+functions).
+
 Putting it all together
 -----------------------
 
+Here is the general skeleton of a Superstack program transpiled in Digirule ASM:
+
+::
+
+    .EQU status_reg=252
+    .EQU in_dev=253
+    .EQU out_dev=255
+    .EQU zero_bit=0
+    .EQU carry_bit=1
+    COPYLR stack_offset head_ptr    # Initialise stack
+    start_program:
+    ...
+    ...
+    HALT
+    f_add:
+    CALL f_preamble
+    COPYRA head_val_1
+    CBR carry_bit status_reg
+    ADDRA head_val
+    COPYAR head_val
+    RETURN
+    f_sub:
+    ...
+    ...
+    f_pop_call_push:
+    CALL f_pop
+    f_call_push:
+    CALLI f_custom_ins
+    CALL f_push
+    RETURN
+    f_custom_ins:
+    .DB 0
+    head_val:
+    .DB 0
+    head_val_1:
+    .DB 0
+    RETURN
+    head_ptr:
+    .DB 0
+    stack:
+    .DB 1,2
+    stack_offset:
