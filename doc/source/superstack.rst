@@ -54,6 +54,10 @@ The complete set of commands is as follows:
 +----------------------------------------+-------------------------------------------------------------------------+
 | ``mod``                                | Pops two numbers, performs ``div``, pushes the modulo of that ``div``   |
 +----------------------------------------+-------------------------------------------------------------------------+
+| ``shl`` (Added in Digirule SuperStack) | Pops two numbers, shifts the first left by the second bits, ptronts     |
++----------------------------------------+-------------------------------------------------------------------------+
+| ``shr`` (Added in Digirule SuperStack) | Same as ``shl`` but shifts to the right                                 |
++----------------------------------------+-------------------------------------------------------------------------+
 | **Logic commands**                                                                                               |
 +----------------------------------------+-------------------------------------------------------------------------+
 | ``and``                                | Pops two numbers, applies AND, ptronts.                                 |
@@ -181,29 +185,56 @@ that arise:
 |         |  NONE             | ``random``, ``cycle``, ``rcycle``, ``if/fi`` |
 +---------+-------------------+----------------------------------------------+
 | Binary  |  PUSH             |                                              |
-|         +-------------------+                                              |
-|         |  POP              | ``add``, ``sub``, ``mul``, ``div``, ``mod``, |
-|         |                   | ``and``, ``or``, ``xor``, ``swap``           |
+|         +-------------------+ ``shl``, ``shr``, ``add``, ``sub``, ``mul``, |
+|         |  POP              | ``div``, ``mod``, ``and``, ``or``, ``xor``,  |
+|         |                   | ``swap``                                     |
 |         +-------------------+----------------------------------------------+
 |         |  NONE             |                                              |
 +---------+-------------------+----------------------------------------------+
 
-
-The vast majority of commands are binary. Which means that they need two operands and their general structure is:
-
-::
-
-    pop op1
-    pop op2
-    result=binary_function(op1,op2)
-    push result
-    
+The vast majority of commands are binary, requiring two operands they receive from the stack and pushing one result 
+back on to the stack.
 These are followed, in number of commands, by the unary ones. These require only one operand and their structure is 
 exactly the same as above but only consisting of a single pop. And finally, we have the nullary commands. The result of 
 these functions is independent from the state of the stack. ``quit`` for example will simply interrupt program 
 execution and ``rev`` will reverse the stack whether it contains zero or more values.
 
-These similarities are exploited systematically in the transpiler to emit as efficient ASM as possible.
+Although the translation process was incremental, it is worth showing here very briefly the key idea behind the way the
+code was optimised.
+
+The binary functions, conform to :math:`y = f(x_1,x_2)` and therefore, in ASM, all end up looking like:
+
+::
+    Binary Function Call Pattern:
+    
+    pop op1
+    pop op2
+    call binary_function
+    push result
+    return
+    
+This pattern *includes* the unary pattern, where functions look like :math:`y=f(x_1)`, too:
+
+::
+
+    Binary / Unary Function Call Pattern:
+    
+    binary:
+    pop op1
+    unary:
+    pop op2
+    call binary_unary_function
+    push result
+    return
+    
+And finally, we have the nullary functions and those unary ones that do not receive any parameters from the stack, 
+**but** do return values on it.
+
+
+
+
+
+
 
 For example, the general call to ``add`` is translated to:
 
