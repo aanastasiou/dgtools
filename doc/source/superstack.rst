@@ -165,19 +165,28 @@ Transpiling superstack to Digirule ASM is relatively straightforward but slightl
 It would be useful here to further classify commands by arity because it will help in explaining some basic patterns 
 that arise:
 
-+---------+----------------------------------------------+
-| Arity   | Superstack commands                          |
-+=========+==============================================+
-| Nullary | ``input``, ``inputascii``, ``rev``, ``pop``, |
-|         | ``quit``, ``rev``                            |
-+---------+----------------------------------------------+
-| Unary   | ``push``, ``output``, ``outputascii``,       | 
-|         | ``random``, ``cycle``, ``rcycle``, ``dup``,  | 
-|         | ``if/fi``                                    |   
-+---------+----------------------------------------------+
-| Binary  | ``add``, ``sub``, ``mul``, ``div``, ``mod``, |
-|         | ``and``, ``or``, ``xor``, ``swap``           |
-+---------+----------------------------------------------+
++---------+-------------------+----------------------------------------------+
+| Arity   | Stack operation   | Superstack commands                          |
++=========+===================+==============================================+
+| Nullary |  PUSH             | ``input``, ``inputascii``                    |       
+|         +-------------------+----------------------------------------------+
+|         |  POP              | ``pop``                                      |
+|         +-------------------+----------------------------------------------+
+|         |  NONE             | ``rev``, ``quit``                            |
++---------+-------------------+----------------------------------------------+
+|  Unary  |  PUSH             | ``push (literal)``                           |       
+|         +-------------------+----------------------------------------------+
+|         |  POP              | ``output``, ``outputascii``, ``dup``         |
+|         +-------------------+----------------------------------------------+
+|         |  NONE             | ``random``, ``cycle``, ``rcycle``, ``if/fi`` |
++---------+-------------------+----------------------------------------------+
+| Binary  |  PUSH             |                                              |
+|         +-------------------+                                              |
+|         |  POP              | ``add``, ``sub``, ``mul``, ``div``, ``mod``, |
+|         |                   | ``and``, ``or``, ``xor``, ``swap``           |
+|         +-------------------+----------------------------------------------+
+|         |  NONE             |                                              |
++---------+-------------------+----------------------------------------------+
 
 
 The vast majority of commands are binary. Which means that they need two operands and their general structure is:
