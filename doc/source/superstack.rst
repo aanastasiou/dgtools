@@ -8,6 +8,9 @@ The motivation for creating a compiler for it was two-fold:
 #. Stack machines represent yet another model for computation.
 #. Operations over a stack are very important for evaluating mathematical expressions.
 
+Just as it was done for Brainfuck, this section first shows the basic parts of the "machine" that the language 
+assumes and then proceeds with their implementation in Digirule ASM and finally some indiciative superstack programs.
+
 
 The Superstack "system"
 -----------------------
@@ -21,10 +24,10 @@ pointer). Consequently, the stack data structure is updated via two operations:
 #. ``Push``, to extend the stack by a value
 #. ``Pop``, to remove a value from the stack
 
-Again, both of these operations **always** referencing the top of the stack.
+Again, both of these operations **always** reference the top of the stack.
 
 The Superstack system also has an Arithmetic Logic Unit which operates over the top of the stack and can carry out 
-the four basic arithmetic operations (plus modulo) and the 3 basic logical operations. 
+the four basic arithmetic operations (plus modulo), the two shifts (left and right) and 3 basic logical operations. 
 
 And finally, the Superstack can read a value from the input and output a value to the output. This might sound similar 
 to Brainuck's facilities, *but*, Superstack extends those because in addition to ``input, output``, it also has commands 
@@ -166,8 +169,14 @@ Transpiling the commands
 
 Transpiling superstack to Digirule ASM is relatively straightforward but slightly more complicated than Brainfuck.
 
-It would be useful here to further classify commands by arity because it will help in explaining some basic patterns 
-that arise:
+This is because, in Superstack, a language "symbol" implies a small program composed of more than one ASM instructions
+and the way these are pieced together now starts to become an important factor for memory size (and to some extent 
+performance).
+
+It would be useful here to further classify Superstack's commands by arity because it will help in explaining some 
+basic patterns that arise. Arity is jargon for "the number of arguments in a function".
+
+This classification is as follows:
 
 +---------+-------------------+----------------------------------------------+
 | Arity   | Stack operation   | Superstack commands                          |
@@ -194,13 +203,16 @@ that arise:
 
 The vast majority of commands are binary, requiring two operands they receive from the stack and pushing one result 
 back on to the stack.
+
 These are followed, in number of commands, by the unary ones. These require only one operand and their structure is 
-exactly the same as above but only consisting of a single pop. And finally, we have the nullary commands. The result of 
+exactly the same as above but only consisting of a single pop. 
+
+And finally, we have the nullary commands. The result of 
 these functions is independent from the state of the stack. ``quit`` for example will simply interrupt program 
 execution and ``rev`` will reverse the stack whether it contains zero or more values.
 
-Although the translation process was incremental, it is worth showing here very briefly the key idea behind the way the
-code was optimised.
+Although the optimisation process was incremental, it is worth showing here very briefly the key idea of the progressive
+reductions that were applied to the code.
 
 The binary functions, conform to :math:`y = f(x_1,x_2)` and therefore, in ASM, all end up looking like:
 
@@ -212,7 +224,7 @@ The binary functions, conform to :math:`y = f(x_1,x_2)` and therefore, in ASM, a
     call binary_function
     push result
     return
-    
+        
 This pattern *includes* the unary pattern, where functions look like :math:`y=f(x_1)`, too:
 
 ::
@@ -229,6 +241,19 @@ This pattern *includes* the unary pattern, where functions look like :math:`y=f(
     
 And finally, we have the nullary functions and those unary ones that do not receive any parameters from the stack, 
 **but** do return values on it.
+
+In a naive implementation, the program ``[1 1 add 2 sub]`` (or ``1 + 1 - 2``) would include this pattern twice when
+the only difference between the two calls is the ``call binary_function`` part. 
+
+To avoid this duplication, we can capture this general pattern in a ``generic_binary`` function whose only parameter 
+is which function to call after it has poped two values from the stack. And in doing so, we would also be reducing 
+duplication for unary functions, since they are **nested** in the binary pattern.
+
+The same observation holds for nullary functions that *return a result*. These conform to the :math:`y=f()` pattern and 
+basically imply simply calling the function. In this case however, there is no additional memory saving from 
+embeding them one level down in the *Binary/Unary* function pattern. This is because a call to *Binary/Unary* costs 
+5 bytes: 3 bytes to set the ``binary_unary_function`` it needs to call and 2 bytes to make the call. 
+
 
 
 
