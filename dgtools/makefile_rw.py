@@ -167,8 +167,7 @@ class DgToolsMakefileParser:
         self._makefile_parser = self._get_parser()
         
     def __call__(self, makefile_text):
-        pd = self._makefile_parser.parseString(makefile_text)
-        return pd
+        return self._makefile_parser.parseString(makefile_text)[0]
         
     @staticmethod   
     def _get_parser():
@@ -236,7 +235,9 @@ class DgToolsMakefileParser:
         makefile = (pyparsing.Optional(other)("prologue") +
                     pyparsing.OneOrMore(pyparsing.Group(makefile_rule("rule") + 
                                         pyparsing.Optional(other)("other")))("main") + 
-                    pyparsing.Optional(pyparsing.SkipTo(pyparsing.StringEnd()))("epilogue")).setParseAction(lambda x,loc,tok:DgToolsMakefile(prologue=tok["prologue"], main=tok["main"], epilogue=tok["epilogue"]))
+                    pyparsing.Optional(pyparsing.SkipTo(pyparsing.StringEnd()))("epilogue")).setParseAction(lambda x,loc,tok:DgToolsMakefile(prologue=tok["prologue"], 
+                                                                                                                                             main=tok["main"], 
+                                                                                                                                             epilogue=tok["epilogue"]))
 
         return makefile
     
