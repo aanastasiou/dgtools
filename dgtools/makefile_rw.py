@@ -29,18 +29,35 @@ class DgToolsMakefileActionDgsimSymbols:
     def __init__(self, parsed_symbols):
         self._parsed_symbols = parsed_symbols
         
-    def __str__(self):
-        symbol_str=""
+    def _symbols2str(self, to_cmd_line=False):
+        """
+        Returns a string representation of just the input symbols.
+        """
+        delim = " " if to_cmd_line else ","
+        symbol_items = []
+        symbol_str = ""
         for a_symbol in self._parsed_symbols:
-            symbol_str+=f"{a_symbol['ts']} {a_symbol['symbol_data']['symbol']}"
+            symbol_str=f"{(a_symbol['ts']+' ') if to_cmd_line else ''}{a_symbol['symbol_data']['symbol']}"
             if "length" in a_symbol["symbol_data"]:
                 symbol_str+=f":{a_symbol['symbol_data']['length']}"
             if "offset" in a_symbol["symbol_data"]:
                 symbol_str+=f":{a_symbol['symbol_data']['offset']}"
-            symbol_str+=" "
-        return symbol_str
+            symbol_items.append(symbol_str)
+        return delim.join(symbol_items)
+
+    def __str__(self):
+        return self._symbols2str(to_cmd_line=True)
         
+    def defined_symbols_as_str(self):
+        """
+        Returns the defined symbols as a plain simple space delimited string.
         
+        Note:
+            * __str__() Is used for plain simple serialisation.
+        """
+        return self._symbols2str()
+        
+
 class DgToolsMakefileAction:
     """
     Represents an action that involves one of the dgtools (Either dgasm or dgsim).
@@ -84,14 +101,22 @@ class DgToolsMakefileAction:
         """
         Convenience function that allows to get the value of a specific parameter in place.
         """
-        return self._parsed_parameters[item]
+        try:
+            if isinstance(self._parsed_parameters[item], pyparsing.ParseResults):
+                # Here, always returning the last item of the parsed result means that the captured value is returned.
+                # Note: Usually, parameters are always in a key value form.
+                return self._parsed_parameters[item][-1]
+            else:
+                return self._parsed_parameters[item]
+        except KeyError:
+            return ""
 
     def __setitem__(self, item, value):
         """
         Convenience function that allows to set the value of a specific parameter in place.
         """
         if isinstance(self._parsed_parameters[item],pyparsing.ParseResults):
-            self._parsed_parameters[item][1]=value
+            self._parsed_parameters[item][-1]=value
         else:
             self._parsed_parameters[item]=value
 
