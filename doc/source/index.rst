@@ -6,7 +6,7 @@
 Welcome to dgtools's documentation!
 ===================================
 
-.. image:: _static/my_digirule2.jpeg
+.. image:: figures/full_banner_dg.png
 
 ``dgtools`` is a mini-toolchain for compiling and testing ASM programs for the 
 `Digirule 2 <https://bradsprojects.com/digirule2/>`_. 

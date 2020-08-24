@@ -8,8 +8,10 @@ VM simulates.
 """
 
 from dgtools.digirule import Digirule
+from dgtools.exceptions import DgtoolsErrorProgramHalt
 import types
 import base64
+import pytest
 
 
 def get_vm_hash(dg_vm):
@@ -24,7 +26,6 @@ def get_vm_hash(dg_vm):
     hash_obj = list(dg_vm._mem)
     hash_obj.extend([dg_vm._acc,
                      dg_vm._pc,
-                     dg_vm._interactive_mode, 
                      dg_vm._mem[252], 
                      dg_vm._mem[253], 
                      dg_vm._mem[254], 
@@ -51,7 +52,8 @@ def get_vm_hash_after_exec(a_program, use_this_vm=None):
     else:
         vm = use_this_vm
         
-    vm.run()
+    with pytest.raises(DgtoolsErrorProgramHalt):
+        vm.run()
     
     return get_vm_hash(vm)
 
@@ -69,8 +71,7 @@ def test_constants():
     assert vm._bt_reg_ptr == 253
     assert vm._addrled_reg_ptr == 254
     assert vm._dataled_reg_ptr == 255
-    assert vm._interactive_mode == False
-    assert type(vm._interactive_callback) is types.FunctionType
+    assert vm._interactive_callback is None
 
     
 def test_HALT():
@@ -523,7 +524,8 @@ def test_DECRJZ():
     # Notice here, we resume execution without reloading the program. That would reset the memory state.
     
     vm.goto(0)
-    vm.run()
+    with pytest.raises(DgtoolsErrorProgramHalt):
+        vm.run()
     vm_hash = get_vm_hash(vm)
     vm_expected._mem[3] = 0x00
     vm_expected._mem[252] = 1
@@ -554,7 +556,8 @@ def test_INCRJZ():
     assert get_vm_hash(vm_expected) == vm_hash, "Failed to continue when condition not met."
     
     vm.goto(0)
-    vm.run()
+    with pytest.raises(DgtoolsErrorProgramHalt):
+        vm.run()
     vm_hash = get_vm_hash(vm)
     vm_expected._mem[3] = 0x00
     vm_expected._mem[252] = 1

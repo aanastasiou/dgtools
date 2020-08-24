@@ -24,6 +24,16 @@ output for any messages on the compilation process either from ``dgasm.py`` or `
 
 The ``dgui.py`` can also be invoked through the ``DigiruleASM`` build environment within the Sublime text editor.
 
+Creating a skeleton ``Makefile``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``dgui`` can generate a skeleton ``Makefile`` for use with `GNU make <https://www.gnu.org/software/make/>`_. With the 
+``Makefile`` in place (that is, after the first time ``dgui.py`` runs):
+
+* Compilation comes down to ``make html``
+* Starting from scratch ``make clean``
+
+A ``Makefile`` is a great way of automating more "complex" processes when you are trying to document and showcase code.
 
 ``DigiruleASM`` build package for Sublime Text
 ----------------------------------------------

@@ -1,11 +1,12 @@
-TODO List as of Sat May 9 23:41:52 BST 2020
-../dgtools/dginspect.py:100 TODO: HIGH, Add a mode that only generates an update of the VM state when the state of one of the tracked symbols changes
-../dgtools/dginspect.py:110 TODO: MID, Reduce code duplication by packaging this validation in a function
-../dgtools/dginspect.py:155 TODO: HIGH, the following operations can be "absorbed" into the DGB_Archive with appropriate validations too
-../dgtools/digirule.py:25 TODO: MED, There might be constraints in the depth of this stack. Not yet implemented.
-../dgtools/digirule.py:41 TODO: LOW, Make the speed setting functional
-../dgtools/digirule.py:191 TODO: MED, addr cannot go higher than 252 or it will overwrite peripherals. It should generate a warning.
-../dgtools/digirule.py:215 TODO: LOW, Obviously, each command can be abstracted in its own callback so that the VM becomes easily 
-../dgtools/digirule.py:222 TODO: LOW, Unsupported opcodes could be intercepted and re-interpreted?
-../dgtools/digirule.py:387 TODO: MED, In CBR and SBR, if the bit is zero, it should raise an error at compile time.
-../dgtools/digirule.py:419 TODO: MED, If you get a RETLA without first having called CALL, it should raise an exception at compile time.
+TODO List as of Tue Aug 4 21:30:53 BST 2020
+../dgtools/callbacks.py:124 TODO: MED, It would be more informative if this had a configurable prompt too
+../dgtools/dginspect.py:99 TODO: HIGH, Add a mode that only generates an update of the VM state when the state of one of the tracked symbols changes
+../dgtools/dginspect.py:109 TODO: MID, Reduce code duplication by packaging this validation in a function
+../dgtools/dginspect.py:156 TODO: HIGH, the following operations can be "absorbed" into the DGB_Archive with appropriate validations too
+../dgtools/digirule.py:27 TODO: MED, There might be constraints in the depth of this stack. Not yet implemented.
+../dgtools/digirule.py:43 TODO: LOW, Make the speed setting functional
+../dgtools/digirule.py:190 TODO: HIGH, add the underflow exception
+../dgtools/digirule.py:378 TODO: MED, In CBR and SBR, if the bit is zero, it should raise an error at compile time.
+../dgtools/digirule.py:405 TODO: MED, If you get a RETLA without first having called CALL, it should raise an exception at compile time.
+../dgtools/digirule.py:635 TODO: MED, This can raise a divide by zero warning / exception too
+../dgtools/digirule.py:706 TODO: MED, Maybe this can be matched to a more realistic behaviour once comout, comin are connected to real files.

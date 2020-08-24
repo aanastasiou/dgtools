@@ -91,7 +91,10 @@ class ModalDialogBox(urwid.PopUpLauncher):
         self._with_mem_dump = urwid.CheckBox("Mem dump at every cycle")
         self._in_interactive_mode = urwid.CheckBox("Interactive mode")
         self._maximum_cycles_to_run = urwid.IntEdit("Maximum cycles to run:",200)
+        self._digirule_model = urwid.Edit("Model (2A, 2U):", "2A")
         self._extra_syms = urwid.Edit("Extra symbols to track:")
+        self._gen_makefile = urwid.CheckBox("Generate Skeleton Makefile")
+        self._dgtheme = urwid.Edit("HTML Theme:", "")
         
         ok_cancel = urwid.GridFlow([urwid.AttrMap(urwid.Button("OK".center(15),
                                                                on_press = self._on_ok),
@@ -114,13 +117,17 @@ class ModalDialogBox(urwid.PopUpLauncher):
                                                                  "dialog_plain", "dialog_focused"),
                                                    urwid.AttrMap(self._out_file,"dialog_plain","dialog_focused"),
                                                    urwid.AttrMap(self._trace_file,"dialog_plain","dialog_focused"),
-                                                   urwid.AttrMap(urwid.Text("Simulation parameters"),"dialog_section"),     
-                                                   urwid.AttrMap(self._trace_title,"dialog_plain","dialog_focused"), 
+                                                   urwid.AttrMap(urwid.Text("Simulation parameters"),"dialog_section"),
+                                                   urwid.AttrMap(self._digirule_model,
+                                                                 "dialog_plain","dialog_focused"),     
+                                                   urwid.AttrMap(self._trace_title,"dialog_plain","dialog_focused"),
+                                                   urwid.AttrMap(self._dgtheme,"dialog_plain","dialog_focused"),
                                                    urwid.AttrMap(self._with_mem_dump,"dialog_plain","dialog_focused"), 
                                                    urwid.AttrMap(self._in_interactive_mode,
-                                                                 "dialog_plain","dialog_focused"), 
+                                                                 "dialog_plain","dialog_focused"),
+                                                   urwid.AttrMap(self._gen_makefile,"dialog_plain","dialog_focused"),
                                                    urwid.AttrMap(self._maximum_cycles_to_run,
-                                                                 "dialog_plain","dialog_focused"), 
+                                                                 "dialog_plain","dialog_focused"),
                                                    urwid.AttrMap(self._extra_syms,"dialog_plain","dialog_focused"),
                                                    urwid.Divider("\u2015"),
                                                    ok_cancel]), title="Dgtools Compilation Parameters"),"dialog_plain")
@@ -201,11 +208,41 @@ class ModalDialogBox(urwid.PopUpLauncher):
     def extra_symbols(self):
         entries_to_return = list(filter(lambda x:len(x)>0,self._extra_syms.edit_text.replace(" ","").split(",")))
         return entries_to_return
+        
+    @property
+    def gen_makefile(self):
+        return self._gen_makefile.state
+    
+    @property
+    def digirule_model(self):
+        return self._digirule_model.edit_text.upper()
+        
+    @property
+    def dgtheme(self):
+        return self._dgtheme.edit_text
 
 
 def handle_esc(key):
     if key=="esc":
         raise urwid.ExitMainLoop()
+
+
+def generate_makefile(input_dsf_file, output_dgb_file, output_trace_file, max_n, dgasm_line, dgsim_line):
+    """
+    Generates a very simple Makefile.
+    """
+    makefile_template = f"{output_trace_file}:{output_dgb_file}\n" \
+                        f"\t{dgsim_line}\n\n" \
+                        f"{output_dgb_file}:{input_dsf_file}\n" \
+                        f"\t{dgasm_line}\n\n" \
+                        f"html:{output_trace_file}\n" \
+                        f"\txdg-open {output_trace_file}\n\n" \
+                        f"clean:\n" \
+                        f"\t rm *.dgb\n" \
+                        f"\t rm *.html\n" \
+                        f"\t rm *.css\n" 
+    
+    return makefile_template
     
     
 @click.command()
@@ -241,7 +278,7 @@ def main(input_file, output_file):
                                                       align="center",
                                                       width=66,
                                                       valign="middle", 
-                                                      height=16), palette, 
+                                                      height=20), palette, 
                                                       unhandled_input=handle_esc,
                                                       pop_ups = True)
     loop.run()
@@ -251,31 +288,40 @@ def main(input_file, output_file):
         dgasm_params = ["dgasm.py",params_dialog_box.input_file]
         if len(params_dialog_box.output_file):
             dgasm_params.extend(["-o", params_dialog_box.output_file])
+        dgasm_params.extend(["-g", params_dialog_box.digirule_model])
         
         dgsim_params = ["dgsim.py", params_dialog_box.output_file, "-mn", str(params_dialog_box.maximum_cycles_to_run)]
         if len(params_dialog_box.output_trace_file):
             dgsim_params.extend(["-otf", params_dialog_box.output_trace_file])
         if len(params_dialog_box.trace_title):
-            dgsim_params.extend(["-t", params_dialog_box.trace_title])
+            dgsim_params.extend(["-t", f"'{params_dialog_box.trace_title}'"])
         if params_dialog_box.in_interactive_mode:
             dgsim_params.extend(["-I"])
         if params_dialog_box.with_mem_dump:
             dgsim_params.extend(["--with-dump"])
+        if len(params_dialog_box.dgtheme)>0:
+            dgsim_params.extend(["--theme", params_dialog_box.dgtheme])
+            
         if len(params_dialog_box.extra_symbols)>0:
             for a_symbol in params_dialog_box.extra_symbols:
                 dgsim_params.extend(["-ts", f"{a_symbol}"])
-        
-        dgasm_process = subprocess.Popen(dgasm_params, stdout=subprocess.PIPE, text=True)
-        if dgasm_process.wait()!=0:
-            sys.stdout.write(dgasm_process.stdout.read())
-        else:
+                
+        dgasm_process = subprocess.Popen(dgasm_params, stdin=sys.stdin, stdout=sys.stdout, text=True)
+        if dgasm_process.wait()==0:
             sys.stdout.write("Compilation succesful.\n")
-            # If that was succesful, run the simulator
-            dgsim_process = subprocess.Popen(dgsim_params, stdout=subprocess.PIPE, text=True)
-            if dgsim_process.wait()!=0:
-                sys.stdout.write(dgsim_process.stdout.read())
-            else:
+            dgsim_process = subprocess.Popen(dgsim_params, stdin=sys.stdin, stdout=sys.stdout, text=True)
+            if dgsim_process.wait()==0:
                 sys.stdout.write("Simulation succesful.\n")
+                if params_dialog_box.gen_makefile:
+                    # And since this was succesful, let's write the makefile out
+                    # The makefile is written to the current working directory
+                    with open("Makefile", "wt") as fd:
+                        fd.write(generate_makefile(params_dialog_box.input_file,
+                                                   params_dialog_box.output_file,
+                                                   params_dialog_box.output_trace_file,
+                                                   params_dialog_box.maximum_cycles_to_run,
+                                                   " ".join(dgasm_params),
+                                                   " ".join(dgsim_params)))
     else:
         sys.stdout.write("Compilation canceled\n")
         sys.exit(1)

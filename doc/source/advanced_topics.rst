@@ -6,7 +6,7 @@ Advanced Digirule 2 Programming
 ``dgtools`` provides an assembler that can interpret labels as memory addresses and this makes it possible to start 
 creating more involved programs. 
 
-However, one thing that the Digirule hardware itself does not specify is a stack which is an important part of 
+However, one thing that the Digirule2 hardware itself does not specify is a stack which is an important part of 
 more complex programs that include function calling.
 
 This section first establishes a stack and associated operations (push, pop), later a set of registers and finally 

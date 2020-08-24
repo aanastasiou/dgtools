@@ -1,15 +1,13 @@
 # dgtools
 
-dgtools is a set of tools for developing software for a...ruler.
-
-Not just any ruler, but the [Digirule2](https://bradsprojects.com/digirule2/) by 
-[bradsprojects](https://bradsprojects.com).
+dgtools is a complete toolkit for developing software for the [Digirule](https://bradsprojects.com/digirule2/) 
+series of hardware by [bradsprojects](https://bradsprojects.com).
 
 ## Overview
 
 1. `dgasm`
 
-   * The assembler, accepts a human readable `.asm` text file with Digirule2 ASM and 
+   * The assembler, accepts a human readable `.asm` text file with Digirule ASM and 
      produces a `.dgb` binary file with compiled code ready to be executed on the hardware.
    
 2. `dginspect`
@@ -20,21 +18,19 @@ Not just any ruler, but the [Digirule2](https://bradsprojects.com/digirule2/) by
    
 3. `dgsim`
 
-   * The Digirule2 Virtual Machine, accepts a `.dgb` binary file and produces:
-       1. A human readable (HTML) trace of every state change the CPU goes through at each 
+   * The Digirule Virtual Machine, accepts a `.dgb` binary file and produces:
+       1. A human readable HTML (themeable) trace of every state change the CPU goes through at each 
           timestep of execution.
-       2. The final `.dgb` file that contains the final state of the memory space at the end of 
-          execution.
-          
-4. `dgui`
-
-   * A very basic, text based, user interface that can be used to call `dgasm, dgsim` and compile 
-     the HTML simulation output in one step.
-     
+       2. An additional `.dgb` file that contains the final state of the memory space at the end of 
+          program execution.
+               
 These tools work together to write, debug and simulate code for the Digirule 2 prior to "uploading" it to the 
-actual hardware.
+actual hardware. 
 
-The most common workflow is:
+`dgtools` also includes some "extras", such as a Sublime text `.dsf` ASM plugin, a console gui (`dgui`) that can handle 
+compilation/simulation in one step and a code formatter (`dgform`).
+
+The most common workflow is to:
 
 1. Use a text editor to write human readable assembly code.
 2. Call `dgasm.py` to compile the binary
@@ -54,7 +50,7 @@ The most common workflow is:
 ### Process
 
 1. Download the code from the repository
-2. `> virtualenv -p python3.6 pyenv`
+2. `> virtualenv -p python3.8 pyenv`
 3. `> source pyenv/bin/activate`
 4. To start using `dgtools`:
      * `pip install -e ./` (From within the `dgtools/` directory that contains the `setup.py` file)
