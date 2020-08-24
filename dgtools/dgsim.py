@@ -67,6 +67,8 @@ from dgtools import (DgtoolsErrorOpcodeNotSupported,
                      Digirule, 
                      Digirule2U, 
                      BUILTIN_MODELS)
+import inspect
+import shutil
 from dgtools.exceptions import DgtoolsError
     
 
