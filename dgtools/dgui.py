@@ -20,6 +20,7 @@ import subprocess
 import pyparsing
 import urwid
 import click
+from dgtools import DgToolsMakefileParser
 
 
 def get_symbols_parser():
@@ -35,7 +36,6 @@ def get_symbols_parser():
                     pyparsing.Optional(numeric_param("offset"))))
     symbol_records = pyparsing.delimitedList(symbol_record)    
     return symbol_records
-
 
 
 class MessageBox(urwid.WidgetWrap):
@@ -76,25 +76,87 @@ class ModalDialogBox(urwid.PopUpLauncher):
         """
         Initialises the dialog box and determines initial values for all the UI elements.
         """
+        # Default dialog box values
         
-        if output_file is None:
-            output_file = f"{os.path.splitext(input_file)[0]}.dgb"
+        df_input_file = input_file
+        df_output_file = ""
+        df_trace_title = ""
+        df_trace_file = ""
+        df_with_dump = False
+        df_interactive_mode = False
+        df_max_n = 400
+        df_target = "2A"
+        df_symbols = ""
+        df_gen_makefile = True
+        df_dgtheme = ""
+
+        # TODO: MED, It would be nice to have this working over any sort of path the input_file might be in.
+        # Check if there is a Makefile in the CWD and that this Makefile contains rules that the parser can make sense of
+        is_makefile_readable = True
+        if os.path.exists("Makefile"):
+            try:
+                with open("Makefile", "r") as fd:
+                    makefile_contents = DgToolsMakefileParser()(fd.read())
+            except Exception:
+                is_makefile_readable = False
+                
+        if is_makefile_readable:
+            # makefile_contents exists here
+            # Does any of the targets operates on the given input file?
+            # NOTE: For the moment only looking for a single rule 
+            # TODO: LOW, It would be nice to have this work over any number of rules (needs a hint on the model)
+            dsf2dgb_makefile_target = list(filter(lambda x:makefile_contents[x].action["input_file"]==input_file,
+                                                  makefile_contents.targets))
+            if len(dsf2dgb_makefile_target) == 1:
+                dsf2dgb_rule = makefile_contents[dsf2dgb_makefile_target[0]]
+                # And is there a rule that takes that dgb file and produces an HTML file?
+                dgb2html_makefile_target = list(filter(lambda x:makefile_contents[x].action["input_file"]==dsf2dgb_rule.target,
+                                                       makefile_contents.targets))
+                if len(dgb2html_makefile_target) == 1:
+                    print("Hello")
+                    dgb2html_rule = makefile_contents[dgb2html_makefile_target[0]]
+                    # If these two rules exist, then initialise the dialog box from the data in the Makefile
+                    df_input_file = input_file
+                    df_output_file = dsf2dgb_rule.target
+                    df_trace_title = dgb2html_rule.action["title"].replace("'","")
+                    df_trace_file = dgb2html_rule.target
+                    df_with_dump = len(dgb2html_rule.action["with_dump"])>0
+                    df_interactive_mode = (len(dgb2html_rule.action["interactive_mode"])>0)
+                    df_max_n = dgb2html_rule.action["max_n"] or df_max_n
+                    df_target = dsf2dgb_rule.action["target"] or df_target
+                    symbols_in_makefile = dgb2html_rule.action["trace_symbols"]
+                    if type(symbols_in_makefile) is not str:
+                        df_symbols = symbols_in_makefile.defined_symbols_as_str()
+                    df_gen_makefile = True
+                    # df_dgtheme=
+                    
+                    # Since the Makefile was present, save its contents to be able to regenerate it on exit.
+                    self._makefile_contents = makefile_contents
+                    self._dsf2dgb_rule = dsf2dgb_rule
+                    self._dgb2html_rule = dgb2html_rule
+        else:
+            # Initialise the values of the UI.
+            df_output_file = output_file
+            if output_file is None:
+                df_output_file = f"{os.path.splitext(input_file)[0]}.dgb"
+                
+            df_trace_title = os.path.split(input_file)[1]
+            
+            df_trace_file = trace_file
+            if trace_file is None:
+                df_trace_file = f"{os.path.splitext(input_file)[0]}_trace.html"
         
-        if trace_file is None:
-            trace_file = f"{os.path.splitext(input_file)[0]}_trace.html"
-        
-        trace_title = os.path.split(input_file)[1]
-        self._in_file = urwid.Edit("Source file:", input_file)
-        self._out_file = urwid.Edit("Binary file:", output_file)
-        self._trace_title = urwid.Edit("Trace Title:", trace_title)
-        self._trace_file = urwid.Edit("Trace HTML file:", trace_file)
-        self._with_mem_dump = urwid.CheckBox("Mem dump at every cycle")
-        self._in_interactive_mode = urwid.CheckBox("Interactive mode")
-        self._maximum_cycles_to_run = urwid.IntEdit("Maximum cycles to run:",200)
-        self._digirule_model = urwid.Edit("Model (2A, 2U):", "2A")
-        self._extra_syms = urwid.Edit("Extra symbols to track:")
-        self._gen_makefile = urwid.CheckBox("Generate Skeleton Makefile")
-        self._dgtheme = urwid.Edit("HTML Theme:", "")
+        self._in_file = urwid.Edit("Source file:", df_input_file)
+        self._out_file = urwid.Edit("Binary file:", df_output_file)
+        self._trace_title = urwid.Edit("Trace Title:", df_trace_title)
+        self._trace_file = urwid.Edit("Trace HTML file:", df_trace_file)
+        self._with_mem_dump = urwid.CheckBox("Mem dump at every cycle", df_with_dump)
+        self._in_interactive_mode = urwid.CheckBox("Interactive mode", df_interactive_mode)
+        self._maximum_cycles_to_run = urwid.IntEdit("Maximum cycles to run:", df_max_n)
+        self._digirule_model = urwid.Edit("Model (2A, 2U):", df_target)
+        self._extra_syms = urwid.Edit("Extra symbols to track:", df_symbols)
+        self._gen_makefile = urwid.CheckBox("Generate Skeleton Makefile", df_gen_makefile)
+        self._dgtheme = urwid.Edit("HTML Theme:", df_dgtheme)
         
         ok_cancel = urwid.GridFlow([urwid.AttrMap(urwid.Button("OK".center(15),
                                                                on_press = self._on_ok),
@@ -158,6 +220,9 @@ class ModalDialogBox(urwid.PopUpLauncher):
             self.open_pop_up()
         else:
             self._was_ok = True
+            # At this point the Dialog box has collected and validated the input.
+            # TODO: MED, The production of the simple Makefile template will do for the moment but can do better 
+            #       with the DgToolsMakefileParser
             raise urwid.ExitMainLoop()
                 
     def _on_cancel(self, a_button):
