@@ -91,11 +91,17 @@ class ModalDialogBox(urwid.PopUpLauncher):
         df_dgtheme = ""
 
         # TODO: MED, It would be nice to have this working over any sort of path the input_file might be in.
-        # Check if there is a Makefile in the CWD
+        # Check if there is a Makefile in the CWD and that this Makefile contains rules that the parser can make sense of
+        is_makefile_readable = True
         if os.path.exists("Makefile"):
-            # If a Makefile exists parse it
-            with open("Makefile", "r") as fd:
-                makefile_contents = DgToolsMakefileParser()(fd.read())
+            try:
+                with open("Makefile", "r") as fd:
+                    makefile_contents = DgToolsMakefileParser()(fd.read())
+            except Exception:
+                is_makefile_readable = False
+                
+        if is_makefile_readable:
+            # makefile_contents exists here
             # Does any of the targets operates on the given input file?
             # NOTE: For the moment only looking for a single rule 
             # TODO: LOW, It would be nice to have this work over any number of rules (needs a hint on the model)
