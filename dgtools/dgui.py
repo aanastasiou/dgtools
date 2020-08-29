@@ -99,6 +99,8 @@ class ModalDialogBox(urwid.PopUpLauncher):
                     makefile_contents = DgToolsMakefileParser()(fd.read())
             except Exception:
                 is_makefile_readable = False
+        else:
+            is_makefile_readable = False
                 
         if is_makefile_readable:
             # makefile_contents exists here
