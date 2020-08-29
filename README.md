@@ -1,14 +1,16 @@
 # dgtools
 
 dgtools is a complete toolkit for developing software for the [Digirule](https://bradsprojects.com/digirule2/) 
-series of hardware by [bradsprojects](https://bradsprojects.com).
+series (`2A/2U`) of hardware by [bradsprojects](https://bradsprojects.com).
 
 ## Overview
 
 1. `dgasm`
 
    * The assembler, accepts a human readable `.asm` text file with Digirule ASM and 
-     produces a `.dgb` binary file with compiled code ready to be executed on the hardware.
+     produces:
+       #. A `.dgb` binary file with compiled code ready for simulation by `dgsim.py` .
+       #. A `.hex` file (in the case of 2U) to be downloaded to the board.
    
 2. `dginspect`
 
@@ -24,7 +26,7 @@ series of hardware by [bradsprojects](https://bradsprojects.com).
        2. An additional `.dgb` file that contains the final state of the memory space at the end of 
           program execution.
                
-These tools work together to write, debug and simulate code for the Digirule 2 prior to "uploading" it to the 
+These tools work together to write, debug and simulate code for the Digirule 2 prior to transfering it to the 
 actual hardware. 
 
 `dgtools` also includes some "extras", such as a Sublime text `.dsf` ASM plugin, a console gui (`dgui`) that can handle 
