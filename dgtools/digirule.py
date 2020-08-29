@@ -371,7 +371,7 @@ class Digirule:
         addr = self._read_next()
         new_value = self._rd_mem(addr) | (1<<bit_to_clear)
         self._wr_mem(addr, new_value)
-
+        
     def _bcrsc(self):
         bit_to_check_mask = 1 << self._read_next()
         addr = self._read_next()
@@ -543,16 +543,17 @@ class Digirule2U(Digirule):
                                 34:self._shiftrr,
                                 35:self._cbr,
                                 36:self._sbr,
-                                37:self._bcrsc,
-                                38:self._bcrss,
-                                39:self._jump,
-                                40:self._jumpi,
-                                41:self._call,
-                                42:self._calli,
-                                43:self._return,
-                                44:self._retla,
-                                45:self._addrpc,
-                                46:self._randa,
+                                37:self._bchg,
+                                38:self._bcrsc,
+                                39:self._bcrss,
+                                40:self._jump,
+                                41:self._jumpi,
+                                42:self._call,
+                                43:self._calli,
+                                44:self._return,
+                                45:self._retla,
+                                46:self._addrpc,
+                                47:self._randa,
                                192:self._comout,
                                193:self._comin,
                                194:self._comrdy})
@@ -593,6 +594,13 @@ class Digirule2U(Digirule):
 
     def _initsp(self):
         self._ppc = []
+        
+    def _bchg(self):
+        # Bit toggling
+        bit_to_toggle = self._read_next()
+        addr = self._read_next()
+        new_value = (self._rd_mem(addr) ^ (1<<bit_to_toggle)) & 0xFF
+        self._wr_mem(addr, new_value)  
         
     def _randa(self):
         self._acc = random.randint(0,255)
@@ -777,18 +785,21 @@ class Digirule2U(Digirule):
         asm_incrjz = pyparsing.Group(pyparsing.Regex("INCRJZ")("cmd") + existing_defs["literal_or_identifier"]("addr"))("32:1")
         asm_shiftrl = pyparsing.Group(pyparsing.Regex("SHIFTRL")("cmd") + existing_defs["literal_or_identifier"]("addr"))("33:1")
         asm_shiftrr = pyparsing.Group(pyparsing.Regex("SHIFTRR")("cmd") + existing_defs["literal_or_identifier"]("addr"))("34:1")
-        asm_cbr = pyparsing.Group(pyparsing.Regex("CBR")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("35:2")
-        asm_sbr = pyparsing.Group(pyparsing.Regex("SBR")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("36:2")
-        asm_bcrsc = pyparsing.Group(pyparsing.Regex("BCRSC")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("37:2")
-        asm_bcrss = pyparsing.Group(pyparsing.Regex("BCRSS")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("38:2")
-        asm_jump = pyparsing.Group(pyparsing.Regex("JUMP")("cmd") + existing_defs["literal_or_identifier"]("addr"))("39:1")
-        asm_jumpi = pyparsing.Group(pyparsing.Regex("JUMPI")("cmd") + existing_defs["literal_or_identifier"]("iaddr"))("40:1")
-        asm_call = pyparsing.Group(pyparsing.Regex("CALL")("cmd") + existing_defs["literal_or_identifier"]("addr"))("41:1")
-        asm_calli = pyparsing.Group(pyparsing.Regex("CALLI")("cmd") + existing_defs["literal_or_identifier"]("iaddr"))("42:1")
-        asm_return = pyparsing.Group(pyparsing.Regex("RETURN")("cmd"))("43:0")
-        asm_retla = pyparsing.Group(pyparsing.Regex("RETLA")("cmd") + existing_defs["literal_or_identifier"]("value"))("44:1")
-        asm_addrpc = pyparsing.Group(pyparsing.Regex("ADDRPC")("cmd") + existing_defs["literal_or_identifier"]("value"))("45:1")
-        asm_randa = pyparsing.Group(pyparsing.Regex("RANDA")("cmd"))("46:0")
+        
+        asm_cbr = pyparsing.Group(pyparsing.Regex("BCLR")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("35:2")
+        asm_sbr = pyparsing.Group(pyparsing.Regex("BSET")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("36:2")
+        asm_bchg = pyparsing.Group(pyparsing.Regex("BCHG")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("37:2")
+        
+        asm_bcrsc = pyparsing.Group(pyparsing.Regex("BCRSC")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("38:2")
+        asm_bcrss = pyparsing.Group(pyparsing.Regex("BCRSS")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("39:2")
+        asm_jump = pyparsing.Group(pyparsing.Regex("JUMP")("cmd") + existing_defs["literal_or_identifier"]("addr"))("40:1")
+        asm_jumpi = pyparsing.Group(pyparsing.Regex("JUMPI")("cmd") + existing_defs["literal_or_identifier"]("iaddr"))("41:1")
+        asm_call = pyparsing.Group(pyparsing.Regex("CALL")("cmd") + existing_defs["literal_or_identifier"]("addr"))("42:1")
+        asm_calli = pyparsing.Group(pyparsing.Regex("CALLI")("cmd") + existing_defs["literal_or_identifier"]("iaddr"))("43:1")
+        asm_return = pyparsing.Group(pyparsing.Regex("RETURN")("cmd"))("44:0")
+        asm_retla = pyparsing.Group(pyparsing.Regex("RETLA")("cmd") + existing_defs["literal_or_identifier"]("value"))("45:1")
+        asm_addrpc = pyparsing.Group(pyparsing.Regex("ADDRPC")("cmd") + existing_defs["literal_or_identifier"]("value"))("46:1")
+        asm_randa = pyparsing.Group(pyparsing.Regex("RANDA")("cmd"))("47:0")
         asm_comout = pyparsing.Group(pyparsing.Regex("COMOUT")("cmd"))("192:0")
         asm_comin = pyparsing.Group(pyparsing.Regex("COMIN")("cmd"))("193:0")
         asm_comrdy = pyparsing.Group(pyparsing.Regex("COMRDY")("cmd"))("194:0")
@@ -799,7 +810,7 @@ class Digirule2U(Digirule):
                                         asm_addra ^ asm_subla ^ asm_subra ^ asm_mul ^ asm_div ^ asm_andla ^ \
                                         asm_andra ^ asm_orla ^ asm_orra ^ asm_xorla ^ asm_xorra ^ asm_decr ^ \
                                         asm_incr ^ asm_decrjz ^ asm_incrjz ^ asm_shiftrl ^ asm_shiftrr ^ asm_cbr ^ \
-                                        asm_sbr ^ asm_bcrsc ^ asm_bcrss ^ asm_jump ^ asm_jumpi ^ asm_call ^ \
+                                        asm_sbr ^ asm_bchg ^ asm_bcrsc ^ asm_bcrss ^ asm_jump ^ asm_jumpi ^ asm_call ^ \
                                         asm_calli ^ asm_return ^ asm_retla ^ asm_addrpc ^ asm_randa ^ asm_comout ^ \
                                         asm_comin ^ asm_comrdy)
 
