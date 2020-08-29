@@ -9,8 +9,8 @@ series (`2A/2U`) of hardware by [bradsprojects](https://bradsprojects.com).
 
    * The assembler, accepts a human readable `.asm` text file with Digirule ASM and 
      produces:
-       #. A `.dgb` binary file with compiled code ready for simulation by `dgsim.py` .
-       #. A `.hex` file (in the case of 2U) to be downloaded to the board.
+       1. A `.dgb` binary file with compiled code ready for simulation by `dgsim.py` .
+       2. A `.hex` file (in the case of 2U) to be downloaded to the board.
    
 2. `dginspect`
 
