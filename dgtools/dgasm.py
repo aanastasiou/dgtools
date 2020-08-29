@@ -22,6 +22,7 @@ Options:
 import sys
 import os
 import click
+import intelhex
 from dgtools import (DgtoolsErrorSymbolAlreadyDefined, DgtoolsErrorSymbolUndefined, DgtoolsErrorASMSyntaxError,
                      DGB_Archive, Digirule, Digirule2U, BUILTIN_MODELS, DgAssembler)
                      
@@ -68,6 +69,13 @@ def dgasm(input_file, output_file, target):
         
     dgb_archive = DGB_Archive(asm_code_compiled["program"], asm_code_compiled["labels"], version=target)
     dgb_archive.save(output_file)
+
+    if target == "2U":
+        # Save the HEX binary too
+        ihex = intelhex.IntelHex()
+        for an_address, a_byte in enumerate(asm_code_compiled["program"]):
+            ihex[an_address] = a_byte
+        ihex.write_hex_file(f"{os.path.splitext(output_file)[0]}.hex")
         
 if __name__ == "__main__":
     dgasm()

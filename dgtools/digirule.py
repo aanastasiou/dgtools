@@ -20,6 +20,7 @@ class Digirule:
         * Functions that change the state of the VM but do not return values, should return `self`
         
     """
+    # TODO: MED, Need to add randa on the 2A 
     def __init__(self):
         # Program counter
         self._pc = 0
