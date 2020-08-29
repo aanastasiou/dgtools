@@ -786,9 +786,9 @@ class Digirule2U(Digirule):
         asm_incrjz = pyparsing.Group(pyparsing.Regex("INCRJZ")("cmd") + existing_defs["literal_or_identifier"]("addr"))("32:1")
         asm_shiftrl = pyparsing.Group(pyparsing.Regex("SHIFTRL")("cmd") + existing_defs["literal_or_identifier"]("addr"))("33:1")
         asm_shiftrr = pyparsing.Group(pyparsing.Regex("SHIFTRR")("cmd") + existing_defs["literal_or_identifier"]("addr"))("34:1")
-        
-        asm_cbr = pyparsing.Group(pyparsing.Regex("BCLR")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("35:2")
-        asm_sbr = pyparsing.Group(pyparsing.Regex("BSET")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("36:2")
+                
+        asm_cbr = pyparsing.Group(pyparsing.Regex("CBR|BCLR")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("35:2")
+        asm_sbr = pyparsing.Group(pyparsing.Regex("SBR|BSET")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("36:2")
         asm_bchg = pyparsing.Group(pyparsing.Regex("BCHG")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("37:2")
         
         asm_bcrsc = pyparsing.Group(pyparsing.Regex("BCRSC")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("38:2")
@@ -811,8 +811,8 @@ class Digirule2U(Digirule):
                                         asm_addra ^ asm_subla ^ asm_subra ^ asm_mul ^ asm_div ^ asm_andla ^ \
                                         asm_andra ^ asm_orla ^ asm_orra ^ asm_xorla ^ asm_xorra ^ asm_decr ^ \
                                         asm_incr ^ asm_decrjz ^ asm_incrjz ^ asm_shiftrl ^ asm_shiftrr ^ asm_cbr ^ \
-                                        asm_sbr ^ asm_bchg ^ asm_bcrsc ^ asm_bcrss ^ asm_jump ^ asm_jumpi ^ asm_call ^ \
-                                        asm_calli ^ asm_return ^ asm_retla ^ asm_addrpc ^ asm_randa ^ asm_comout ^ \
-                                        asm_comin ^ asm_comrdy)
+                                        asm_sbr ^ asm_bchg ^ asm_bcrsc ^ asm_bcrss ^ \
+                                        asm_jump ^ asm_jumpi ^ asm_call ^ asm_calli ^ asm_return ^ asm_retla ^ \
+                                        asm_addrpc ^ asm_randa ^ asm_comout ^ asm_comin ^ asm_comrdy)
 
         return asm_statement

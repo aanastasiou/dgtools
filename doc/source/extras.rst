@@ -41,15 +41,15 @@ A ``Makefile`` is a great way of automating more "complex" processes when you ar
 `Sublime Text <https://www.sublimetext.com/>`_ is a fantastic editor and through the use of packages it can morph 
 into a minimal but powerful development environment.
 
-``dgtools`` includes a ``DigiruleASM`` build package (in ``extras/DigiruleASM.zip``) that once installed can 
-recognise ``.dsf`` files...
+``dgtools`` includes a ``DigiruleASM`` build package (in ``extras/DigiruleASM-sublime.package``) that once installed can 
+recognise ``.dsf`` files and automate the build process *from within Sublime text*.
 
 .. figure:: figures/fig_st_build_env_ss.png
 
     ``simpleadd_3.dsf`` through the eyes of the ``Digirule2ASM`` package...
     
 
-...and offers a basic set of compilation options, right from the editor that can be selected 
+This package offers a basic set of compilation options, right from the editor that can be selected 
 through ``Ctrl + Shift + B``.
 
 .. figure:: figures/fig_st_build_env_ss_2.png

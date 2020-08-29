@@ -22,7 +22,7 @@ class DigiruleASMLexer(RegexLexer):
                     "SUBRA", "MUL", "DIV", "ANDLA", "ANDRA", "ORLA", "ORRA", "XORLA", "XORRA", "DECR", "INCR", 
                     "DECRJZ", "INCRJZ", "SHIFTRL", "SHIFTRR", "CBR", "SBR", "BCRSC", "BCRSS", "JUMP", "JUMPI", "CALL", 
                     "CALLI", "RETURN", "RETLA", "ADDRPC", "RANDA", "COMOUT", "COMIN", 
-                    "COMRDY" ), suffix=r" ?"), Keyword.Reserved),
+                    "COMRDY","BCLR","BSET","BCHG" ), suffix=r" ?"), Keyword.Reserved),
             (r'^[a-zA-Z_][a-zA-Z0-9_]*\:$', Name.Label),
             (r'[a-zA-Z_][a-zA-Z0-9_]*', Name.Variable),
             (r'\.(DB|EQU) ?', Keyword.Declaration),
