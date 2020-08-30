@@ -200,7 +200,10 @@ class DgToolsMakefileParser:
         Parser definitions
         """
         # DGSIM PARSER
+        # Generic File
         a_file = pyparsing.Regex("[^ \!\$\`\&\*\(\)\+\:\\n]+")
+        # Generic identifier
+        an_idf = pyparsing.Regex("[a-zA-Z_][a-zA-Z_0-9]+")
         
         max_n = (pyparsing.Regex("-mn|--max-n") + 
                  pyparsing.Regex("[0-9]+").setParseAction(lambda s,loc,tok:int(tok[0])))
@@ -213,6 +216,7 @@ class DgToolsMakefileParser:
         title = (pyparsing.Regex("--title|-t") + pyparsing.quotedString())
         otf = pyparsing.Regex("-otf|--output-trace_file") + a_file
         omf = pyparsing.Regex("-omf|--output-memdump_file") + a_file
+        theme = pyparsing.Regex("--theme") + an_idf
         
         trace_symbol = pyparsing.Group(pyparsing.Regex("[a-zA-Z_][a-zA-Z0-9_]*")("symbol") + 
                                        pyparsing.Optional(pyparsing.Suppress(":") + 
@@ -231,7 +235,8 @@ class DgToolsMakefileParser:
                        pyparsing.Optional(with_dump)("with_dump") & 
                        pyparsing.Optional(title)("title") & 
                        pyparsing.Optional(otf)("otf") & 
-                       pyparsing.Optional(omf)("omf") & 
+                       pyparsing.Optional(omf)("omf") &
+                       pyparsing.Optional(theme)("theme") & 
                        pyparsing.Optional(trace_symbols)("trace_symbols"))).setParseAction(lambda s,loc,tok:DgToolsMakefileAction(action="dgsim.py",
                                                                                                                                   parsed_parameters = tok)) 
         
