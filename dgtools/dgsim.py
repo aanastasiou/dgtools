@@ -346,7 +346,7 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title,
         machine_after_execution_archive.save(output_memdump_file)
     
     except Exception as e:
-        print(f"ERROR: {str(e)}")
+        print(f"dgsim: {str(e)}")
         sys.exit(1)
 
     # Take care of the theme specification
@@ -354,7 +354,7 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title,
         theme_source = f"{os.path.dirname(inspect.getfile(DGB_Archive))}/css_themes/{theme}.css"
         theme_destination = f"{os.path.dirname(output_trace_file) or '.'}/dgtheme.css"
         if not os.path.exists(theme_source):
-            print(f"WARNING: Specified theme ({theme}) not installed.")
+            print(f"dgsim: Specified theme ({theme}) not installed.")
         else:
             shutil.copy(theme_source, theme_destination)
 

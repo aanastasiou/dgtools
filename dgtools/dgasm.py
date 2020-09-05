@@ -23,7 +23,7 @@ import sys
 import os
 import click
 import intelhex
-from dgtools import (DgtoolsErrorSymbolAlreadyDefined, DgtoolsErrorSymbolUndefined, DgtoolsErrorASMSyntaxError,
+from dgtools import (DgtoolsError, DgtoolsErrorASMSyntaxError,
                      DGB_Archive, Digirule, Digirule2U, BUILTIN_MODELS, DgAssembler)
                      
 @click.command()
@@ -59,14 +59,21 @@ def dgasm(input_file, output_file, target):
     with open(input_file, "rt") as fd:
         asm_code_text = fd.read()
         
+    # Parse
     try:
         asm_code_ast = assembler.text_to_ast(asm_code_text)
-    except DgtoolsErrorASMSyntaxError as deas:
-        print(f"File {input_file} {deas}")
+    except DgtoolsError as deas:
+        print(f"dgasm: File {input_file}: {deas}")
         sys.exit(-1)
-
-    asm_code_compiled = assembler.asm_ast_to_obj(asm_code_ast)
-        
+    
+    # Compile    
+    try:
+        asm_code_compiled = assembler.asm_ast_to_obj(asm_code_ast)
+    except DgtoolsError as dge:
+        print(f"dgasm: File {input_file}: {dge}")
+        sys.exit(-1)
+    
+    # Save     
     dgb_archive = DGB_Archive(asm_code_compiled["program"], asm_code_compiled["labels"], version=target)
     dgb_archive.save(output_file)
 

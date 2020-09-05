@@ -13,7 +13,7 @@ from .exceptions import (DgtoolsErrorSymbolUndefined, DgtoolsErrorSymbolAlreadyD
                          DgtoolsErrorOpcodeNotSupported, DgtoolsErrorDgbarchiveCorrupted, 
                          DgtoolsErrorDgbarchiveVersionIncompatible, DgtoolsErrorProgramHalt,
                          DgtoolsErrorOutOfMemory, DgtoolsErrorASMSyntaxError, DgtoolsErrorStackUnderflow, 
-                         DgtoolsErrorStackOverflow)
+                         DgtoolsErrorStackOverflow, DgtoolsError)
 from .output_render_html import Output_Render_HTML
 from .callbacks import (DigiruleCallbackComOutStdout, DigiruleCallbackComOutStoreMem, 
                         DigiruleCallbackComInUserInteraction, DigiruleCallbackInputUserInteraction)
