@@ -43,7 +43,9 @@ Options:
   -mn, --max-n INTEGER            Maximum number of time steps to allow the
                                   sim to run for.
 
-  --theme TEXT                    Specifies the CSS theme to use (e.g. dgbeos)
+  --theme TEXT                    Specifies the CSS theme to use (plain OR
+                                  dgbeos)
+
   --help                          Show this message and exit.
   
 
@@ -274,7 +276,7 @@ def validate_trace_symbol(ctx, param, value):
                    "will be executed and the HTML report will start at n=10")
 @click.option("--max-n","-mn", type=int, default=200, 
               help="Maximum number of time steps to allow the sim to run for.")
-@click.option("--theme",type=str, help="Specifies the CSS theme to use (e.g. dgbeos)")
+@click.option("--theme",type=str, help="Specifies the CSS theme to use (plain OR dgbeos)")
 def dgsim(input_file, output_trace_file, output_memdump_file, title, 
           with_dump, interactive_mode, trace_symbol, skip_n, max_n, theme):
     """
