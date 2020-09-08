@@ -52,7 +52,8 @@ class DgAssembler:
         # Comments
         # A line of ASM code is either a comment or code with an optional inline comment
         prog_or_dir_statement = pyparsing.Group(asm_statement ^ dir_statement)("prog_dir_statement")
-        dir_comment = pyparsing.Group(pyparsing.Suppress("#") + pyparsing.Regex(r".*?\n")("text"))("def_comment")
+        # dir_comment = pyparsing.Group(pyparsing.Suppress("#") + pyparsing.Regex(r".*?\n")("text")))("def_comment")
+        dir_comment = pyparsing.Group(pyparsing.Suppress("#") + pyparsing.restOfLine("text"))("def_comment")
         dir_code_comment = pyparsing.Group(dir_comment ^ (prog_or_dir_statement + pyparsing.Optional(dir_comment)))
         program = pyparsing.OneOrMore(dir_code_comment)
         # In the end, ignore the comments.
