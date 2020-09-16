@@ -46,18 +46,24 @@ The most common workflow is to:
 ### Pre-requisites
 
 1. Linux
-2. Python >3.6
+2. Python >=3.6
 3. [`virtualenv`](https://pypi.org/project/virtualenv/)
 
-### Process
 
-1. Download the code from the repository
+### Install from PyPi with pip
+
+* `pip install dgtools`
+
+
+### Install latest development version  
+
+1. Checkout the dgtools repository
 2. `> virtualenv -p python3.8 pyenv`
 3. `> source pyenv/bin/activate`
 4. To start using `dgtools`:
      * `pip install -e ./` (From within the `dgtools/` directory that contains the `setup.py` file)
      * This will make the `dgtools` scripts callable from any position in the filesystem, as long as the 
-       virtual environment is activated.
+       `pyenv` virtual environment is activated.
 5. If you are interested in developing `dgtools` further: 
      * `pip install -r requirements.txt`
 
