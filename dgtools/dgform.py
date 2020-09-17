@@ -27,7 +27,11 @@ def dgform(input_file):
     Generates an HTML file with code formatted through the DigiruleASM pygments formatter.
     Output is sent to stdout.
     """
-    sys.stdout.write(highlight(input_file.read(), DigiruleASMLexer(), HtmlFormatter(full = True)))
+    sys.stdout.write(highlight(input_file.read(), 
+                               DigiruleASMLexer(), 
+                               HtmlFormatter(full=True,
+                                             cssfile="dgform_theme.css",
+                                             linenos="table")))
     
 
 if __name__ == "__main__":
