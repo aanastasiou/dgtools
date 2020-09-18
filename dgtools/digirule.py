@@ -557,7 +557,10 @@ class Digirule2U(Digirule):
                                 47:self._randa,
                                192:self._comout,
                                193:self._comin,
-                               194:self._comrdy})
+                               194:self._comrdy,
+                               196:self._pinout,
+                               197:self._pinin,
+                               198:self._pindir})
                                
         self._comout_callback = None
         self._comin_callback = None
@@ -737,6 +740,22 @@ class Digirule2U(Digirule):
         # Comms is always "ready" in emulation.
         # TODO: MED, Maybe this can be matched to a more realistic behaviour once comout, comin are connected to real files.
         self._set_status_reg(self._ZERO_FLAG_BIT, 0)
+        
+    def _pinout(self):
+        # Send ACC n bit to n_pin.
+        # The n_pin is a mask
+        n_pin = self._read_next()
+        
+    def _pinin(self):
+        # Read ACC n bit to n_pin (1-3)
+        # The n_pin is a mask
+        n_pin = self._read_next()
+        
+    def _pindir(self):
+        # Set the pin I/O direction
+        # The n_pin is a mask
+        n_pin = self._read_next()
+        
 
     @staticmethod
     def get_asm_statement_def(existing_defs):
@@ -791,8 +810,8 @@ class Digirule2U(Digirule):
         asm_sbr = pyparsing.Group(pyparsing.Regex("SBR|BSET")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("36:2")
         asm_bchg = pyparsing.Group(pyparsing.Regex("BCHG")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("37:2")
         
-        asm_bcrsc = pyparsing.Group(pyparsing.Regex("BCRSC")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("38:2")
-        asm_bcrss = pyparsing.Group(pyparsing.Regex("BCRSS")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("39:2")
+        asm_bcrsc = pyparsing.Group(pyparsing.Regex("BCRSC|BTSTSC")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("38:2")
+        asm_bcrss = pyparsing.Group(pyparsing.Regex("BCRSS|BTSTSS")("cmd") + existing_defs["literal_or_identifier"]("n_bit") + existing_defs["literal_or_identifier"]("addr"))("39:2")
         asm_jump = pyparsing.Group(pyparsing.Regex("JUMP")("cmd") + existing_defs["literal_or_identifier"]("addr"))("40:1")
         asm_jumpi = pyparsing.Group(pyparsing.Regex("JUMPI")("cmd") + existing_defs["literal_or_identifier"]("iaddr"))("41:1")
         asm_call = pyparsing.Group(pyparsing.Regex("CALL")("cmd") + existing_defs["literal_or_identifier"]("addr"))("42:1")
@@ -804,6 +823,9 @@ class Digirule2U(Digirule):
         asm_comout = pyparsing.Group(pyparsing.Regex("COMOUT")("cmd"))("192:0")
         asm_comin = pyparsing.Group(pyparsing.Regex("COMIN")("cmd"))("193:0")
         asm_comrdy = pyparsing.Group(pyparsing.Regex("COMRDY")("cmd"))("194:0")
+        asm_pinout = pyparsing.Group(pyparsing.Regex("PINOUT")("cmd") + existing_defs["literal_or_identifier"]("value"))("196:1")
+        asm_pinin = pyparsing.Group(pyparsing.Regex("PININ")("cmd") + existing_defs["literal_or_identifier"]("value"))("197:1")
+        asm_pindir = pyparsing.Group(pyparsing.Regex("PINDIR")("cmd") + existing_defs["literal_or_identifier"]("value"))("198:1")
         
         asm_statement = pyparsing.Group(asm_halt ^ asm_nop ^ asm_speed ^ asm_initsp ^ asm_copyla ^ asm_copylr ^ \
                                         asm_copyli ^ asm_copyar ^ asm_copyai ^ asm_copyra ^ asm_copyrr ^ asm_copyri ^ \
@@ -813,6 +835,7 @@ class Digirule2U(Digirule):
                                         asm_incr ^ asm_decrjz ^ asm_incrjz ^ asm_shiftrl ^ asm_shiftrr ^ asm_cbr ^ \
                                         asm_sbr ^ asm_bchg ^ asm_bcrsc ^ asm_bcrss ^ \
                                         asm_jump ^ asm_jumpi ^ asm_call ^ asm_calli ^ asm_return ^ asm_retla ^ \
-                                        asm_addrpc ^ asm_randa ^ asm_comout ^ asm_comin ^ asm_comrdy)
+                                        asm_addrpc ^ asm_randa ^ asm_comout ^ asm_comin ^ asm_comrdy ^ \
+                                        asm_pinout ^ asm_pinin ^ asm_pindir)
 
         return asm_statement
