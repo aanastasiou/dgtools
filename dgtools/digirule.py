@@ -567,8 +567,8 @@ class Digirule2U(Digirule):
         
     def set_default_callbacks(self):
         super().set_default_callbacks()
-        self._comin_callback = DigiruleCallbackComInUserInteraction("Serial Input:")
-        self._comout_callback = DigiruleCallbackComOutStdout()
+        self._comin_callback = DigiruleCallbackComInUserInteraction("Serial Input <-")
+        self._comout_callback = DigiruleCallbackComOutStdout("Serial Output ->")
         
     def clear_callbacks(self):
         super().clear_callbacks()

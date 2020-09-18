@@ -13,13 +13,32 @@ class DigiruleCallbackBase:
     Base class for all interactions with the Digirule.
     
     Note:
-        * An interaction is any operation that interacts with the Digirule object and 
-          exchanges data with it.
+        * An interaction is any operation that interacts with a Digirule object and 
+          exchanges data.
+        * Use interactions to simulate interfaces with entities that are external to 
+          the Digirule.
+        * Callbacks have a label that provides a brief description so that the user knows
+          which interaction this is for.
     """
-    pass
     
+    def __init__(self, cb_label):
+        """
+        Configures the label of the interaction callback.
+        
+        :returns: Type checked user input
+        :rtype: uint8
+        """
 
-class DigiruleCallbackInputBase:
+        if not isinstance(cb_label, str):
+            raise TypeError(f"Callback labels are expected to be str, received {type(cb_label)}.")
+        self._cb_label = cb_label
+    
+    @property
+    def label(self):
+        return self._cb_label
+
+
+class DigiruleCallbackInputBase(DigiruleCallbackBase):
     """
     An input interaction brings data in to the Digirule.
     """
@@ -42,11 +61,12 @@ class DigiruleCallbackInputBase:
         return input_value
     
 
-class DigiruleCallbackOutputBase:
+class DigiruleCallbackOutputBase(DigiruleCallbackBase):
     """
     An output interaction takes data out of the Digirule.
     """
-    def __init__(self):
+    def __init__(self, cb_label):
+        super().__init__(cb_label)
         self._value = None
         
     @property
@@ -64,19 +84,8 @@ class DigiruleCallbackInputUserInteraction(DigiruleCallbackInputBase):
     """
     Prompts the user for (binary) button input.
     """
-    
-    def __init__(self, user_prompt):
-        """
-        Configures the prompt.
-        
-        :returns: Type checked user input
-        :rtype: uint8
-        """
-        super().__init__()    
-        self._user_prompt = user_prompt
-        
     def get_input(self):
-        return input(self._user_prompt)
+        return input(self.label)
         
     def validate_input(self, input_value):
         user_input_numeric = int(input_value, 2)
@@ -102,7 +111,7 @@ class DigiruleCallbackComInUserInteraction(DigiruleCallbackInputUserInteraction)
         else:
             # User enters a simple character
             if len(input_value)>1:
-                raise ValueError(f"COM Input must be a single ASCII character. Entered {input_value}.")
+                raise ValueError(f"COM Input must be a single ASCII character or '\\0-255' (e.g. \\65 for A). Entered {input_value}.")
             return ord(input_value)
             
 
@@ -121,6 +130,5 @@ class DigiruleCallbackComOutStdout(DigiruleCallbackOutputBase):
     """
     Sends output directly to stdout
     """
-    # TODO: MED, It would be more informative if this had a configurable prompt too
     def on_new_data(self, a_new_value):
-        sys.stdout.write(chr(a_new_value))
+        sys.stdout.write(f"{self.label} {chr(a_new_value):3s} - 0x{(a_new_value & 0xFF):03X}\n")
