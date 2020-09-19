@@ -36,6 +36,13 @@ class DigiruleCallbackBase:
     @property
     def label(self):
         return self._cb_label
+    
+    @label.setter
+    def label(self, new_label):
+        if not isinstance(new_label, str):
+            raise TypeError(f"Callback labels are expected to be str, received {type(new_label)}.")
+        self._cb_label = new_label
+        
 
 
 class DigiruleCallbackInputBase(DigiruleCallbackBase):
@@ -126,9 +133,24 @@ class DigiruleCallbackComOutStoreMem(DigiruleCallbackOutputBase):
         self._value.append(a_new_value)
 
 
+# TODO: LOW, Rename DigiruleCallbackComOutStdout to a more generic name because it is more generally applicable.
 class DigiruleCallbackComOutStdout(DigiruleCallbackOutputBase):
     """
-    Sends output directly to stdout
+    Sends output directly to stdout.
     """
     def on_new_data(self, a_new_value):
         sys.stdout.write(f"{self.label} {chr(a_new_value):3s} - 0x{(a_new_value & 0xFF):03X}\n")
+
+
+class DigiruleCallbackPinInUserInteraction(DigiruleCallbackInputUserInteraction):
+    """
+    Prompts the user for pin input.
+    """
+    def validate_input(self, input_value):
+        if len(input_value) == 0:
+            raise ValueError("User input required")
+            
+        if input_value not in ["0","1"]:
+            raise ValueError(f"Pin Input should be a single character ('0' or '1'). Entered {input_value}.")
+
+        return int(input_value) & 0xFF

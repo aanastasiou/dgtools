@@ -1,5 +1,5 @@
-TODO List as of Sat 29 Aug 20:30:40 BST 2020
-../dgtools/callbacks.py:124 TODO: MED, It would be more informative if this had a configurable prompt too
+TODO List as of Sat 19 Sep 01:38:22 BST 2020
+../dgtools/callbacks.py:136 TODO: LOW, Rename DigiruleCallbackComOutStdout to a more generic name because it is more generally applicable.
 ../dgtools/dginspect.py:99 TODO: HIGH, Add a mode that only generates an update of the VM state when the state of one of the tracked symbols changes
 ../dgtools/dginspect.py:109 TODO: MID, Reduce code duplication by packaging this validation in a function
 ../dgtools/dginspect.py:156 TODO: HIGH, the following operations can be "absorbed" into the DGB_Archive with appropriate validations too
@@ -12,5 +12,7 @@ TODO List as of Sat 29 Aug 20:30:40 BST 2020
 ../dgtools/digirule.py:191 TODO: HIGH, add the underflow exception
 ../dgtools/digirule.py:370 TODO: MED, In CBR and SBR, if the bit is zero, it should raise an error at compile time.
 ../dgtools/digirule.py:397 TODO: MED, If you get a RETLA without first having called CALL, it should raise an exception at compile time.
-../dgtools/digirule.py:667 TODO: MED, This can raise a divide by zero warning / exception too
-../dgtools/digirule.py:738 TODO: MED, Maybe this can be matched to a more realistic behaviour once comout, comin are connected to real files.
+../dgtools/digirule.py:699 TODO: MED, This can raise a divide by zero warning / exception too
+../dgtools/digirule.py:770 TODO: MED, Maybe this can be matched to a more realistic behaviour once comout, comin are connected to real files.
+../dgtools/digirule.py:773 TODO: MID, Reduce code duplication in _comin, _comout
+../dgtools/digirule.py:806 TODO: LOW, Improve the way the label is modified externally

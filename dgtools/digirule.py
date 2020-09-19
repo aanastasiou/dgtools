@@ -7,7 +7,7 @@ Built-in Digirule models supported by dgtools.
 """
 from .exceptions import DgtoolsErrorOpcodeNotSupported, DgtoolsErrorProgramHalt, DgtoolsErrorOutOfMemory
 from .callbacks import (DigiruleCallbackInputBase, DigiruleCallbackInputUserInteraction, DigiruleCallbackComOutStdout, 
-                        DigiruleCallbackComInUserInteraction)
+                        DigiruleCallbackComInUserInteraction, DigiruleCallbackPinInUserInteraction)
 import random
 import pyparsing
 
@@ -564,16 +564,22 @@ class Digirule2U(Digirule):
                                
         self._comout_callback = None
         self._comin_callback = None
+        self._pin_in_callback = None
+        self._pin_out_callback = None
         
     def set_default_callbacks(self):
         super().set_default_callbacks()
         self._comin_callback = DigiruleCallbackComInUserInteraction("Serial Input <-")
+        self._pin_in_callback = DigiruleCallbackPinInUserInteraction("Pin Input <-")
         self._comout_callback = DigiruleCallbackComOutStdout("Serial Output ->")
+        self._pin_out_callback = DigiruleCallbackComOutStdout("Pin Output ->")
         
     def clear_callbacks(self):
         super().clear_callbacks()
         self._comin_callback = None
         self._comout_callback = None
+        self._pin_in_callback = None
+        self._pin_out_callback = None
         
     @property 
     def comout_callback(self):
@@ -581,8 +587,8 @@ class Digirule2U(Digirule):
         
     @comout_callback.setter
     def comout_callback(self, new_callback):
-        if not isinstance(new_callback, DigiruleCallbackInputBase):
-            raise TypeError(f"comout_callback() setter expected descendant of DigiruleCallbackInputBase, "
+        if not isinstance(new_callback, DigiruleCallbackOutputBase):
+            raise TypeError(f"comout_callback() setter expected descendant of DigiruleCallbackOutputBase, "
                             f"received {type(new_callback)}")
         self._comout_callback = new_callback
         
@@ -592,10 +598,33 @@ class Digirule2U(Digirule):
         
     @comin_callback.setter
     def comin_callback(self, new_callback):
-        if type(new_callback) is not types.FunctionType:
-            raise TypeError(f"comin_callback() setter expected a function, received {type(new_callback)}")
+        if not isinstance(new_callback, DigiruleCallbackInputBase):
+            raise TypeError(f"comin_callback() setter expected descendant of DigiruleCallbackInputBase, "
+                            f"received {type(new_callback)}")
         self._comin_callback = new_callback
 
+    @property
+    def pin_in_callback(self):
+            return self._pin_in_callback
+            
+    @pin_in_callback.setter
+    def pin_in_callback(self, new_callback):
+        if not isinstance(new_callback, DigiruleCallbackInputBase):
+            raise TypeError(f"pin_in_callback() setter expected descendant of DigiruleCallbackInputBase, "
+                            f"received {type(new_callback)}")
+        self._pin_in_callback = new_callback
+    
+    @property
+    def pin_out_callback(self):
+        return self._pin_out_callback
+    
+    @pin_out_callback.setter
+    def pin_out_callback(self, new_callback):
+        if not isinstance(new_callback, DigiruleCallbackInputBase):
+            raise TypeError(f"comin_callback() setter expected descendant of DigiruleCallbackInputBase, "
+                            f"received {type(new_callback)}")
+        self._pin_out_callback = new_callback
+            
     def _initsp(self):
         self._ppc = []
         
@@ -741,15 +770,55 @@ class Digirule2U(Digirule):
         # TODO: MED, Maybe this can be matched to a more realistic behaviour once comout, comin are connected to real files.
         self._set_status_reg(self._ZERO_FLAG_BIT, 0)
         
+    # TODO: MID, Reduce code duplication in _comin, _comout
     def _pinout(self):
         # Send ACC n bit to n_pin.
         # The n_pin is a mask
         n_pin = self._read_next()
+        if n_pin>=1 and n_pin<=3:
+            if self._pin_out_callback is not None:
+                if n_pin != 3:
+                    # Only one pin is sent to the output
+                    pin_label = f"(PIN {n_pin}) "
+                    self._pin_out_callback.label=f"{pin_label}{self._pin_out_callback.label}"
+                    self._pin_out_callback(48 + ((self._get_acc_value() & n_pin)>>(n_pin-1)))
+                    self._pin_out_callback.label = self._pin_out_callback.label.replace(pin_label,"")
+                else:
+                    # Both pins are sent to the output
+                    pin_label = f"(PIN 1) "
+                    self._pin_out_callback.label=f"{pin_label}{self._pin_out_callback.label}"
+                    self._pin_out_callback(48 + (self._get_acc_value() & 1))
+                    self._pin_out_callback.label = self._pin_out_callback.label.replace(pin_label,"")
+                    
+                    pin_label = f"(PIN 2) "
+                    self._pin_out_callback.label=f"{pin_label}{self._pin_out_callback.label}"
+                    self._pin_out_callback(48 + ((self._get_acc_value() & 2)>>1))
+                    self._pin_out_callback.label = self._pin_out_callback.label.replace(pin_label,"")
         
     def _pinin(self):
         # Read ACC n bit to n_pin (1-3)
-        # The n_pin is a mask
+        # The n_pin is a mask if n_pin<3. If n_pin is 3 then the operation is carried out on both pins
         n_pin = self._read_next()
+        if n_pin>=1 and n_pin<=3:
+            if self._pin_in_callback is not None:
+                if n_pin != 3:
+                    # Only one pin is read
+                    # TODO: LOW, Improve the way the label is modified externally
+                    pin_label = f"(PIN {n_pin}) "
+                    self._pin_in_callback.label=f"{pin_label}{self._pin_in_callback.label}"
+                    self._set_acc_value((self._get_acc_value() & ~n_pin) | self._pin_in_callback())
+                    self._pin_in_callback.label = self._pin_in_callback.label.replace(pin_label,"")
+                else:
+                    # Both pins are read
+                    pin_label = f"(PIN 1) "
+                    self._pin_in_callback.label=f"{pin_label}{self._pin_in_callback.label}"
+                    self._set_acc_value((self._get_acc_value() & ~1) | self._pin_in_callback())
+                    self._pin_in_callback.label = self._pin_in_callback.label.replace(pin_label,"")
+                    
+                    pin_label = f"(PIN 2) "
+                    self._pin_in_callback.label=f"{pin_label}{self._pin_in_callback.label}"
+                    self._set_acc_value((self._get_acc_value() & ~2) | (self._pin_in_callback()<<1))
+                    self._pin_in_callback.label = self._pin_in_callback.label.replace(pin_label,"")
         
     def _pindir(self):
         # Set the pin I/O direction
