@@ -69,16 +69,22 @@ def get_bf_parser():
     bf_input = pyparsing.Group(pyparsing.Suppress(","))("IN_DV").setParseAction(in_dv)
     bf_jz = pyparsing.Group(pyparsing.Suppress("["))("JZ")
     bf_jnz = pyparsing.Group(pyparsing.Suppress("]"))("JNZ")
+    bf_comment = pyparsing.Suppress(pyparsing.Regex("[^\[\]\+\-\<\>\.\,]+?"))("comment")
     bf_statement = pyparsing.Forward()
-    bf_statement << (bf_inc_data_p ^ bf_dec_data_p ^ bf_inc_data_v ^ bf_dec_data_v ^ bf_output ^ bf_input ^  \
+    bf_statement << (bf_comment ^ bf_inc_data_p ^ bf_dec_data_p ^ bf_inc_data_v ^ bf_dec_data_v ^ bf_output ^ \
+                     bf_input ^  \
                     pyparsing.Group(bf_jz + pyparsing.ZeroOrMore(bf_statement) + bf_jnz)("ITERATION").setParseAction(iteration_block))
     bf_program = pyparsing.OneOrMore(bf_statement).setParseAction(emit_asm)
+    #bf_program.ignore(bf_comment)
     return bf_program
     
     
 @click.command()
 @click.argument("input_file", type=click.File("rt"))
 def main(input_file):
+    """
+    Compiles brainfuck to Digirule ASM.
+    """
     bf2asm_parser = get_bf_parser()
     try:
         dg_asm_text = bf2asm_parser.parseString(input_file.read(), parseAll=True)

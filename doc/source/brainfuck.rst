@@ -1,40 +1,32 @@
 A Brainfuck compiler
 ====================
 
-Brainfuck is probably the most widespread of the "esoteric" programming languages.
+Brainfuck is probably the most widespread of the "esoteric" programming languages. It is a Turing complete 
+language with 8 instructions that read and modify an array of bytes of finite size. 
 
-It is immensely valuable though, because of two striking characteristics:
+Stating that a particular "machine" is Turing complete implies that *anything that is 
+computable*, can be computed with it. And, stating that this "machine" can achieve this with just 8 commands and 
+some memory implies that computation, any computation, can be broken down into a minimal set of fundamental operations.
 
-1. It is Turing complete.
-2. It has 8 "commands", here they are:``+-><.,[]`` and a chunk of memory (e.g a simple array).
-
-Stating that a particular "machine" is Turing complete is...scaringly important. It implies that *anything that is 
-computable*, can be computed with this machine. 
-
-Stating that this "machine" can achieve this with just 8 commands and a chunk of memory implies that computation can 
-be broken down into a minimal set of fundamental operations. Operations that have nothing to do with CPUs, memory buses
-and anyhting else we might already be associating with "computers".
-
-Granted, computers **can** compute stuff. But anything that can add, subtract, iterate and more importantly remember, 
-can "compute". In other words, taken to the extreme, it is possible to write a Brainfuck program that implements 
+In other words, taken to the extreme, it **is** possible to write a Brainfuck program that implements something like 
 "World of Warcraft". It is not going to be easy. It is not going to be human readable or easy to follow.
 
-But it **is** doable. And this is what makes Brainfuck and other programming languages in the same league, scaringly 
-important. And fun, just like a brainteaser.
+But it **is** doable. And this is what makes Brainfuck and other similar programming languages worth a second look. 
 
-There are a tonne of Brainfuck compilers out there. And if you think a compiler as a computation process, there are 
-even Brainfuck interpreters. That is, programs written in Brainfuck that *operate over an input that represents 
+There are a tonne of Brainfuck compilers out there. And if you think of a compiler itself as a computation process, 
+there are even Brainfuck interpreters. That is, programs written in Brainfuck that *operate over an input that represents 
 a Brainfuck program and re-produce its outcome*. 
 
-And so the objective was set: *"Is it possible to write a Brainfuck compiler for the Digirule?"*
+And with this, the objective was set: *"Is it possible to write a Brainfuck compiler for the Digirule?"*
 
-Because if this is possible, then this means that we can "ignore" the tens of instructions in the Digirule instruction 
-set and achieve the same outcome with just 8 Brainfuck instructions.
+Because, if it is possible, then this means that we can "ignore" the tens of instructions in the Digirule instruction 
+set and achieve the same outcome with just the 8 Brainfuck instructions.
 
-Needless to say, if you have read up to this point, that it **is** possible. And given the proliferation of computer 
-languages, compilers, transpilers, etc, it is not even "new".
+Needless to say, if you have reached this point, that it **is** possible. And given the proliferation of computer 
+languages, compilers, transpilers, etc, it is not even a "new" idea.
 
 It is however fun to have done and if you are interested in finding out more about how it works keep reading. 
+
 Alternatively, you can simply jump to the practical section that outlines the Brainfuck programs you can use with 
 the Brainfuck compiler.
 
@@ -43,13 +35,22 @@ The Brainfuck "System"
 ----------------------
 
 Brainfuck, as a language, is associated with an underlying machine that is very close, in form, to the Turing Machine.
+
 The layout of this "machine" explains directly the instruction set.
+
 
 The machine
 ^^^^^^^^^^^
 
-It has a "tape" for memory, a "Data Pointer" (DP) that points to some point on the tape, an Arithmetic Logic Unit (ALU) 
-that can only add and subtract **by one**, an input device and an output device.
+Brainfuck targets a "machine" that is composed of the following peripherals:
+
+1. A "tape", which is an ancient word for "memory" or "an array of numbers"
+2. A "Data Pointer" (DP) that points to some point on the tape. This is quite simply the index within the array 
+   of numbers. 
+3. An Arithmetic Logic Unit (ALU) that can only add and subtract **by one**
+4. An input device; and 
+5. An output device.
+
 
 The instruction set
 ^^^^^^^^^^^^^^^^^^^
@@ -99,7 +100,7 @@ Having defined the array, we also need to define its offset. Notice here that in
 memory is the "Data Pointer". So, let's define a "variable" called ``dp``, representing the current position within the 
 array.
 
-If you would like to catch up with plain simple operations (such as assignments), you might want to see 
+If you would like to catch up with plain simple operations (such as assignments) in Digirule ASM, you might want to see 
 :ref:`this first <assignments>`.
 
 Modelling the input and output devices is also easy. On the Digirule, these can be mapped directly to the "keyboard" 
@@ -117,7 +118,7 @@ demonstrated here by walking through the implementation of three commands:
 #. The "Iteration" (``[ ]``).
 
 The first two, are basically the same side effect (increase a "value") but towards different targets. To "move right" 
-we simply need to add 1 to the ``dp``. To increase the value that the dp points at, we need to add one to where it 
+we simply need to add 1 to the ``dp``. To increase the value that the ``dp`` points at, we need to add one to where it 
 points to.
 
 The naive implementation of the first is:
@@ -130,11 +131,11 @@ However, notice that Brainfuck does not have literals. In plain simple Brainfuck
 as the value somewhere along the "tape". So, the literal ``12``, in Brainfuck is ``++++++++++++`` which leads 
 to adding 12 units to the initial value of the memory tape cell. The 
 naive implementation therefore, leads to 12 calls to ``INCR`` and more generally :math:`\text{reps} \times 2` 
-bytes of memory. Here, :math:`\text{reps}` stands for repetitions or the number of times the ``+`` symbol appears at a 
-specific point in input.
+bytes of memory. Here, :math:`\text{reps}` stands for the number of times the ``+`` symbol appears at a 
+specific point in the input program.
 
-For this reason, the Brainfuck transpiler, "catches" the repeated application of ``+ - > <`` and converts it to the more
-efficient:
+For this reason, the Brainfuck transpiler, "catches" the repeated application of ``+ - > <`` and converts them to the 
+more efficient:
 
 ::
 
@@ -150,7 +151,7 @@ Similarly, adding 1 to the value of where the ``dp`` points to, is a matter of e
 the value the ``dp`` points at.
 
 Unfortunately, an indirect ``INCR`` is impossible with the "2U" Digirule firmware, which means that it would have to be 
-done via the usual :ref`self-modifying code trick <iset_notes_mem_ops>`:
+done via the usual :ref`way of building up the instruction at runtime <iset_notes_mem_ops>`:
 
 ::
 
