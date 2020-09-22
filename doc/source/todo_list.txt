@@ -1,4 +1,5 @@
-TODO List as of Sat 19 Sep 01:38:22 BST 2020
+TODO List as of Wed 23 Sep 00:04:20 BST 2020
+../dgtools/assembler.py:34 TODO: LOW, Rename uchar, as it is not a uchar anymore. This is a remnant.
 ../dgtools/callbacks.py:136 TODO: LOW, Rename DigiruleCallbackComOutStdout to a more generic name because it is more generally applicable.
 ../dgtools/dginspect.py:99 TODO: HIGH, Add a mode that only generates an update of the VM state when the state of one of the tracked symbols changes
 ../dgtools/dginspect.py:109 TODO: MID, Reduce code duplication by packaging this validation in a function

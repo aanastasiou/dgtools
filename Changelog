@@ -1,3 +1,5 @@
+Version 1.0.2 
+    * DB directive can now unroll string literals
 Version 1.0.1 2020-09-19
     * `dgform` produces its own CSS and includes line numbers.
     * Improved callback inheritance.

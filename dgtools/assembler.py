@@ -9,6 +9,7 @@ Digirule assembler support.
 from .digirule import Digirule
 from .exceptions import DgtoolsErrorSymbolAlreadyDefined, DgtoolsErrorSymbolUndefined, DgtoolsErrorASMSyntaxError
 import pyparsing
+import functools
 
 class DgAssembler:
     
@@ -17,37 +18,54 @@ class DgAssembler:
             raise TypeError(f"Expected Digirule, received {type(digirule_cls)}")
         
         # Action functions to convert valid string literals to numbers
+        char2num = lambda toks:ord(toks[0][1:-1])
         uchar2num = lambda toks:int(toks[0])
         buchar2num = lambda toks:int(toks[0],2)
         xuchar2num = lambda toks:int(toks[0],16)
         # An identifier for labels and symbols. It must be at least 1 character, start with a letter or number and
         # can include the underscore.
         identifier = pyparsing.Regex(r"[a-zA-Z_][a-zA-Z0-9_]*")
-        # A literal can be a decimal number (4,14,52), a binary number (0b100, 0b1110, 0b110100) or a hexadecimal number
-        # (0x4, 0x0E, 0x34). 
+        # A literal can be: 
+        #    * An integer (4, -14,52), 
+        #    * A binary number (0b100, 0b1110, 0b110100) 
+        #    * A hexadecimal number (0x4, 0x0E, 0x34)
+        #    * A single character ("A","J","8", anything from space to tilde on the ascii table). 
+        literal_char = pyparsing.Regex(r"\"[ -~]\"|'[ -~]'").setParseAction(char2num)
+        # TODO: LOW, Rename uchar, as it is not a uchar anymore. This is a remnant.
         literal_uchar = pyparsing.Regex(r"[-]?[0-9][0-9]?[0-9]?").setParseAction(uchar2num)
         literal_buchar = pyparsing.Regex(r"0b[0|1]+").setParseAction(buchar2num)
         literal_xuchar = pyparsing.Regex(r"0x[0-9A-F][0-9A-F]?").setParseAction(xuchar2num)
-        literal = literal_uchar ^ literal_buchar ^ literal_xuchar
+        literal = literal_char ^ literal_uchar ^ literal_buchar ^ literal_xuchar
         # Opcodes can accept literals or identifiers (.EQU or labels) as opcodes.
         literal_or_identifier = pyparsing.Group(literal("literal") ^ identifier("symbol"))("value_type")
         
         existing_defs = {"identifier":identifier,
+                         "literal_char":literal_char,
                          "literal_uchar":literal_uchar,
                          "literal_buchar":literal_buchar,
                          "literal_xuchar":literal_xuchar,
                          "literal":literal,
                          "literal_or_identifier":literal_or_identifier}
-        
+        # Existing defs are passed down in case the digirule ASM code needs to specialise instructions
         asm_statement = digirule_cls.get_asm_statement_def(existing_defs)
         
         # Assembler directives
-        # .DB A static space delimited list of byte defs
         # label: Defines a label
-        # .EQU A "symbol" (that in the future would be able to evaluate to anything.
         dir_label = pyparsing.Group(identifier("idf") + pyparsing.Suppress(":"))("def_label")
-        dir_db = pyparsing.Group(pyparsing.Regex(".DB")("cmd") + pyparsing.delimitedList(literal_or_identifier)("values"))("def_db")
-        dir_equ = pyparsing.Group(pyparsing.Regex(".EQU")("cmd") + identifier("idf") + pyparsing.Suppress("=") + literal("value"))("def_equ")
+        
+        # .DB A static coma delimited list of byte defs
+        dir_db_str = pyparsing.quotedString().setParseAction(lambda s,loc,tok:[ord(u) for u in tok[0][1:-1]])
+        dir_db_values = pyparsing.delimitedList(pyparsing.Group(literal("literal") ^ \
+                                                                identifier("symbol") ^ \
+                                                                dir_db_str("string")))
+        dir_db = pyparsing.Group(pyparsing.Regex(".DB")("cmd") + dir_db_values("values"))("def_db")
+        
+        # .EQU A "symbol" (that in the future would be able to evaluate to a proper macro.
+        dir_equ = pyparsing.Group(pyparsing.Regex(".EQU")("cmd") + \
+                                  identifier("idf") + \
+                                  pyparsing.Suppress("=") + \
+                                  literal("value"))("def_equ")
+        # A directive statement
         dir_statement = pyparsing.Group(dir_label ^ dir_db ^ dir_equ)
         # Comments
         # A line of ASM code is either a comment or code with an optional inline comment
@@ -96,10 +114,14 @@ class DgAssembler:
                 else:
                     raise DgtoolsErrorSymbolAlreadyDefined(f"Label {arguments['idf']} is getting redefined.")
             elif command == "def_db":
-                # .DB simply defines raw data that are simply dumped where they appear. If a label is not set to a 
+                # .DB defines raw data that are simply dumped where they appear. If a label is not set to a 
                 # data block, it cannot be referenced.
-                value_data = list(map(lambda x:x[0],arguments["values"]))
-                mem.extend(value_data)
+                #value_data = list(map(lambda x:x[0] if "string" not in x else [u for u in x],arguments["values"]))
+                #import pdb
+                #pdb.set_trace()
+                #mem.extend(value_data)
+                for a_val in arguments["values"]:
+                    mem.extend(a_val)
             elif command == "def_equ":
                 if arguments["idf"] not in symbols:
                     symbols[arguments["idf"]] = arguments["value"]
