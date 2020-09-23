@@ -1,0 +1,95 @@
+# A very simple random number generator
+
+# Here is one of the simplest ways to generate 
+# Pseudo-Random-Numbers. The clue is in the name.
+# Although it is difficult to predict what is the 
+# next number in a sequence of 10 numbers, if we 
+# wait long enough, the numbers start repeating, in 
+# exactly the same sequence. In fact, if we start 
+# the generator from the same number it will generate 
+# the exact same next one and the next one and so on.
+
+# In this example, the width of the register is 8bit 
+# and therefore its "period" is 256 numbers.
+
+# This should be enough to give the Digirule the 
+# ability to roll the dice.
+
+.EQU status_reg=252    # Status register on the Digirule2
+.EQU carry_bit=1
+.EQU zero_bit=0
+
+# Number of random numbers to generate
+.EQU gen_n_numbers=172 
+
+# Initial state for the random number generator
+# NOTE: Usually computers take the current time 
+#       as the initial "seed". And this is how
+#       the sequence of numbers appears to be 
+#       different, every time we execute a program.
+.EQU rnd_state=42      
+
+# Put `array_idx` at the start of `array`
+COPYLR array array_idx
+start:
+COPYRA state
+COPYRR state R1
+SHIFTRR state             # SHIFTRR goes through the carry bit
+CBR carry_bit status_reg  # and here we only want a SHIFT operation. 
+SHIFTRR state             # This bit clearing after SHIFTRR is  
+XORRA state               # repeatedly applied here, since each  
+CBR carry_bit status_reg  # SHIFTRR should not be affected by whatever
+SHIFTRR state             # is already in the carry bit of the status  
+XORRA state               # register.  
+CBR carry_bit status_reg
+SHIFTRR state
+XORRA state
+ANDLA 1
+COPYAR R2
+CBR carry_bit status_reg
+SHIFTRR R1
+DECRJZ R2
+JUMP clr_bit
+set_bit:
+SBR 7 R1
+JUMP resume
+clr_bit:
+CBR 7 R1
+resume:
+COPYRR R1 state           # The current state becomes the next state 
+COPYLR state f_from
+COPYRR array_idx f_to
+CALL f_copy_ind           # The current state gets assigned to the array
+INCR array_idx 
+DECRJZ R0
+JUMP start                # Standard iteration: Decrease, check and jump  
+HALT                      # otherwise stop.
+
+state:
+.DB rnd_state
+R0:
+.DB gen_n_numbers
+R1:
+.DB 0
+R2:
+.DB 0
+
+
+# Memory copy by indirect addressing via self-modification.
+# We construct a suitable absolute
+# addressing copy instruction (COPYRR) and
+# execute it as a sub-routine over f_from, f_to
+
+f_copy_ind:
+.DB 7
+f_from:
+.DB 0
+f_to:
+.DB 0
+RETURN
+
+array_idx:
+.DB 0
+
+array:
+.DB 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0

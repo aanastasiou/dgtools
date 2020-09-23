@@ -1,0 +1,20 @@
+COPYLR 251 R0
+next_pixel:
+COPYRI R0 R0
+COPYRR R0 R1
+DIV R1 R2
+COPYAI R0
+DECR R0
+COPYRA R0
+SUBLA framebuffer
+BTSTSS 0 252
+JUMP next_pixel
+HALT
+R0:
+.DB 0
+R1:
+.DB 0
+R2:
+.DB 64
+framebuffer:
+.DB 0

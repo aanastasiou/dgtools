@@ -72,6 +72,12 @@ from dgtools import (DgtoolsErrorOpcodeNotSupported,
 import inspect
 import shutil
 from dgtools.exceptions import DgtoolsError
+
+try:
+    from PIL import Image
+    PIL_PRESENT = True
+except ModuleNotFoundError:
+    PIL_PRESENT = False
     
 
 def trace_program(program, output_file, skip_n=0, max_n=200, trace_title="", 
@@ -112,6 +118,13 @@ def trace_program(program, output_file, skip_n=0, max_n=200, trace_title="",
     # This function could simply be returning a data structure with all data required by a template to produce the 
     # actual output. But that would increase dependencies and possibly required memory too. This is why the file is 
     # created here on the fly.
+    frames = []
+    frame_pal=[]
+    for u in range(0,256):
+        frame_pal.append(u)#64*(u % 4))
+        frame_pal.append(0)
+        frame_pal.append(0)
+    frame_pal=bytes(frame_pal)
     with Output_Render_HTML(output_file) as dgen:
         dgen.open_tag("article")
         dgen.open_tag("header")
@@ -119,6 +132,20 @@ def trace_program(program, output_file, skip_n=0, max_n=200, trace_title="",
         dgen.close_tag("header")
         while not done and n<max_n:
             if n>=skip_n:
+                # Render the memory as an image
+                if PIL_PRESENT:
+                    # frame_data = []
+                    # for a_val in machine._mem:
+                        # # frame_data.append(32*(a_val & 0b11100000 >> 5))
+                        # # frame_data.append(32*(a_val & 0b00011100 >> 2))
+                        # # frame_data.append(64*(a_val & 0b00000011 >> 0))
+                        # frame_data.append(16*(a_val>>4))
+                        # frame_data.append(0)
+                        # frame_data.append(0)
+                        
+                    frames.append(Image.frombytes(size=(16,16),
+                                                  data=bytes([u for u in machine._mem]),
+                                                  mode="L").resize((128, 128), resample=Image.NEAREST))
                 # Machine registers
                 dgen.open_tag("section")
                 dgen.named_anchor(f"n{n}")
@@ -215,6 +242,14 @@ def trace_program(program, output_file, skip_n=0, max_n=200, trace_title="",
         dgen.close_tag("section")
         
         dgen.close_tag("article")
+    if PIL_PRESENT:
+        gif_output_filename = f"{os.path.splitext(output_file)[0]}.gif"
+        frames[0].save(gif_output_filename,
+                       save_all=True,
+                       append_images=frames[1:],
+                       optimize=True,
+                       loop=1,
+                       palette=frame_pal)
     return machine
 
 def validate_trace_symbol(ctx, param, value):
