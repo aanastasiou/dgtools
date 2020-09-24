@@ -1,20 +1,42 @@
 COPYLR 251 R0
 next_pixel:
-COPYRI R0 R0
+CALL get_random_number
 COPYRR R0 R1
 DIV R1 R2
-COPYAI R0
+SUBLA 0
+BTSTSS 1 252
+JUMP bright_one
+JUMP dim_one
+bright_one:
+COPYLI 255 R0
+JUMP cont
+dim_one:
+COPYLI 0 R0
+cont:
 DECR R0
 COPYRA R0
 SUBLA framebuffer
 BTSTSS 0 252
 JUMP next_pixel
 HALT
+get_random_number:
+SWAPRR R2 R3
+RANDA
+SWAPRA R3
+SUBRA R3
+BTSTSC 0 252
+JUMP get_random_number
+BTSTSC 1 252
+JUMP get_random_number
+COPYAR R2
+RETURN
 R0:
 .DB 0
 R1:
 .DB 0
 R2:
-.DB 64
+.DB 12
+R3:
+.DB 4
 framebuffer:
 .DB 0
