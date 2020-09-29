@@ -1,42 +1,66 @@
-COPYLR 251 R0
-next_pixel:
-CALL get_random_number
-COPYRR R0 R1
-DIV R1 R2
-SUBLA 0
-BTSTSS 1 252
-JUMP bright_one
-JUMP dim_one
-bright_one:
-COPYLI 255 R0
-JUMP cont
-dim_one:
-COPYLI 0 R0
-cont:
-DECR R0
-COPYRA R0
-SUBLA framebuffer
-BTSTSS 0 252
-JUMP next_pixel
+.EQU status_reg=252
+.EQU zero_bit=0
+.EQU carry_bit=1
+.EQU pixel_bit=3
+
+COPYLA framebuffer 
+ADDRA framebuffer_offset
+COPYAR framebuffer_offset
+
+COPYLR 0 X
+COPYLR 0 Y
+set_next:
+BSET pixel_bit status_reg
+CALL set_pixel
+INCR X
+INCR Y
+DECR Q0
+BTSTSS zero_bit status_reg
+JUMP set_next
 HALT
-get_random_number:
-SWAPRR R2 R3
-RANDA
-SWAPRA R3
-SUBRA R3
-BTSTSC 0 252
-JUMP get_random_number
-BTSTSC 1 252
-JUMP get_random_number
-COPYAR R2
+
+set_pixel:
+COPYRR X R0
+DIV R0 R1   # Divide by 8
+COPYAR pix_bit   # Modulo in R1
+COPYRA R0   # Division in R0, shift it to Acc
+COPYRR framebuffer_X_dim R0 
+MUL R0 Y    # Multiply xdim by the x to locate the byte
+ADDRA R0    # Add the byte offset
+ADDRA framebuffer_offset # Add the framebuffer offset
+COPYAR pix_addr   # Send the result to R2
+BTSTSC pixel_bit status_reg
+JUMP set_pixel_on
+JUMP set_pixel_off
+set_pixel_on:
+COPYLR 36 pix_command
+JUMP set_pixel_apply
+set_pixel_off:
+COPYLR 35 pix_command
+set_pixel_apply:
+CALL pix_command
 RETURN
+
+Q0:
+.DB 15
 R0:
 .DB 0
 R1:
+.DB 8
+X:
 .DB 0
-R2:
-.DB 12
-R3:
-.DB 4
+Y:
+.DB 0
+pix_command:
+.DB 36
+pix_bit:
+.DB 0
+pix_addr:
+,DB 0
+RETURN
+framebuffer_X_dim:
+.DB 8
+framebuffer_offset:
+.DB 32
 framebuffer:
 .DB 0
