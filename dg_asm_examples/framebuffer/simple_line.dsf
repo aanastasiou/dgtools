@@ -3,21 +3,78 @@
 .EQU carry_bit=1
 .EQU pixel_bit=3
 
+.EQU slash_length=3
+
+# Initialise the framebuffer
 COPYLA framebuffer 
 ADDRA framebuffer_offset
 COPYAR framebuffer_offset
 
+BSET pixel_bit status_reg
+
+# Draw characters 
 COPYLR 0 X
 COPYLR 0 Y
-set_next:
-BSET pixel_bit status_reg
-CALL set_pixel
+draw_next_char:
+RANDA
+COPYAR R0
+BTSTSS 1 R0
+JUMP ds
+dbs:
+CALL draw_backslash
+JUMP continue
+ds:
+CALL draw_slash
+continue:
+COPYRR Q1 Y
 INCR X
+COPYLA 24
+BCLR carry_bit status_reg
+SUBRA X
+BTSTSC zero_bit status_reg
+CALL reset_y
+JUMP draw_next_char
+HALT
+
+reset_y:
 INCR Y
+INCR Y
+INCR Y
+COPYLR 0 X
+COPYRR Y Q1
+RETURN
+
+
+draw_slash:
+INCR Y
+INCR Y
+COPYLR 255 SY
+COPYLR 1 SX
+COPYLR slash_length Q0
+CALL draw_line
+RETURN
+
+draw_backslash:
+COPYLR 1 SY
+COPYLR 1 SX
+COPYLR slash_length Q0
+CALL draw_line
+RETURN
+
+draw_line:
+CALL set_pixel
+COPYRA X
+BCLR carry_bit status_reg
+ADDRA SX
+COPYAR X
+COPYRA Y
+BCLR carry_bit status_reg
+ADDRA SY
+COPYAR Y
 DECR Q0
 BTSTSS zero_bit status_reg
-JUMP set_next
-HALT
+JUMP draw_line
+RETURN
 
 set_pixel:
 COPYRR X R0
@@ -42,12 +99,18 @@ set_pixel_apply:
 CALL pix_command
 RETURN
 
-Q0:
-.DB 15
+Q0:     # Tracks the length of the line
+.DB 0
+Q1:
+.DB 0
 R0:
 .DB 0
 R1:
 .DB 8
+SX:
+.DB 0
+SY:
+.DB 0
 X:
 .DB 0
 Y:
@@ -62,6 +125,6 @@ RETURN
 framebuffer_X_dim:
 .DB 8
 framebuffer_offset:
-.DB 32
+.DB 1
 framebuffer:
 .DB 0
