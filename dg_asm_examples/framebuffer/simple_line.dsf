@@ -2,8 +2,6 @@
 .EQU zero_bit=0
 .EQU carry_bit=1
 .EQU pixel_bit=3
-.EQU inc_x_bit=4
-.EQU inc_y_bit=5
 
 COPYLA framebuffer 
 ADDRA framebuffer_offset
@@ -11,7 +9,6 @@ COPYAR framebuffer_offset
 
 COPYLR 0 X
 COPYLR 0 Y
-
 set_next:
 BSET pixel_bit status_reg
 CALL set_pixel
@@ -20,7 +17,7 @@ INCR Y
 DECR Q0
 BTSTSS zero_bit status_reg
 JUMP set_next
-RETURN
+HALT
 
 set_pixel:
 COPYRR X R0
