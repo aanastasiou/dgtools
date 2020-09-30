@@ -5,7 +5,8 @@ Built-in Digirule models supported by dgtools.
 :author: Athanasios Anastasiou
 :date: Mar 2020
 """
-from .exceptions import DgtoolsErrorOpcodeNotSupported, DgtoolsErrorProgramHalt, DgtoolsErrorOutOfMemory
+from .exceptions import (DgtoolsErrorOpcodeNotSupported, DgtoolsErrorProgramHalt, DgtoolsErrorOutOfMemory,
+                         DgtoolsErrorStackUnderflow)
 from .callbacks import (DigiruleCallbackInputBase, DigiruleCallbackInputUserInteraction, DigiruleCallbackComOutStdout, 
                         DigiruleCallbackComInUserInteraction, DigiruleCallbackPinInUserInteraction)
 import random
@@ -188,7 +189,6 @@ class Digirule:
         return self
         
     def _pop_pc(self):
-        # TODO: HIGH, add the underflow exception
         try:
             self._pc = self._ppc.pop()
         except IndexError:
