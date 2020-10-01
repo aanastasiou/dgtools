@@ -1,3 +1,13 @@
+# Stare at the code long enough
+# the code stares back at you.
+#
+# Establishes a framebuffer and 
+# set_pixel, draw_line operations 
+# and uses these to draw ASC(1) on
+# whatever RAM remains available.
+
+# Can be further optimised.
+
 .EQU status_reg=252
 .EQU zero_bit=0
 .EQU carry_bit=1
@@ -10,28 +20,65 @@ COPYAR framebuffer_offset
 
 BSET pixel_bit status_reg
 
-# Draw characters 
+# Draw the "face" 
+# Top of the head
 COPYLR 0 X
 COPYLR 0 Y
 COPYLR 1 SX
 COPYLR 0 SY
-COPYLR 16 Q0
+COPYLR 7 Q0
 CALL draw_line
+
+# Left side
 COPYLR 0 X
-COPYLR 0 Y
+COPYLR 1 Y
 COPYLR 0 SX
 COPYLR 1 SY
-COPYLR 4 Q0
+COPYLR 5 Q0
 CALL draw_line
+
+# Right side
 COPYLR 0 X
+COPYLR 6 Y
+COPYLR 1 SX
+COPYLR 0 SY
+COPYLR 7 Q0
+CALL draw_line
+
+# Bottom of the head
+COPYLR 6 X
+COPYLR 1 Y
+COPYLR 0 SX
+COPYLR 1 SY
+COPYLR 5 Q0
+CALL draw_line
+
+# Mouth line
+COPYLR 2 X
 COPYLR 4 Y
 COPYLR 1 SX
 COPYLR 0 SY
-COPYLR 16 Q0
+COPYLR 3 Q0
 CALL draw_line
+
+# Left eye
+COPYLR 2 X
+COPYLR 2 Y
+CALL set_pixel
+
+# Right eye
+COPYLR 4 X
+COPYLR 2 Y
+CALL set_pixel
 HALT
 
 draw_line:
+# Draws a line as defined by 
+# a starting position (X,Y)
+# individual X, Y steps (SX,SY)
+# length (Q0)
+# and line color (pixel_bit field
+# of the status register).
 CALL set_pixel
 COPYRA X
 BCLR carry_bit status_reg
@@ -47,6 +94,14 @@ JUMP draw_line
 RETURN
 
 set_pixel:
+# Sets a pixel to the bit value 
+# in (pixel_bit), taking care of 
+# the framebuffer addressing.
+# 
+# The framebuffer is a row major
+# binary array composed of 8 bytes
+# horizontally and the remaining
+# RAM vertically.
 COPYRR X R0
 DIV R0 R1   # Divide by 8
 COPYAR pix_bit   # Modulo in R1
@@ -61,12 +116,12 @@ BTSTSC pixel_bit status_reg
 JUMP set_pixel_on
 JUMP set_pixel_off
 set_pixel_on:
-COPYLR 36 pix_command
+COPYLR 36 pix_instruction
 JUMP set_pixel_apply
 set_pixel_off:
-COPYLR 35 pix_command
+COPYLR 35 pix_instruction
 set_pixel_apply:
-CALL pix_command
+CALL pix_instruction
 RETURN
 
 Q0:     # Tracks the length of the line
@@ -75,24 +130,24 @@ R0:
 .DB 0
 R1:
 .DB 8
-SX:
+SX:     # Step X of the line
 .DB 0
-SY:
+SY:     # Step Y of the line
 .DB 0
-X:
+X:      # Initial X pos
 .DB 0
-Y:
+Y:      # Initial Y pos
 .DB 0
-pix_command:
+pix_instruction:
 .DB 36
 pix_bit:
 .DB 0
 pix_addr:
 ,DB 0
 RETURN
-framebuffer_X_dim:
+framebuffer_X_dim: # The X dim of the buffer
 .DB 8
-framebuffer_offset:
-.DB 9
-framebuffer:
+framebuffer_offset: # Offset from framebuffer
+.DB 6
+framebuffer:        # Where framebuffer starts
 .DB 0
