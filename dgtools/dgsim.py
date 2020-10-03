@@ -152,7 +152,7 @@ def trace_program(program, output_file, skip_n=0, max_n=200, trace_title="",
                             frame_data.append(255 if (u & (1<<r)) else 128)
                     frames.append(Image.frombytes(size=(64,32),
                                                   data=bytes(frame_data),
-                                                  mode="L").resize((128,64),resample=Image.NEAREST))
+                                                  mode="L").resize((256,128),resample=Image.NEAREST))
                 # Machine registers
                 dgen.open_tag("section")
                 dgen.named_anchor(f"n{n}")
