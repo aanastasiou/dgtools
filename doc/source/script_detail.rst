@@ -4,7 +4,13 @@ Detailed Script Descriptions
 ============================
 
 At the moment this section includes the help sections of each script as it would have been obtained via a 
-``> ./[script.py] --help`` call.
+``> ./[script].py --help`` call. 
+
+Where ``[script]`` is one of:
+
+
+Core scripts
+------------
 
 ``dgasm.py``
 ------------
@@ -36,7 +42,18 @@ At the moment this section includes the help sections of each script as it would
 .. automodule:: dgtools.dgui
 
 
+
 ``dgform.py``
 -------------
 
 .. automodule:: dgtools.dgform
+
+
+Extras
+------
+
+
+``dgbf.py``
+-----------
+
+.. automodule:: dgtools.dgbf

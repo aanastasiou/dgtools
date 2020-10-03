@@ -1,4 +1,11 @@
 #!/usr/bin/env python
+"""
+
+Brainfuck to Digirule2 ASM compiler.
+
+:author: Athanasios Anastasiou
+:date: July 2020
+"""
 import functools
 import pyparsing
 import random
@@ -73,7 +80,9 @@ def get_bf_parser():
     bf_statement = pyparsing.Forward()
     bf_statement << (bf_comment ^ bf_inc_data_p ^ bf_dec_data_p ^ bf_inc_data_v ^ bf_dec_data_v ^ bf_output ^ \
                      bf_input ^  \
-                    pyparsing.Group(bf_jz + pyparsing.ZeroOrMore(bf_statement) + bf_jnz)("ITERATION").setParseAction(iteration_block))
+                    pyparsing.Group(bf_jz + \
+                                    pyparsing.ZeroOrMore(bf_statement) + \
+                                    bf_jnz)("ITERATION").setParseAction(iteration_block))
     bf_program = pyparsing.OneOrMore(bf_statement).setParseAction(emit_asm)
     #bf_program.ignore(bf_comment)
     return bf_program

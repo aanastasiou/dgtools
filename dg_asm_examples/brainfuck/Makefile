@@ -1,5 +1,5 @@
 bf_code.dsf:bf_code.bfc
-	./brainfuck_to_asm.py bf_code.bfc>bf_code.dsf
+	dgbf.py bf_code.bfc>bf_code.dsf
 	
 bf_code.dgb:bf_code.dsf
 	dgasm.py bf_code.dsf -g 2U

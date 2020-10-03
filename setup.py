@@ -14,7 +14,9 @@ setup(
     url='https://github.com/aanastasiou/dgtools',
     license='Apache2.0',
     packages=find_packages(),
-    scripts=['dgtools/dgasm.py', 'dgtools/dgsim.py', 'dgtools/dginspect.py', 'dgtools/dgui.py', 'dgtools/dgform.py'],
+    scripts=['dgtools/dgasm.py', 'dgtools/dgsim.py', \
+             'dgtools/dginspect.py', 'dgtools/dgui.py', \
+             'dgtools/dgform.py', 'dgtools/dgbf.py'],
     package_data={'dgtools':['css_themes/*.css']},
     install_requires=['click', 'pyparsing', 'urwid', 'pygments', 'intelhex'],
     python_requires='>=3.6',
