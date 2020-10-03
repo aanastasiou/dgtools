@@ -18,10 +18,10 @@ class DgAssembler:
             raise TypeError(f"Expected Digirule, received {type(digirule_cls)}")
         
         # Action functions to convert valid string literals to numbers
-        char2num = lambda toks:ord(toks[0][1:-1])
-        uchar2num = lambda toks:int(toks[0])
-        buchar2num = lambda toks:int(toks[0],2)
-        xuchar2num = lambda toks:int(toks[0],16)
+        char2num = lambda toks:ord(toks[0][1:-1]) & 0xFF
+        uchar2num = lambda toks:int(toks[0]) & 0xFF
+        buchar2num = lambda toks:int(toks[0],2) & 0xFF
+        xuchar2num = lambda toks:int(toks[0],16) & 0xFF
         # An identifier for labels and symbols. It must be at least 1 character, start with a letter or number and
         # can include the underscore.
         identifier = pyparsing.Regex(r"[a-zA-Z_][a-zA-Z0-9_]*")
@@ -54,7 +54,8 @@ class DgAssembler:
         dir_label = pyparsing.Group(identifier("idf") + pyparsing.Suppress(":"))("def_label")
         
         # .DB A static coma delimited list of byte defs
-        dir_db_str = pyparsing.quotedString().setParseAction(lambda s,loc,tok:[ord(u) for u in tok[0][1:-1]])
+        # H = lambda x:[((x >> (k*8)) & 0xFF) for k in range(math.ceil(math.log2(abs(x))/8)-1,-1,-1)]
+        dir_db_str = pyparsing.quotedString().setParseAction(lambda s,loc,tok:[(ord(u) & 0xFF) for u in tok[0][1:-1]])
         dir_db_values = pyparsing.delimitedList(pyparsing.Group(literal("literal") ^ \
                                                                 identifier("symbol") ^ \
                                                                 dir_db_str("string")))
