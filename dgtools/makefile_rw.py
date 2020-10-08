@@ -218,16 +218,21 @@ class DgToolsMakefileParser:
         omf = pyparsing.Regex("-omf|--output-memdump_file") + a_file
         theme = pyparsing.Regex("--theme") + an_idf
         
+        # Notice here, trace symbols can be either literals or shell variables (prepended with $$)
         trace_symbol = pyparsing.Group(pyparsing.Regex("[a-zA-Z_][a-zA-Z0-9_]*")("symbol") + 
                                        pyparsing.Optional(pyparsing.Suppress(":") + 
-                                       pyparsing.Regex("[0-9]+")("length") + 
+                                       pyparsing.Regex("[0-9]+|\$\$[a-zA-Z_0-9]+")("length") + 
                                        pyparsing.Optional(pyparsing.Suppress(":") + 
-                                                          pyparsing.Regex("[0-9]+")("offset"))))
+                                                          pyparsing.Regex("[0-9]+|\$\$[a-zA-Z_0-9]+")("offset"))))
                                                           
         trace_symbols = pyparsing.OneOrMore(pyparsing.Group(pyparsing.Regex("-ts|--trace-symbol")("ts") + 
                                                             trace_symbol("symbol_data"))).setParseAction(lambda s,loc,tok:DgToolsMakefileActionDgsimSymbols(tok))
 
-        dgsim_rule = (pyparsing.Suppress("dgsim.py") + 
+        # Notice here, the dgsim rule now has a "pre_sim" that captures anything that may appear before a dgsim line
+        # TODO: MID, Extended the pre_sim optional to the dgasm rule too
+        dgsim_rule = (pyparsing.Suppress(pyparsing.Optional(pyparsing.Regex(".*") + \
+                                                            pyparsing.FollowedBy("dgsim.py")))("pre_sim") + 
+                      pyparsing.Suppress("dgsim.py") + 
                       a_file("input_file") + 
                       (pyparsing.Optional(max_n)("max_n") & 
                        pyparsing.Optional(skip_n)("skip_n") & 
@@ -250,7 +255,8 @@ class DgToolsMakefileParser:
                       (pyparsing.Optional(output_file)("output_file") & 
                        pyparsing.Optional(target)("target"))).setParseAction(lambda s,loc,tok:DgToolsMakefileAction(action="dgasm.py", 
                                                                                                                     parsed_parameters = tok)) 
-        # MAKEFILE RULE                                                                                                            
+        # MAKEFILE RULE  
+        # TODO: MID, Make dependencies zero-to-many                                                                                                          
         makefile_rule = (a_file("target_file") + 
                          pyparsing.Suppress(":") + 
                          a_file("dependencies") + 
