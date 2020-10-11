@@ -1,16 +1,12 @@
-<<<<<<< HEAD
-TODO List as of Wed 23 Sep 00:04:20 BST 2020
+TODO List as of Sun 11 Oct 21:31:39 BST 2020
 ../dgtools/assembler.py:34 TODO: LOW, Rename uchar, as it is not a uchar anymore. This is a remnant.
-=======
-TODO List as of Wed 30 Sep 19:55:55 BST 2020
->>>>>>> fix_stackunderflow_exc
 ../dgtools/callbacks.py:136 TODO: LOW, Rename DigiruleCallbackComOutStdout to a more generic name because it is more generally applicable.
 ../dgtools/dginspect.py:99 TODO: HIGH, Add a mode that only generates an update of the VM state when the state of one of the tracked symbols changes
 ../dgtools/dginspect.py:109 TODO: MID, Reduce code duplication by packaging this validation in a function
 ../dgtools/dginspect.py:156 TODO: HIGH, the following operations can be "absorbed" into the DGB_Archive with appropriate validations too
 ../dgtools/dgui.py:93 TODO: MED, It would be nice to have this working over any sort of path the input_file might be in.
 ../dgtools/dgui.py:109 TODO: LOW, It would be nice to have this work over any number of rules (needs a hint on the model)
-../dgtools/dgui.py:226 TODO: MED, The production of the simple Makefile template will do for the moment but can do better 
+../dgtools/dgui.py:227 TODO: MED, The production of the simple Makefile template will do for the moment but can do better 
 ../dgtools/digirule.py:24 TODO: MED, Need to add randa on the 2A 
 ../dgtools/digirule.py:29 TODO: MED, There might be constraints in the depth of this stack. Not yet implemented.
 ../dgtools/digirule.py:45 TODO: LOW, Make the speed setting functional
@@ -20,3 +16,5 @@ TODO List as of Wed 30 Sep 19:55:55 BST 2020
 ../dgtools/digirule.py:770 TODO: MED, Maybe this can be matched to a more realistic behaviour once comout, comin are connected to real files.
 ../dgtools/digirule.py:773 TODO: MID, Reduce code duplication in _comin, _comout
 ../dgtools/digirule.py:806 TODO: LOW, Improve the way the label is modified externally
+../dgtools/makefile_rw.py:232 TODO: MID, Extended the pre_sim optional to the dgasm rule too
+../dgtools/makefile_rw.py:259 TODO: MID, Make dependencies zero-to-many                                                                                                          

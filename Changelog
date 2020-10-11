@@ -3,8 +3,8 @@ Version 1.0.2
     * Fixed the stack underflow error bug
     * Updated Sublime package and its documentation
     * Fixed `dgui.py` bug to correctly pick up the `Makefile` even when launched from external tools.
-
->>>>>>> fix_sublime_xterm
+    * Added the brainfuck compiler and documentation
+    
 Version 1.0.1 2020-09-19
     * `dgform` produces its own CSS and includes line numbers.
     * Improved callback inheritance.
