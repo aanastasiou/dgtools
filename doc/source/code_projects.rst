@@ -19,9 +19,5 @@ But before crying out for "more memory", let's see what can be said in 256 bytes
    
    examples_vol00
    examples_vol01
-   
-   pov
-   int2str
-   lfsr
-   
-   brainfuck
+   examples_vol02
+   examples_vol03

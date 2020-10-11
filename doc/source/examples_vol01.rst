@@ -1,3 +1,4 @@
+===========================
 Volume 1 - Complex programs
 ===========================
 
@@ -6,7 +7,7 @@ techniques that are introduced in the ref:`section about the basics <vol_0>`.
         
 
 Implement A Stack
------------------
+=================
 
 What use is a `stack <https://en.wikipedia.org/wiki/Stack_(abstract_data_type)>`_ within a CPU? 
 And what if a CPU doesn't have one?
@@ -21,7 +22,7 @@ was presented earlier.
     
 
 Function calling conventions
-----------------------------
+============================
 
 The Digirule's instruction set includes a ``CALL`` operation. 
 It stores the value of the Program Counter (PC) to the internal stack 
@@ -41,7 +42,7 @@ to swap two numbers.
 
 
 Recursion
----------
+=========
 
 Being able to call functions, leads naturally to the question *"Can a function call itself?"*.
 
@@ -64,7 +65,7 @@ evaluation.
     
 
 Find the minimum value of an array of integers
-----------------------------------------------
+==============================================
 
 One of the more detailed Digirule demos presented here, is that of a
 very simple random number generator, using a :ref:`Linear Feedback Shift Register (LFSR) <lfsr>`.
@@ -83,7 +84,7 @@ We can find its minimum (or maximum)
     
 
 Sorting an array of integers
-----------------------------
+============================
 
 Bubble Sort, Shaker Sort, Quicksort, Merge Sort, Heap sort, Insertion sort....Delay sort!
 
@@ -108,7 +109,7 @@ The algorithm is composed of two steps:
 
 
 Longest Ripple Counter Ever
----------------------------
+===========================
 
 A ripple counter and a relatively accurate clock signal source are the basic building blocks of digital timers.
 
@@ -174,7 +175,7 @@ This number is big.
 
 
 How Long Is Long?
-^^^^^^^^^^^^^^^^^
+-----------------
 
 Suppose that it takes the Digirule aproximately :math:`60e-6` seconds [1]_ to increase the counter 
 by 1. That is 60 microseconds.
@@ -206,7 +207,7 @@ all the possible phrases in English [2]_ that can be described in 224 bytes.
 
 
 Hacking the Status Register
----------------------------
+===========================
 
 Out of the 8 bits available in Digirule2's status register, the CPU makes use of just 3:
 
@@ -225,7 +226,8 @@ register.
 
 
 Are the "hidden" bits accessible?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------------
+
 The idea here is to set the higher bits (>3) and then try to 
 read them back. If their state has been preserved, then they can be considered 
 "accessible". 
@@ -240,7 +242,7 @@ Keying this in to the Digirule2 confirms the result. It is indeed possible to wr
 
 
 Using the "hidden" bits to save and restore the status register
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------------------------------------------
 
 This all comes down to saving bits 0,1 to higher bits (say for example 4 and 5).
 

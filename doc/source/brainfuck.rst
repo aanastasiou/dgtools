@@ -1,21 +1,53 @@
-A Brainfuck compiler
-====================
+Brainfuck
+=========
 
-Brainfuck is probably the most widespread of the "esoteric" programming languages. It is a Turing complete 
-language with 8 instructions that read and modify an array of bytes of finite size. 
+What is Brainfuck? Why would anyone want to learn Brainfuck? Why would anyone waste their time with Brainfuck? 
+What does Brainfuck have to do with retrocomputing and the Digirule?
 
-Stating that a particular "machine" is Turing complete implies that *anything that is 
-computable*, can be computed with it. And, stating that this "machine" can achieve this with just 8 commands and 
-some memory implies that computation, any computation, can be broken down into a minimal set of fundamental operations.
+A very brief introduction
+-------------------------
 
-In other words, taken to the extreme, it **is** possible to write a Brainfuck program that implements something like 
-"World of Warcraft". It is not going to be easy. It is not going to be human readable or easy to follow.
+Brainfuck is a Turing complete language with just 8 commands that operate on an array of bytes of finite size. 
 
-But it **is** doable. And this is what makes Brainfuck and other similar programming languages worth a second look. 
+Stating that a particular "machine" is `Turing complete <https://en.wikipedia.org/wiki/Turing_completeness>`_ implies 
+that *anything that is computable*, can be computed with it. And, stating that this "machine" can achieve this with 
+just 8 commands and some memory implies that computation, *any computation*, can be broken down into this minimal set 
+of fundamental operations. 
+
+In other words, taken to the extreme, it **is** possible to write a Brainfuck program that implements 
+something like an `iterative approximation to finding the square root of a number <https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method>`_, 
+or something like `"World of Warcraft" <https://en.wikipedia.org/wiki/World_of_Warcraft>`_. 
+
+It is not going to be easy. It is not going to be human readable or easy to debug and follow.
+
+But it **is**, provably, doable.
+
+Brainfuck was conceived by `Urban Dominic Muller <https://www.youtube.com/watch?v=gjm9irBs96U&feature=youtu.be&t=8722>`_ 
+in the early 90s while he was the administrator of `Aminet <http://wiki.aminet.net/index.php/The_history_of_Aminet>`_, 
+the largest software repository of Amiga sofware in the world. Muller was inspired by an earlier language 
+(`FALSE <http://progopedia.com/language/false/>`_) and both that one and Brainfuck had the same key objective: 
+To be compiled to a program with as small a compiler as possible.
+
+These reasons, already make Brainfuck worth a second look, outside the context of an Assembly demo, such as the others 
+that are available here.
+
+However, my basic motivation when writing the Brainfuck compiler was to use it as a very small and self contained 
+example of a way of thinking about CPUs, computers and hardware. Sure, we could sit here and write ASM programs that 
+do *stuff*, in 256 bytes for data and code, for ever. But soon enough, we find ourselves repeating 
+ref:`the same small set of basic techniques <vol_0>` of structuring the Assembly instructions of the CPU. Wouldn't it 
+be nicer, to be able to tell the CPU what we want it to do at a higher level?
+
+Brainfuck does exactly that and is incredibly simple to parse and generate programs for.
 
 There are a tonne of Brainfuck compilers out there. And if you think of a compiler itself as a computation process, 
-there are even Brainfuck interpreters. That is, programs written in Brainfuck that *operate over an input that represents 
-a Brainfuck program and re-produce its outcome*. 
+there are even Brainfuck interpreters. That is, programs written in Brainfuck that 
+*accept a Brainfuck program and re-produce its result*. 
+
+Modern Brainfuck compilers can be created with a size very close to the total memory of a machine such as the Digirule 
+(256 bytes) when written in ASM.
+
+But since we have to fit **both** data **and** code in the span of 256 bytes, it was looking as if a compiler that reads 
+Brainfuck and produces Digirule Assembly was more suitable for this goal.
 
 And with this, the objective was set: *"Is it possible to write a Brainfuck compiler for the Digirule?"*
 
@@ -29,6 +61,8 @@ It is however fun to have done and if you are interested in finding out more abo
 
 Alternatively, you can simply jump to the practical section that outlines the Brainfuck programs you can use with 
 the Brainfuck compiler.
+
+
 
 
 The Brainfuck "System"
@@ -195,14 +229,14 @@ Here is how a given pair of ``[ ]`` containing the block of instructions to be e
     COPYIA dp
     BCRSC zero_bit status_reg
     JUMP label_continue_216276956994
-    
     ...
     ...
+    ... 
+    ... 
     ...
-
     JUMP label_216276956994
     label_continue_216276956994:
-    
+    ...
     ...
     ...
     ...
@@ -214,7 +248,7 @@ is achieved here via a ``COPYIA`` which on the 2U firmware also affects the zero
 
 
 Prologue and Epilogue parts
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In addition to compiling a brainfuck program, we also need to do some housekeeping tasks on entry and exit to a given 
 program.
@@ -246,16 +280,17 @@ In the end, the "skeleton" of a given Brainfuck program always follows the follo
     tape:
     
 
-And this is it. A Brainfuck compiler by which we can program the Digirule.
+And this is it. A Brainfuck compiler by which we can program the Digirule without using a single ASM instruction.
 
 
 
 
-A ``Hello World`` in Brainfuck
-------------------------------
+``Hello World`` in Brainfuck
+----------------------------
 
-There is a separate section devoted to the way of thinking about Brainfuck programs, along with a few examples, but it 
-would be worth to show here a minimal example of adding two user defined numbers.
+Brainfuck programming deserves a separate section devoted to the way of thinking one needs to adopt to achieve 
+secific objectives. While that section is in development, it would still be worth to show here a minimal 
+and absolutely simple example of asking the user for two numbers, producing the sum and returning it on the display.
 
 Here is the program:
 
@@ -284,3 +319,6 @@ And here is what that listing compiles down to:
 .. literalinclude:: ../../dg_asm_examples/brainfuck/add_two_nums.dsf
     :language: DigiruleASM
     :linenos:
+
+.. Conclusion
+.. ----------
