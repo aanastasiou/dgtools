@@ -1,0 +1,175 @@
+KENBACK Instructions
+
+HALT
+NOOP
+ADD A Literal
+ADD A [Literal]
+ADD A @[Literal]
+ADD A X[Literal]
+ADD A @X[Literal]
+ADD B Literal
+ADD B [Literal]
+ADD B @[Literal]
+ADD B X[Literal]
+ADD B @X[Literal]
+ADD X Literal
+ADD X [Literal]
+ADD X @[Literal]
+ADD X X[Literal]
+ADD X @X[Literal]
+SUB A Literal
+SUB A [Literal]
+SUB A @[Literal]
+SUB A X[Literal]
+SUB A @X[Literal]
+SUB B Literal
+SUB B [Literal]
+SUB B @[Literal]
+SUB B X[Literal]
+SUB B @X[Literal]
+SUB X Literal
+SUB X [Literal]
+SUB X @[Literal]
+SUB X X[Literal]
+SUB X @X[Literal]
+LOAD A Literal
+LOAD A [Literal]
+LOAD A @[Literal]
+LOAD A X[Literal]
+LOAD A @X[Literal]
+LOAD B Literal
+LOAD B [Literal]
+LOAD B @[Literal]
+LOAD B X[Literal]
+LOAD B @X[Literal]
+LOAD X Literal
+LOAD X [Literal]
+LOAD X @[Literal]
+LOAD X X[Literal]
+LOAD X @X[Literal]
+STORE A Literal
+STORE A [Literal]
+STORE A @[Literal]
+STORE A X[Literal]
+STORE A @X[Literal]
+STORE B Literal
+STORE B [Literal]
+STORE B @[Literal]
+STORE B X[Literal]
+STORE B @X[Literal]
+STORE X Literal
+STORE X [Literal]
+STORE X @[Literal]
+STORE X X[Literal]
+STORE X @X[Literal]
+
+OR Literal
+OR [Literal]
+OR @[Literal]
+OR X[Literal]
+OR @X[Literal]
+
+AND Literal
+AND [Literal]
+AND @[Literal]
+AND X[Literal]
+AND @X[Literal]
+
+LNEG Literal
+LNEG [Literal]
+LNEG @[Literal]
+LNEG X[Literal]
+LNEG @X[Literal]
+
+JP [Literal]
+JP @[Literal]
+
+JPNZ A Literal
+JPZ A Literal
+JPLZ A Literal
+JPGEZ A Literal
+JPGZ A Literal
+
+JPNZ A [Literal]
+JPZ A [Literal]
+JPLZ A [Literal]
+JPGEZ A [Literal]
+JPGZ A [Literal]
+
+JPMNZ A Literal
+JPMZ A Literal
+JPMLZ A Literal
+JPMGEZ A Literal
+JPMGZ A Literal
+
+JPMNZ A [Literal]
+JPMZ A [Literal]
+JPMLZ A [Literal]
+JPMGEZ A [Literal]
+JPMGZ A [Literal]
+
+JPNZ B Literal
+JPZ B Literal
+JPLZ B Literal
+JPGEZ B Literal
+JPGZ B Literal
+
+JPNZ B [Literal]
+JPZ B [Literal]
+JPLZ B [Literal]
+JPGEZ B [Literal]
+JPGZ B [Literal]
+
+JPMNZ B Literal
+JPMZ B Literal
+JPMLZ B Literal
+JPMGEZ B Literal
+JPMGZ B Literal
+
+JPMNZ B [Literal]
+JPMZ B [Literal]
+JPMLZ B [Literal]
+JPMGEZ B [Literal]
+JPMGZ B [Literal]
+
+JPNZ X Literal
+JPZ X Literal
+JPLZ X Literal
+JPGEZ X Literal
+JPGZ X Literal
+
+JPNZ X [Literal]
+JPZ X [Literal]
+JPLZ X [Literal]
+JPGEZ X [Literal]
+JPGZ X [Literal]
+
+JPMNZ X Literal
+JPMZ X Literal
+JPMLZ X Literal
+JPMGEZ X Literal
+JPMGZ X Literal
+
+JPMNZ X [Literal]
+JPMZ X [Literal]
+JPMLZ X [Literal]
+JPMGEZ X [Literal]
+JPMGZ X [Literal]
+
+SKP 0 [0-7] [Literal]
+SKP 1 [0-7] [Literal]
+
+SET 0 [0-7] [Literal]
+SET 1 [0-7] [Literal]
+
+SFTL A [1-4]
+SFTR A [1-4]
+
+SFTL B [1-4]
+SFTR B [1-4]
+
+ROTL A [1-4]
+ROTR A [1-4]
+
+ROTL B [1-4]
+ROTR B [1-4]
