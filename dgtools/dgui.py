@@ -101,21 +101,22 @@ class ModalDialogBox(urwid.PopUpLauncher):
                 is_makefile_readable = False
         else:
             is_makefile_readable = False
-                
+        
         if is_makefile_readable:
             # makefile_contents exists here
             # Does any of the targets operates on the given input file?
             # NOTE: For the moment only looking for a single rule 
             # TODO: LOW, It would be nice to have this work over any number of rules (needs a hint on the model)
-            dsf2dgb_makefile_target = list(filter(lambda x:makefile_contents[x].action["input_file"]==input_file,
+            dsf2dgb_makefile_target = list(filter(lambda x:makefile_contents[x].action["input_file"] == \
+                                                           os.path.split(input_file)[-1],
                                                   makefile_contents.targets))
             if len(dsf2dgb_makefile_target) == 1:
                 dsf2dgb_rule = makefile_contents[dsf2dgb_makefile_target[0]]
                 # And is there a rule that takes that dgb file and produces an HTML file?
-                dgb2html_makefile_target = list(filter(lambda x:makefile_contents[x].action["input_file"]==dsf2dgb_rule.target,
+                dgb2html_makefile_target = list(filter(lambda x:makefile_contents[x].action["input_file"] == \
+                                                                dsf2dgb_rule.target,
                                                        makefile_contents.targets))
                 if len(dgb2html_makefile_target) == 1:
-                    print("Hello")
                     dgb2html_rule = makefile_contents[dgb2html_makefile_target[0]]
                     # If these two rules exist, then initialise the dialog box from the data in the Makefile
                     df_input_file = input_file

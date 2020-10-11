@@ -35,6 +35,10 @@ Creating a skeleton ``Makefile``
 
 A ``Makefile`` is a great way of automating more "complex" processes when you are trying to document and showcase code.
 
+If a ``Makefile`` is present in the current directory, ``dgui.py`` will pick it up and populate its fields with the 
+parameters stored in the Makefile.
+
+
 ``DigiruleASM`` build package for Sublime Text
 ----------------------------------------------
 
@@ -59,6 +63,10 @@ through ``Ctrl + Shift + B``.
 .. figure:: figures/fig_st_workflow_ss.png
 
     After code compilation, the ``DigiruleASM`` automatically launches the browser to see the output of simulation.
+
+.. note::
+    The sublime text package requires ``xterm`` to be installed on your system. For more information about 
+    ``xterm``, see `here <https://invisible-island.net/xterm/>`_.
 
 
 Styling trace files
