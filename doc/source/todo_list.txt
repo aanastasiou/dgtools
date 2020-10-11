@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 TODO List as of Wed 23 Sep 00:04:20 BST 2020
 ../dgtools/assembler.py:34 TODO: LOW, Rename uchar, as it is not a uchar anymore. This is a remnant.
+=======
+TODO List as of Wed 30 Sep 19:55:55 BST 2020
+>>>>>>> fix_stackunderflow_exc
 ../dgtools/callbacks.py:136 TODO: LOW, Rename DigiruleCallbackComOutStdout to a more generic name because it is more generally applicable.
 ../dgtools/dginspect.py:99 TODO: HIGH, Add a mode that only generates an update of the VM state when the state of one of the tracked symbols changes
 ../dgtools/dginspect.py:109 TODO: MID, Reduce code duplication by packaging this validation in a function
@@ -7,10 +11,9 @@ TODO List as of Wed 23 Sep 00:04:20 BST 2020
 ../dgtools/dgui.py:93 TODO: MED, It would be nice to have this working over any sort of path the input_file might be in.
 ../dgtools/dgui.py:109 TODO: LOW, It would be nice to have this work over any number of rules (needs a hint on the model)
 ../dgtools/dgui.py:226 TODO: MED, The production of the simple Makefile template will do for the moment but can do better 
-../dgtools/digirule.py:23 TODO: MED, Need to add randa on the 2A 
-../dgtools/digirule.py:28 TODO: MED, There might be constraints in the depth of this stack. Not yet implemented.
-../dgtools/digirule.py:44 TODO: LOW, Make the speed setting functional
-../dgtools/digirule.py:191 TODO: HIGH, add the underflow exception
+../dgtools/digirule.py:24 TODO: MED, Need to add randa on the 2A 
+../dgtools/digirule.py:29 TODO: MED, There might be constraints in the depth of this stack. Not yet implemented.
+../dgtools/digirule.py:45 TODO: LOW, Make the speed setting functional
 ../dgtools/digirule.py:370 TODO: MED, In CBR and SBR, if the bit is zero, it should raise an error at compile time.
 ../dgtools/digirule.py:397 TODO: MED, If you get a RETLA without first having called CALL, it should raise an exception at compile time.
 ../dgtools/digirule.py:699 TODO: MED, This can raise a divide by zero warning / exception too
