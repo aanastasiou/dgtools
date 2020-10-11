@@ -29,6 +29,8 @@ The following code snippet is the Digirule ASM equivalent where every operation 
     :linenos:
 
 
+.. _assignments:
+
 Assignments
 -----------
 
@@ -88,6 +90,8 @@ Swap with indirect copy
     :linenos:
     
 
+.. _array_indexing:
+
 Array Indexing
 --------------
 
@@ -102,6 +106,8 @@ Here is how arrays are expressed on the Digirule.
     :language: DigiruleASM
     :linenos:
 
+
+.. _cond_branch:
 
 Conditional branching & the ``if`` command
 ------------------------------------------

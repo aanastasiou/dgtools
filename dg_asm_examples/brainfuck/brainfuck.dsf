@@ -1,0 +1,71 @@
+# Brainfuck interpreter
+.EQU led_reg=255
+.EQU but_reg=253
+.EQU zero_bit=0
+.EQU carry_bit=1
+
+COPYLR pc program
+
+fetch:
+COPYIA pc
+COPYLR lookup R0
+decode:
+SUBRA R0
+BCRSC zero_bit
+CALL
+
+
+
+
+input:
+COPYRI but_reg data_pointer
+RETURN  
+
+output:
+COPYIR data_pointer led_reg
+RETURN
+
+dec_data_val:
+COPYIA data_pointer
+SUBLA 1
+COPYAI data_pointer
+RETURN
+
+inc_data_val:
+COPYIA data_pointer
+ADDLA 1
+COPYAI data_pointer
+RETURN
+
+dec_data_pointer:
+DECR data_pointer
+RETURN
+
+inc_data_pointer:
+INCR data_pointer
+RETURN
+
+lookup:
+.DB 62, inc_data_pointer
+.DB 60, dec_data_pointer
+.DB 43, inc_data_val
+.DB 45, dec_data_val
+.DB 46, output
+.DB 44, input
+.DB 0, 0
+.DB 0, 0
+
+R0:
+.DB 0
+
+pc:
+.DB 0
+
+data_pointer:
+.DB 0
+
+program:
+.DB 0
+
+memory:
+.DB 0
