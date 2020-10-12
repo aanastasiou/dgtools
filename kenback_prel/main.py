@@ -6,6 +6,112 @@ Sept 2020
 
 import pyparsing
 
+class MemorySpace:
+    def __init__(self):
+        self._mem = bytearray([])
+        self._mem_base = 0
+        self._reg_map = {}
+        self._mem_len = 256
+        
+    def _mem_rd(self, offset, absolute=False):
+        if absolute:
+            return self._mem[offset]
+        else:
+            return self._mem[self._mem_base + offset]
+    
+    def _mem_wr(self, offset, value, absolute=False):
+        if absolute:
+            self._mem[offset] = value
+        else:
+            self._mem[self._mem_base + offset] = value
+
+    def _reg_rd(self, reg_name):
+        self._mem_rd(self._reg_map[reg_name], absolute=True)
+    
+    def _reg_wr(self, reg_name, value):
+        self._mem_wr(self._reg_map[reg_name],value, absolute=True)
+    
+    def load(self,a_program):
+        self._mem = bytearray(a_program)
+        
+    def save(self):
+        return self._mem
+        
+
+class CPU:
+    def __init__(self):
+        self._mem_space = None
+        self._pc_reg = ""
+        self._ins_lookup = {}
+        
+    @property
+    def pc(self):
+        return self._mem_space._reg_rd(self._pc_reg)
+    
+    @pc.setter    
+    def pc(self, value):
+        self._mem_space._reg_wr(self._pc_reg, value)
+        
+    def _read_next(self):
+        value = self._mem_space._mem_rd(self.pc, absolute=True)
+        self.pc+=1
+        return value
+        
+    def _exec_next(self):
+        # Fetch...
+        cmd = self._read_next()
+        # Execute
+        try:
+            self._ins_lookup[cmd]()
+        except KeyError as ke:
+            #raise DgtoolsErrorOpcodeNotSupported(f"Opcode {cmd} not understood")
+            pass
+            
+class MemorySpaceKenback(MemorySpace):
+    def __init__(self):
+        super().MemorySpace.__init__()
+        self._mem_base = 0
+        self._reg_map = {"A":0,
+                         "B":1,
+                         "X":2,
+                         "P":3,
+                         "OUTPUT":0O200,
+                         "OC_A":0O201,
+                         "OC_B":0O202,
+                         "OC_X":0O203,
+                         "INPUT":0O377}
+        self._mem_len = 256
+        self._mem = bytearray([0 for k in range(0, self._mem_len)])
+        
+class Kenback(CPU):
+    def __init__(self):
+        super().__init__()
+        self._mem_space = MemorySpaceKenback()
+        self._pc_reg = "P"
+        self._ins_lookup={0:self._ins_halt}
+        
+    def _ins_halt(self):
+        print("THE END");
+        
+    
+    
+# class MemorySpaceDigirule2(MemorySpace):
+    # def __init__(self):
+        # super().MemorySpace.__init__()
+        # self._mem_base = 2
+        # self._reg_map = {"acc":0,
+                         # "pc":1,
+                         # "status":254,
+                         # "key_port":255,
+                         # "addr_led":256,
+                         # "data_led":257}
+        # self._mem_len = 256+2
+        # self._mem = bytearray([0 for k in range(0, self._mem_len)])
+        
+# class CPUDigirule2(CPU):
+    # pass
+    
+
 def get_parser():
     register_A = pyparsing.Literal("A").setParseAction(lambda s,loc,tok:0)
     register_B = pyparsing.Literal("B").setParseAction(lambda s,loc,tok:1)
@@ -26,7 +132,7 @@ def get_parser():
     ins_halt = pyparsing.Group(pyparsing.Regex("HALT"))("0:1")
     ins_noop = pyparsing.Group(pyparsing.Regex("NOOP"))("127:1")
     # ADD
-    ins_add_a_im = pyparsing.Group(pyparsing.Regex("ADD A") + lit_value)("3:1")
+    ins_add_a_im = pyparsing.Group(pyparsing.Regex("ADD A") +lit_value)("3:1")
     ins_add_a_me = pyparsing.Group(pyparsing.Regex("ADD A") + mem_value)("4:1")
     ins_add_a_id = pyparsing.Group(pyparsing.Regex("ADD A") + idc_value)("5:1")
     ins_add_a_ix = pyparsing.Group(pyparsing.Regex("ADD A") + idx_value)("6:1")
@@ -124,23 +230,23 @@ def get_parser():
     ins_jmd = pyparsing.Group(pyparsing.Regex("JMD") + lit_value)("244:1")
     ins_jmi = pyparsing.Group(pyparsing.Regex("JMI") + idc_value)("252:1")
     # Conditional on A direct
-    ins_jpd_a_nz = pyparsing.Group(pyparsing.Regex("JPDNZ A") + lit_value)
-    ins_jpd_a_z = pyparsing.Group(pyparsing.Regex("JPDZ A") + lit_value)
-    ins_jpd_a_ltz = pyparsing.Group(pyparsing.Regex("JPDLTZ A") + lit_value)
-    ins_jpd_a_gez = pyparsing.Group(pyparsing.Regex("JPDGEZ A") + lit_value)
-    ins_jpd_a_gz = pyparsing.Group(pyparsing.Regex("JPDGZ A") + lit_value)
+    ins_jpd_a_nz = pyparsing.Group(pyparsing.Regex("JPDNZ A") + lit_value)(f"{0O073}:1")
+    ins_jpd_a_z = pyparsing.Group(pyparsing.Regex("JPDZ A") + lit_value)(f"{0O074}:1")
+    ins_jpd_a_ltz = pyparsing.Group(pyparsing.Regex("JPDLTZ A") + lit_value)(f"{0O075}:1")
+    ins_jpd_a_gez = pyparsing.Group(pyparsing.Regex("JPDGEZ A") + lit_value)(f"{0O076}:1")
+    ins_jpd_a_gz = pyparsing.Group(pyparsing.Regex("JPDGZ A") + lit_value)(f"{0O077}:1")
     # Conditional on A indirect
-    ins_jpi_a_nz = pyparsing.Group(pyparsing.Regex("JPINZ A") + idc_value)
-    ins_jpi_a_z = pyparsing.Group(pyparsing.Regex("JPIZ A") + idc_value)
-    ins_jpi_a_ltz = pyparsing.Group(pyparsing.Regex("JPILTZ A") + idc_value)
-    ins_jpi_a_gez = pyparsing.Group(pyparsing.Regex("JPIGEZ A") + idc_value)
-    ins_jpi_a_gz = pyparsing.Group(pyparsing.Regex("JPIGZ A") + idc_value)
+    ins_jpi_a_nz = pyparsing.Group(pyparsing.Regex("JPINZ A") + idc_value)(f"{0O053}:1")
+    ins_jpi_a_z = pyparsing.Group(pyparsing.Regex("JPIZ A") + idc_value)(f"{0O054}:1")
+    ins_jpi_a_ltz = pyparsing.Group(pyparsing.Regex("JPILTZ A") + idc_value)(f"{0O055}:1")
+    ins_jpi_a_gez = pyparsing.Group(pyparsing.Regex("JPIGEZ A") + idc_value)(f"{0O056}:1")
+    ins_jpi_a_gz = pyparsing.Group(pyparsing.Regex("JPIGZ A") + idc_value)(f"{0O057}:1")
     # Conditional on A mark direct
-    ins_jmd_a_nz = pyparsing.Group(pyparsing.Regex("JMDNZ A") + lit_value)
-    ins_jmd_a_z = pyparsing.Group(pyparsing.Regex("JMDZ A") + lit_value)
-    ins_jmd_a_ltz = pyparsing.Group(pyparsing.Regex("JMDLTZ A") + lit_value)
-    ins_jmd_a_gez = pyparsing.Group(pyparsing.Regex("JMDGEZ A") + lit_value)
-    ins_jmd_a_gz = pyparsing.Group(pyparsing.Regex("JMDGZ A") + lit_value)
+    ins_jmd_a_nz = pyparsing.Group(pyparsing.Regex("JMDNZ A") + lit_value)(f"{0O063}:1")
+    ins_jmd_a_z = pyparsing.Group(pyparsing.Regex("JMDZ A") + lit_value)(f"{0O064}:1")
+    ins_jmd_a_ltz = pyparsing.Group(pyparsing.Regex("JMDLTZ A") + lit_value)(f"{0O065}:1")
+    ins_jmd_a_gez = pyparsing.Group(pyparsing.Regex("JMDGEZ A") + lit_value)(f"{0O066}:1")
+    ins_jmd_a_gz = pyparsing.Group(pyparsing.Regex("JMDGZ A") + lit_value)(f"{0O067}:1")
     # Conditional on A mark indirect
     ins_jmi_a_nz = pyparsing.Group(pyparsing.Regex("JMINZ A") + idc_value)
     ins_jmi_a_z = pyparsing.Group(pyparsing.Regex("JMIZ A") + idc_value)
@@ -281,6 +387,33 @@ def get_parser():
     ins_rotr_b_2 = pyparsing.Group(pyparsing.Regex("ROTR B 2"))
     ins_rotr_b_3 = pyparsing.Group(pyparsing.Regex("ROTR B 3"))
     ins_rotr_b_4 = pyparsing.Group(pyparsing.Regex("ROTR B 4"))
+    
+    program = pyparsing.OneOrMore(ins_halt ^ ins_noop ^ ins_add_a_im ^ ins_add_a_me ^ ins_add_a_id ^ ins_add_a_ix ^ \
+                                  ins_add_a_idx ^ ins_add_b_im ^ ins_add_b_me ^ ins_add_b_id ^ ins_add_b_ix ^ \
+                                  ins_add_b_idx ^ ins_add_x_im ^ ins_add_x_me ^ ins_add_x_id ^ ins_add_x_ix ^ \
+                                  ins_add_x_idx ^ ins_sub_a_im ^ ins_sub_a_me ^ ins_sub_a_id ^ ins_sub_a_ix ^ \
+                                  ins_sub_a_idx ^ ins_sub_b_im ^ ins_sub_b_me ^ ins_sub_b_id ^ ins_sub_b_ix ^ \
+                                  ins_sub_b_idx ^ ins_sub_x_im ^ ins_sub_x_me ^ ins_sub_x_id ^ ins_sub_x_ix ^ \
+                                  ins_sub_x_idx ^ ins_load_a_im ^ ins_load_a_me ^ ins_load_a_id ^ ins_load_a_ix ^ \
+                                  ins_load_a_idx ^ ins_load_b_im ^ ins_load_b_me ^ ins_load_b_id ^ ins_load_b_ix ^ \
+                                  ins_load_b_idx ^ ins_load_x_im ^ ins_load_x_me ^ ins_load_x_id ^ ins_load_x_ix ^ \
+                                  ins_load_x_idx ^ ins_store_a_im ^ ins_store_a_me ^ ins_store_a_id ^ ins_store_a_ix ^ \
+                                  ins_store_a_idx ^ ins_store_b_im ^ ins_store_b_me ^ ins_store_b_id ^ \
+                                  ins_store_b_ix ^ ins_store_b_idx ^ ins_store_x_im ^ ins_store_x_me ^ \
+                                  ins_store_x_id ^ ins_store_x_ix ^ ins_store_x_idx ^ ins_and_x_im ^ ins_and_x_me ^ \
+                                  ins_and_x_id ^ ins_and_x_ix ^ ins_and_x_idx ^ ins_or_x_im ^ ins_or_x_me ^ \
+                                  ins_or_x_id ^ ins_or_x_ix ^ ins_or_x_idx ^ ins_lneg_x_im ^ ins_lneg_x_me ^ \
+                                  ins_lneg_x_id ^ ins_lneg_x_ix ^ ins_lneg_x_idx ^ ins_jpd ^ ins_jpi ^ ins_jmd ^ \
+                                  ins_jmi ^ ins_jpd_a_nz ^ ins_jpd_a_z ^ ins_jpd_a_ltz ^ ins_jpd_a_gez ^ ins_jpd_a_gz ^\
+                                  ins_jpi_a_nz ^ ins_jpi_a_z ^ ins_jpi_a_ltz ^ ins_jpi_a_gez ^ ins_jpi_a_gz ^ \
+                                  ins_jmd_a_nz ^ ins_jmd_a_z ^ ins_jmd_a_ltz ^ ins_jmd_a_gez ^ ins_jmd_a_gz ^ \
+                                  ins_jmi_a_nz ^ ins_jmi_a_z ^ ins_jmi_a_ltz ^ ins_jmi_a_gez ^ ins_jmi_a_gz ^ \
+                                  ins_jpd_b_nz ^ ins_jpd_b_z ^ ins_jpd_b_ltz ^ ins_jpd_b_gez ^ ins_jpd_b_gz ^ \
+                                  ins_jpi_b_nz ^ ins_jpi_b_z ^ ins_jpi_b_ltz ^ ins_jpi_b_gez ^ ins_jpi_b_gz ^ \
+                                  ins_jmd_b_nz ^ ins_jmd_b_z ^ ins_jmd_b_ltz ^ ins_jmd_b_gez ^ ins_jmd_b_gz ^ ins_jmi_b_nz ^ ins_jmi_b_z ^ ins_jmi_b_ltz ^ ins_jmi_b_gez ^ ins_jmi_b_gz ^ ins_jpd_x_nz ^ ins_jpd_x_z ^ ins_jpd_x_ltz ^ ins_jpd_x_gez ^ ins_jpd_x_gz ^ ins_jpi_x_nz ^ ins_jpi_x_z ^ ins_jpi_x_ltz ^ ins_jpi_x_gez ^ ins_jpi_x_gz ^ ins_jmd_x_nz ^ ins_jmd_x_z ^ ins_jmd_x_ltz ^ ins_jmd_x_gez ^ ins_jmd_x_gz ^ ins_jmi_x_nz ^ ins_jmi_x_z ^ ins_jmi_x_ltz ^ ins_jmi_x_gez ^ ins_jmi_x_gz ^ ins_skip_0_0 ^ ins_skip_0_1 ^ ins_skip_0_2 ^ ins_skip_0_3 ^ ins_skip_0_4 ^ ins_skip_0_5 ^ ins_skip_0_6 ^ ins_skip_0_7 ^ ins_skip_1_0 ^ ins_skip_1_1 ^ ins_skip_1_2 ^ ins_skip_1_3 ^ ins_skip_1_4 ^ ins_skip_1_5 ^ ins_skip_1_6 ^ ins_skip_1_7 ^ ins_set_0_0 ^ ins_set_0_1 ^ ins_set_0_2 ^ ins_set_0_3 ^ ins_set_0_4 ^ ins_set_0_5 ^ ins_set_0_6 ^ ins_set_0_7 ^ ins_set_1_0 ^ ins_set_1_1 ^ ins_set_1_2 ^ ins_set_1_3 ^ ins_set_1_4 ^ ins_set_1_5 ^ ins_set_1_6 ^ ins_set_1_7 ^ ins_sftl_a_1 ^ ins_sftl_a_2 ^ ins_sftl_a_3 ^ ins_sftl_a_4 ^ ins_sftr_a_1 ^ ins_sftr_a_2 ^ ins_sftr_a_3 ^ ins_sftr_a_4 ^ ins_sftl_b_1 ^ ins_sftl_b_2 ^ ins_sftl_b_3 ^ ins_sftl_b_4 ^ ins_sftr_b_1 ^ ins_sftr_b_2 ^ ins_sftr_b_3 ^ ins_sftr_b_4 ^ ins_rotl_a_1 ^ ins_rotl_a_2 ^ ins_rotl_a_3 ^ ins_rotl_a_4 ^ ins_rotr_a_1 ^ ins_rotr_a_2 ^ ins_rotr_a_3 ^ ins_rotr_a_4 ^ ins_rotl_b_1 ^ ins_rotl_b_2 ^ ins_rotl_b_3 ^ ins_rotl_b_4 ^ ins_rotr_b_1 ^ ins_rotr_b_2 ^ ins_rotr_b_3 ^ ins_rotr_b_4)
+    return program
 
 if __name__ == "__main__":
+    pro = "LOAD A 1\nADD A 1\nHALT"
+    r = get_parser().parseString(pro, parseAll=True)
     
