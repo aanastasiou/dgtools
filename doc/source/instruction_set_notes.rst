@@ -1,5 +1,12 @@
+============================
 Notes on the instruction set
 ============================
+
+.. note::
+
+    This section applies mainly to the Digirule2/Digirule2A instruction set. The main ideas about providing an 
+    efficient instruction set for a CPU that does not have a lot of RAM available still apply of course.
+    
 
 This section contains a few notes on modifying the instruction set of a Digirule2, so that it becomes more efficient.
 Since the Digirule2 has limited memory, it does pay off to implement slightly more complex instructions to save memory 
@@ -50,10 +57,10 @@ Throughout those:
 .. _iset_notes_mem_ops:
 
 Memory Operations
------------------
+=================
 
 Indirect Copy
-^^^^^^^^^^^^^
+-------------
 
 As demonstrated in section :ref:`advanced-topics`, there is a clear need for an indirect copy instruction. That is, 
 a copy instruction that can copy between memory offsets stored in memory.
@@ -88,10 +95,10 @@ In that case, the memory cost would be just 3 bytes.
 
 
 Arithmetic Instructions
------------------------
+=======================
 
 Target of ``SHIFT**, BCRS*``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+----------------------------
 
 Most of the mathematical operations of Digirule 2's instruction set target the Accumulator. For example, addition, 
 subtraction (``ADD*A, SUB*A``) and the elementary logic operations or ``AND*A, OR*A, XOR*A`` require one of the 
@@ -109,7 +116,7 @@ calculation cannot be expressed in a different way.
 The suggestion here is to have variants of bit testing and shifting that can target the Accumulator too.
 
 ``SHIFTRR, SHIFTRL``
-^^^^^^^^^^^^^^^^^^^^
+--------------------
 
 These two instructions shift bytes left or right and are equivalant to division or multiplication by 2, respectively.
 On the Digirule 2, shifting is performed **through** the Carry flag. If a program is performing
@@ -126,10 +133,10 @@ conserving memory.
 
 
 Flow control instructions
--------------------------
+=========================
 
 Indirect ``JUMP`` and ``CALL``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------------
 
 Similarly to the reasoning of the indirect version of ``COPYRR``, an indirect version of ``JUMP addr, CALL addr`` would 
 simply jump to memory location ``mem[mem[addr]]``.

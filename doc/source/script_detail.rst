@@ -52,6 +52,7 @@ Core scripts
 Extras
 ------
 
+.. _dgbf_desc:
 
 ``dgbf.py``
 -----------

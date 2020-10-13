@@ -11,7 +11,7 @@ end up looking like in ASM.
 There are very few things that the Digirule cannot do, in terms of computation. From a practical point of view, 
 its only limit seems to be its memory space.
 
-But before crying out for "more memory", let's see what can be said in 256 bytes:
+But before crying out for "more memory", let's see what can be done in 256 bytes for data and code:
 
 .. toctree::
    :maxdepth: 3

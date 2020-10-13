@@ -4,8 +4,8 @@
 Volume 2 - More complex ASM programs
 ====================================
 
-.. include:: pov.rst
-.. include:: int2str.rst
-.. include:: lfsr.rst
+.. include:: pov.inc
+.. include:: int2str.inc
+.. include:: lfsr.inc
 
 

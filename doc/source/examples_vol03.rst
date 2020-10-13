@@ -4,4 +4,4 @@
 Volume 3 - Compilers
 ====================
 
-.. include:: brainfuck.rst
+.. include:: brainfuck.inc

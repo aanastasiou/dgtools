@@ -1,74 +1,61 @@
 Brainfuck
 =========
 
-What is Brainfuck? Why would anyone want to learn Brainfuck? Why would anyone waste their time with Brainfuck? 
-What does Brainfuck have to do with retrocomputing and the Digirule?
+Brain what?...and why?
+----------------------
 
-A very brief introduction
--------------------------
+Brainfuck is a Turing complete language with just 8 commands that operate on a rudimentary "machine" with 
+memory, a basic input / output and two very, very (**very**) fundamental mathematical operations. 
 
-Brainfuck is a Turing complete language with just 8 commands that operate on an array of bytes of finite size. 
-
-Stating that a particular "machine" is `Turing complete <https://en.wikipedia.org/wiki/Turing_completeness>`_ implies 
-that *anything that is computable*, can be computed with it. And, stating that this "machine" can achieve this with 
-just 8 commands and some memory implies that computation, *any computation*, can be broken down into this minimal set 
-of fundamental operations. 
+Stating that a "machine" is `Turing complete <https://en.wikipedia.org/wiki/Church%E2%80%93Turing_thesis>`_ 
+implies that *anything that is computable*, can be computed with it. And, stating that this "machine" can achieve this 
+with just 8 commands and some memory implies that computation, *any computation*, can be broken down into a minimal 
+set of fundamental operations. 
 
 In other words, taken to the extreme, it **is** possible to write a Brainfuck program that implements 
 something like an `iterative approximation to finding the square root of a number <https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method>`_, 
 or something like `"World of Warcraft" <https://en.wikipedia.org/wiki/World_of_Warcraft>`_. 
 
-It is not going to be easy. It is not going to be human readable or easy to debug and follow.
+It is not going to be easy. It is not going to be human readable or easy to debug and follow (for reasons that are about 
+to become obvious)
 
-But it **is**, provably, doable.
+But it **is**.provably.doable.
 
 Brainfuck was conceived by `Urban Dominic Muller <https://www.youtube.com/watch?v=gjm9irBs96U&feature=youtu.be&t=8722>`_ 
 in the early 90s while he was the administrator of `Aminet <http://wiki.aminet.net/index.php/The_history_of_Aminet>`_, 
 the largest software repository of Amiga sofware in the world. Muller was inspired by an earlier language 
 (`FALSE <http://progopedia.com/language/false/>`_) and both that one and Brainfuck had the same key objective: 
-To be compiled to a program with as small a compiler as possible.
+To be compiled to a functioning program with as small a compiler as it is possible.
 
-These reasons, already make Brainfuck worth a second look, outside the context of an Assembly demo, such as the others 
-that are available here.
+Perhaps these reasons already make Brainfuck worth a second look, even as yet another demo over some resource 
+constrained computer.
 
-However, my basic motivation when writing the Brainfuck compiler was to use it as a very small and self contained 
-example of a way of thinking about CPUs, computers and hardware. Sure, we could sit here and write ASM programs that 
-do *stuff*, in 256 bytes for data and code, for ever. But soon enough, we find ourselves repeating 
-ref:`the same small set of basic techniques <vol_0>` of structuring the Assembly instructions of the CPU. Wouldn't it 
-be nicer, to be able to tell the CPU what we want it to do at a higher level?
+But, there is also an impressive little thing happening right here. 
 
-Brainfuck does exactly that and is incredibly simple to parse and generate programs for.
+If Brainfuck is enough to write **any** program and it is possible for an instruction set to express a 
+Brainfuck program, then we can use Brainfuck's "model" to do away with the intricacies and details of the ASM 
+instruction set itself and program the hardware straight in Brainfuck...to carry out **any** computation.
 
-There are a tonne of Brainfuck compilers out there. And if you think of a compiler itself as a computation process, 
-there are even Brainfuck interpreters. That is, programs written in Brainfuck that 
-*accept a Brainfuck program and re-produce its result*. 
-
-Modern Brainfuck compilers can be created with a size very close to the total memory of a machine such as the Digirule 
-(256 bytes) when written in ASM.
-
-But since we have to fit **both** data **and** code in the span of 256 bytes, it was looking as if a compiler that reads 
-Brainfuck and produces Digirule Assembly was more suitable for this goal.
+Since Brainfuck assumes that it runs on a system with some basic facilities (Memory, Input/Output, Arithmetic unit), 
+then Brainfuck **BECOMES** a sort-of Assembly language for that system [1]_.
 
 And with this, the objective was set: *"Is it possible to write a Brainfuck compiler for the Digirule?"*
-
-Because, if it is possible, then this means that we can "ignore" the tens of instructions in the Digirule instruction 
-set and achieve the same outcome with just the 8 Brainfuck instructions.
 
 Needless to say, if you have reached this point, that it **is** possible. And given the proliferation of computer 
 languages, compilers, transpilers, etc, it is not even a "new" idea.
 
-It is however fun to have done and if you are interested in finding out more about how it works keep reading. 
+It is however fun to have done and if you are interested in finding out more about its inner workings keep reading. 
 
 Alternatively, you can simply jump to the practical section that outlines the Brainfuck programs you can use with 
 the Brainfuck compiler.
 
 
 
-
 The Brainfuck "System"
 ----------------------
 
-Brainfuck, as a language, is associated with an underlying machine that is very close, in form, to the Turing Machine.
+Brainfuck, as a language, is associated with an underlying machine that is very close, in form, 
+to `the Turing Machine <https://en.wikipedia.org/wiki/Universal_Turing_machine>`_.
 
 The layout of this "machine" explains directly the instruction set.
 
@@ -79,9 +66,11 @@ The machine
 Brainfuck targets a "machine" that is composed of the following peripherals:
 
 1. A "tape", which is an ancient word for "memory" or "an array of numbers"
-2. A "Data Pointer" (DP) that points to some point on the tape. This is quite simply the index within the array 
-   of numbers. 
-3. An Arithmetic Logic Unit (ALU) that can only add and subtract **by one**
+2. A "Data Pointer" (DP) that points to some point on the tape. 
+    * This is quite simply the index within the array 
+      of numbers. 
+3. An Arithmetic Logic Unit (ALU) 
+    * That can only add and subtract...**by one**
 4. An input device; and 
 5. An output device.
 
@@ -151,7 +140,7 @@ demonstrated here by walking through the implementation of three commands:
 #. The "Add 1" (``+``); and
 #. The "Iteration" (``[ ]``).
 
-The first two, are basically the same side effect (increase a "value") but towards different targets. To "move right" 
+The first two, produce the same result (increase a "value") but towards different targets. To "move right" 
 we simply need to add 1 to the ``dp``. To increase the value that the ``dp`` points at, we need to add one to where it 
 points to.
 
@@ -162,8 +151,10 @@ The naive implementation of the first is:
     INCR dp
     
 However, notice that Brainfuck does not have literals. In plain simple Brainfuck, it is impossible to specify ``12`` 
-as the value somewhere along the "tape". So, the literal ``12``, in Brainfuck is ``++++++++++++`` which leads 
-to adding 12 units to the initial value of the memory tape cell. The 
+as a value somewhere along the "tape". So, the literal ``12``, in Brainfuck is expressed as ``++++++++++++`` which leads 
+to adding 12 units to the initial value of the memory tape cell. 
+
+The 
 naive implementation therefore, leads to 12 calls to ``INCR`` and more generally :math:`\text{reps} \times 2` 
 bytes of memory. Here, :math:`\text{reps}` stands for the number of times the ``+`` symbol appears at a 
 specific point in the input program.
@@ -225,6 +216,7 @@ implementation of ``while`` is exactly the same thing with a bit more label mana
 Here is how a given pair of ``[ ]`` containing the block of instructions to be executed, would be transpiled:
 
 ::
+
     label_216276956994:
     COPYIA dp
     BCRSC zero_bit status_reg
@@ -244,13 +236,15 @@ Here is how a given pair of ``[ ]`` containing the block of instructions to be e
 Two labels are generated marking the start (``label_216276956994:``) and the end of the loop 
 (``label_continue_216276956994:``). In loop entry, we always check the current value that the ``dp`` points to and this 
 is achieved here via a ``COPYIA`` which on the 2U firmware also affects the zero flag which is tested with that 
-``BCRSC``. If that value becomes non-zero, execution jumps at the end of the loop.
+``BCRSC``. 
+
+If that value becomes non-zero, execution jumps at the end of the loop.
 
 
 Prologue and Epilogue parts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In addition to compiling a brainfuck program, we also need to do some housekeeping tasks on entry and exit to a given 
+In addition to compiling a Brainfuck program, we also need to do some housekeeping tasks on entry and exit to a given 
 program.
 
 On entry, we need to initialise ``dp`` to the start of the ``tape`` and this would be our "prologue".
@@ -280,9 +274,36 @@ In the end, the "skeleton" of a given Brainfuck program always follows the follo
     tape:
     
 
-And this is it. A Brainfuck compiler by which we can program the Digirule without using a single ASM instruction.
+And this is it, a Brainfuck compiler by which we can program the Digirule without 
+using a single ASM instruction.
 
 
+Using `dgtools` to compile Brainfuck programs
+---------------------------------------------
+
+The Brainfuck compiler is called :ref:`dgbf <dgbf_desc>` and produces a Digirule Assembly source code file (a `.dsf`) 
+that is then compiled to an executable by `dgasm`. ``dgbf`` accepts a single filename and produces output right thrugh 
+``stdout``.
+
+Given the Brainfuck code in some file ``bf_code.bfc``, a typical command line session goes like this:
+
+::
+
+    \> dgbf.py bf_code.bfc>asm_code.dsf    # Brainfuck --> Assembly
+    \> dgasm.py asm_code.dsf -g 2U         # Assembly --> Executable
+    \> dgsim.py asm_code.dgb -I            # Simulation
+    \> xdg-open asm_code_trace.html        # Output
+    
+
+.. note::
+    Notice how ``dgsim.py`` was called with ``-I``, putting it in interactive mode. 
+    This is necessary only if your program contains I/O commands and you would like to 
+    really try entering different numbers yourself. If ``-I`` is not provided, then 
+    ``dgsim.py`` will ignore the I/O commands.
+
+For more information on compiling Digirule ASM programs in general, see :ref:`here <intro_topics>`.
+
+Let's try this with a simple program.
 
 
 ``Hello World`` in Brainfuck
@@ -299,7 +320,7 @@ Here is the program:
     ,>,[-<+>]<.
 
 
-And here is what it does:
+Here is how it works:
 
 #. ``,`` Ask user for input, put the value in the current ``dp``
 #. ``>`` Increase ``dp``, moving to the next cell
@@ -319,6 +340,41 @@ And here is what that listing compiles down to:
 .. literalinclude:: ../../dg_asm_examples/brainfuck/add_two_nums.dsf
     :language: DigiruleASM
     :linenos:
+    
+Alternatively, you can skip the whole "user interaction" part and try out a simple 2+3 sum with something like:
 
-.. Conclusion
-.. ----------
+::
+
+    ++>+++[-<+>]<.
+
+
+Conclusion
+----------
+
+There are a tonne of Brainfuck compilers out there. And if you think of a compiler itself as a program, 
+there are even Brainfuck interpreters. That is, programs written in Brainfuck that 
+*accept a Brainfuck program and re-produce its result*. 
+
+Modern Brainfuck compilers can be created with a size very close to the total memory of a machine such as the Digirule 
+(256 bytes) when written in ASM.
+
+But since we have to fit **both** data **and** code in the span of 256 bytes, it was looking as if a compiler that reads 
+Brainfuck and produces Digirule Assembly was more suitable for this goal.
+
+Writing programs in Brainfuck is a really good brain teaser, but, it has an incredibly 
+high cost: Speed...and high maintenance...and unreadable code...
+
+It is trivial to show that the speed of execution of adding two numbers depends on the numbers themselves. The higher 
+the numbers, the slower the speed that the program will execute.
+
+Yet, this has not stopped people from using Brainfuck to `write anything from interpreters to whole operating 
+systems. <https://github.com/search?q=brainfuck>`_. Knowing that it **is** doable is a slippery slope to the tar pit.
+
+For our purposes, Brainfuck is a wonderful demonstrator of a basic "model" of computation, one that is based on a linear 
+memory segment to carry out any computation.
+
+And from this perspective it is not the only one. 
+
+
+
+.. [1] In fact, `this has already been done <https://people.csail.mit.edu/wjun/papers/sigtbd16.pdf>`_
