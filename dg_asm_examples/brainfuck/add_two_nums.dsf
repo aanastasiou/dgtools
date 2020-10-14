@@ -1,0 +1,33 @@
+.EQU status_reg=252
+.EQU in_dev=253
+.EQU out_dev=255
+.EQU zero_bit=0
+.EQU carry_bit=2
+COPYLR tape dp
+start_program:
+COPYRI in_dev dp
+INCR dp
+COPYRI in_dev dp
+label_866750380492:
+COPYIA dp
+BCRSC zero_bit status_reg
+JUMP label_continue_866750380492
+COPYLR 29 handle_dv_i
+CALL handle_dv_i
+DECR dp
+COPYLR 30 handle_dv_i
+CALL handle_dv_i
+INCR dp
+
+JUMP label_866750380492
+label_continue_866750380492:
+DECR dp
+COPYIR dp out_dev
+HALT
+HALT
+handle_dv_i:
+.DB 0
+dp:
+.DB 0
+RETURN
+tape:
