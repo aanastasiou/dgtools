@@ -5,6 +5,12 @@ Introducing ``dgtools``
 
 The objective of this introductory section is to demonstrate the key use cases of ``dgtools`` by example.
 
+The basic idea behind ``dgtools`` is that it accepts an ASM code listing (your program) and converts it to a form 
+that can be executed on the hardware itself or simulates its operation even if you don't have the hardware.
+
+The simulation part can handle interaction with the user but primarily is in the form of an HTML trace file that 
+shows the state of the CPU (registers, memory, Input/Output devices) after executing each ASM instruction.
+
 Digirule 2 ASM knowledge is not essential, but a general knowledge of ASM, even at introductory level, would be 
 favourable. This walkthrough is based on the very simple example of adding two numbers which, through a number of 
 revisions, introduces a feature or capability of `dgtools`. 

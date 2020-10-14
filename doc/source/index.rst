@@ -18,6 +18,8 @@ For an example of the level of detail in terms of simulating program execution, 
 `this sample output file <_static/simpleadd_2_trace.html>`_ and keep reading through the introductory section to 
 generate traces of your own code.
 
+Alternatively, you can now try out online any of the examples in these pages via `dgrdo <https://www.dgrdo.org>`_.
+
 
 .. toctree::
    :maxdepth: 2

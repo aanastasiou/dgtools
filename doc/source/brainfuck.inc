@@ -133,7 +133,7 @@ and data led display "peripherals". Both look like simple data transfers between
 Transpiling the commands
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-With very little overhead, it is possible to map the Brainfuck commands to Digirule (2U) assembly. This will be 
+With very little overhead, it is possible to map the Brainfuck commands to Digirule (**2U**) assembly. This will be 
 demonstrated here by walking through the implementation of three commands: 
 
 #. The "Move Right" (``>``)
@@ -301,7 +301,7 @@ Given the Brainfuck code in some file ``bf_code.bfc``, a typical command line se
     really try entering different numbers yourself. If ``-I`` is not provided, then 
     ``dgsim.py`` will ignore the I/O commands.
 
-For more information on compiling Digirule ASM programs in general, see :ref:`here <intro_topics>`.
+For more information on compiling Digirule ASM programs in general, see :ref:`here <intro-topics>`.
 
 Let's try this with a simple program.
 
@@ -341,7 +341,7 @@ And here is what that listing compiles down to:
     :language: DigiruleASM
     :linenos:
     
-Alternatively, you can skip the whole "user interaction" part and try out a simple 2+3 sum with something like:
+Alternatively, you can skip the whole "user interaction" part and try out a simple ``2+3`` sum with something like:
 
 ::
 

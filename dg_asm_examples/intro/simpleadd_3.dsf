@@ -1,7 +1,9 @@
 # Implements the addition of two constants.
-# This is equivalent to the statement `r3 = a + b` where `a` and `b` have been defined earlier
+# This is equivalent to the statement `r3 = a + b` 
+# where `a` and `b` have been defined earlier
 # as constants.
-# Havin performed the addition, the result is also sent to the display.
+# Havin performed the addition, the result is also 
+# sent to the display.
  
 .EQU led_register=0xFF
 .EQU a=1

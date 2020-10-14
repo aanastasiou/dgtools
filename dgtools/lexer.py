@@ -4,7 +4,7 @@
 :date: May 2020
 """
 from pygments.lexer import RegexLexer, words
-from pygments.token import Keyword, Name, Number, Operator, Comment, Punctuation
+from pygments.token import Keyword, Name, Number, Operator, Comment, Punctuation, String
 
 from pygments import highlight
 from pygments.formatters import HtmlFormatter
@@ -30,6 +30,7 @@ class DigiruleASMLexer(RegexLexer):
             (r' ?0b[0-1]{1,8}', Number.Bin),
             (r' ?0x[0-9A-F]{1,2}', Number.Hex),
             (r' ?[0-9]{1,3}', Number.Integer),
+            (r' ?"[ -~]+"|\'[ -~]+\'', String),
             (r'=', Operator),
             (r'[ ,]', Punctuation),          
         ]

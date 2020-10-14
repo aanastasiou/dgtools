@@ -16,11 +16,10 @@ Please note that, at the moment, the reserved keywords of both the assembler dir
 **must be typed in uppercase**.
 
 
-
 Assembler Directives
 --------------------
 
-Assembler directives ALWAYS start with a dot. At the moment, the following directives are supported:
+Assembler directives always start with a dot. At the moment, the following directives are supported:
 
 
 .EQU
@@ -68,8 +67,18 @@ But this can also be expressed in one single line as :
 
     .DB 0, 0b11110000, 0x0F
     
+The directive also understands double quoted strings and "unrolls" them to their individual character values. For 
+example:
+
+.. code:: DigiruleASM
+
+    .DB 'ABC', 10, 13, "DEF"
+    
+This will be unrolled to the equivalent ``65,66,67,10,13,68,69,70``, automatically. 
+    
 If a ``.DB`` is not preceded by the definition of a label, it is very difficult to address the memory it points to.
 To do that, continue reading on "Labels".
+
 
 Labels
 ^^^^^^
@@ -115,6 +124,13 @@ For more illustrative examples of ``.DB``, see section :ref:`advanced-topics`
 
 Digirule 2 Instruction Set
 --------------------------
+
+.. note::
+
+    The current version of ``dgtools`` supports the latest model too (Digirule 2U) but the instruction set 
+    will be adjusted to the final after its release.
+    
+    
 
 The Assembly language that Digirule 2 executes is detailed in the PDF user manual that accompanies the hardware 
 and is also available `here <https://bradsprojects.com/wp-content/uploads/Digirule2-User-Manual.pdf>`_.

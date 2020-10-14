@@ -136,7 +136,7 @@ Flow control instructions
 =========================
 
 Indirect ``JUMP`` and ``CALL``
------------------------------
+------------------------------
 
 Similarly to the reasoning of the indirect version of ``COPYRR``, an indirect version of ``JUMP addr, CALL addr`` would 
 simply jump to memory location ``mem[mem[addr]]``.
