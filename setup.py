@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='dgtools',
-    version='1.0.1',
+    version='1.0.2',
     description='An assembler and simulation toolchain for the Digirule2 series of hardware.',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',

@@ -1,9 +1,10 @@
-Version 1.0.2 
+Version 1.0.2 2020-10-14
     * DB directive can now unroll string literals
     * Fixed the stack underflow error bug
     * Updated Sublime package and its documentation
-    * Fixed `dgui.py` bug to correctly pick up the `Makefile` even when launched from external tools.
-    * Added the brainfuck compiler and documentation
+    * Fixed `dgui.py` bug to correctly pick up the `Makefile` 
+      even when launched from external tools.
+    * Added the Brainfuck compiler and documentation
     
 Version 1.0.1 2020-09-19
     * `dgform` produces its own CSS and includes line numbers.
