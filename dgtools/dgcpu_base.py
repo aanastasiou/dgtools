@@ -33,12 +33,19 @@ class DGMemorySpaceBase:
     def _reg_wr(self, reg_name, value):
         self._mem_wr(self._reg_map[reg_name],value, absolute=True)
     
-    def _reg_rd_bit(self):
-        pass
+    def _reg_rd_bit(self, reg_name, n_bit):
+        test_bit = 1 << n_bit
+        reg_val = self._reg_rd(reg_name)
+        return ((reg_val & test_bit) == test_bit) & 0xFF
         
-    def _reg_wr_bit(self):
-        pass
-        
+    def _reg_wr_bit(self, reg_name, n_bit, bit_value):
+        test_bit = 1 << n_bit
+        reg_val = self._reg_rd(reg_name)
+        if bit_value:
+            self._reg_wr(reg_name, reg_val | test_bit)
+        else:
+            self._reg_wr(reg_name, reg_val & (255 - test_bit))
+            
     def load(self,a_program):
         self._mem = bytearray(a_program)
         
