@@ -1,11 +1,26 @@
-Copy the first cell to the second cell
+Produce the sum of a list of numbers
 
-+++++++
-[  
-    ->+>+<<
+
+>
+
+Initialise the list to 1 2 3 4
++
+>
+++
+>
++++
+>
+++++
+
+Summation loop
+
+[ 
+    >
+    [
+        -
+        <
+        +
+        >
+    ]
+    <<
 ]
->>
-[
-    -<<+>>
-]
-<<
