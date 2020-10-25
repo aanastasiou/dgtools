@@ -15,5 +15,6 @@ clean:
 	rm bf_code.dsf
 	rm *.dgb
 	rm bf_code_trace.html
+	rm bf_code_html.html
 	rm *.css
 	rm *.hex
