@@ -13,38 +13,66 @@ class DGMemorySpaceBase:
         self._mem = bytearray([])
         self._mem_base = 0
         self._reg_map = {}
-        self._mem_len = 256
+        self._mem_len = 0
         
     def _mem_rd(self, offset, absolute=False):
+        # TODO: HIGH, Needs offset checking and exception
         if absolute:
             return self._mem[offset]
         else:
             return self._mem[self._mem_base + offset]
     
     def _mem_wr(self, offset, value, absolute=False):
+        # TODO: HIGH, Needs offset checking and exception
         if absolute:
             self._mem[offset] = value
         else:
             self._mem[self._mem_base + offset] = value
+        return self
 
     def _reg_rd(self, reg_name):
-        self._mem_rd(self._reg_map[reg_name], absolute=True)
+        # TODO: HIGH, Needs to check if reg_name exists and exception
+        return self._mem_rd(self._reg_map[reg_name], absolute=True)
     
     def _reg_wr(self, reg_name, value):
+        # TODO: HIGH, Needs to check if reg_name exists and if value is within the right range
         self._mem_wr(self._reg_map[reg_name],value, absolute=True)
+        return self
     
     def _reg_rd_bit(self, reg_name, n_bit):
+        # TODO: HIGH, needs reg_name checking and n_bit range checkint and exceptions
         test_bit = 1 << n_bit
         reg_val = self._reg_rd(reg_name)
         return ((reg_val & test_bit) == test_bit) & 0xFF
         
     def _reg_wr_bit(self, reg_name, n_bit, bit_value):
+        # TODO: HIGH, needs reg_name, n_bit, bit_value range checks and exceptions
         test_bit = 1 << n_bit
         reg_val = self._reg_rd(reg_name)
         if bit_value:
             self._reg_wr(reg_name, reg_val | test_bit)
         else:
             self._reg_wr(reg_name, reg_val & (255 - test_bit))
+        return self
+            
+    def __getitem__(self, idx):
+        if issubclass(type(idx), tuple):
+            return self._reg_rd_bit(idx[0], idx[1])
+        if issubclass(type(idx), str):
+            return self._reg_rd(idx)
+        elif issubclass(type(idx), int):
+            return self._mem_rd(idx)
+            
+    def __setitem__(self, idx, a_value, n_bit=None):
+        if issubclass(type(idx), tuple):
+            return self._reg_wr_bit(idx[0], idx[1], a_value)
+        if issubclass(type(idx), str):
+            if n_bit is not None:
+                return self._reg_wr_bit(idx, n_bit, a_value)
+            return self._reg_wr(idx, a_value)
+        elif issubclass(type(idx), int):
+            return self._mem_wr(idx, a_value)
+        
             
     def load(self,a_program):
         self._mem = bytearray(a_program)
@@ -60,6 +88,10 @@ class DGCPU:
         self._ins_lookup = {}
         
     @property
+    def mem(self):
+        return self._mem_space
+
+    @property
     def pc(self):
         return self._mem_space._reg_rd(self._pc_reg)
     
@@ -68,7 +100,7 @@ class DGCPU:
         self._mem_space._reg_wr(self._pc_reg, value)
         
     def _read_next(self):
-        value = self._mem_space._mem_rd(self.pc, absolute=True)
+        value = self._mem_space._mem_rd(self.pc)
         self.pc+=1
         return value
         
