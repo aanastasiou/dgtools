@@ -1,4 +1,12 @@
 #!/usr/bin/env python
+"""
+
+Superstack to Digirule2 ASM compiler.
+
+:author: Athanasios Anastasiou
+:date: August 2020
+"""
+
 import pyparsing
 import random
 import click
@@ -8,7 +16,7 @@ import functools
 
 def get_superstack_parser():
     """
-    Returns the complete brainfuck parser --> Digirule ASM.
+    Returns the complete Superstack parser --> Digirule ASM.
     """
     def _get_label_tag(tag_chars="0123456789", N=12):
         return "".join([tag_chars[random.randint(0,len(tag_chars)-1)] for n in range(N)])
@@ -193,14 +201,16 @@ def get_superstack_parser():
     sust_rev = pyparsing.Group(pyparsing.Regex("[Rr][Ee][Vv]"))("REV").setParseAction(_rev)
     sust_quit = pyparsing.Group(pyparsing.Regex("[Qq][Uu][Ii][Tt]"))("QUIT").setParseAction(_quit)
     sust_debug = pyparsing.Group(pyparsing.Regex("[Dd][Ee][Bb][Uu][Gg]"))("DEBUG")
+    sust_comment = pyparsing.Group(pyparsing.Suppress("#") + pyparsing.restOfLine("text"))("SUST_COMMENT")
     sust_statement = pyparsing.Forward()
     sust_if_block = pyparsing.Group(pyparsing.Regex("[Ii][Ff]")+pyparsing.ZeroOrMore(sust_statement)+pyparsing.Regex("[Ff][Ii]")).setParseAction(_iteration_block)
     sust_statement << (sust_literal ^ sust_shl ^ sust_shr ^ sust_add ^ sust_sub ^ sust_mul ^ sust_div ^ sust_mod ^ 
                        sust_random ^ sust_and ^ sust_or ^ sust_xor ^ sust_nand ^ sust_not ^ sust_output ^ sust_input ^ 
                        sust_outputascii ^ sust_inputascii ^ sust_pop ^ sust_swap ^ sust_cycle ^ sust_rcycle ^ sust_dup ^ 
-                       sust_rev ^  sust_quit ^ sust_debug ^ sust_if_block)
+                       sust_rev ^  sust_quit ^ sust_debug ^ sust_if_block ^ sust_comment)
     sust_program = (pyparsing.Optional(sust_stack_data) + pyparsing.OneOrMore(sust_statement)).setParseAction(_emit_asm)
     sust_program.ignore(sust_debug)
+    sust_program.ignore(sust_comment)
     return sust_program
     
     

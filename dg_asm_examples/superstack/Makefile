@@ -1,18 +1,19 @@
-sust_program.dsf: sust_program.ssf
-	./superstack_to_asm.py sust_program.ssf>sust_program.dsf
-	
-sust_program_trace.html:sust_program.dgb
-	dgsim.py sust_program.dgb -I -mn 4000 -ts stack:14 -ts head_ptr -ts head_val -ts head_val_1
-	
-sust_program.dgb:sust_program.dsf
-	dgasm.py sust_program.dsf -g 2U 
-	
-html:sust_program_trace.html
-	xdg-open sust_program_trace.html
+sust_code.dsf: sust_code.ssf
+	dgsust.py sust_code.ssf>sust_code.dsf
+		
+sust_code.dgb:sust_code.dsf
+	dgasm.py sust_code.dsf -g 2U 
+
+sust_code_trace.html:sust_code.dgb
+	@tape_offset=$$((252 - `dginspect.py sust_code.dgb|egrep -o -e "'stack': [0-9]+"|sed -e "s/'stack': //"`)); \
+	dgsim.py sust_code.dgb --title "Subtract by adding" -mn 4000 -I -ts head_ptr -ts head_val -ts head_val_1 -ts stack:$$tape_offset --theme plain
+
+html:sust_code_trace.html
+	xdg-open sust_code_trace.html
 	
 clean:
-	rm sust_program.dsf
-	rm sust_program.dgb
-	rm sust_program_memdump.dgb
-	rm sust_program_trace.html
-	
+	rm sust_code.dsf
+	rm *.dgb
+	rm sust_code_trace.html
+	rm *.css
+	rm *.hex

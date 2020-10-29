@@ -1,0 +1,7 @@
+# Subtraction by complement two addition
+8 3  # Initial stack content
+sub 
+8 
+3 255 xor 
+1 add 
+add

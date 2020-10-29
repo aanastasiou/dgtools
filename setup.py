@@ -16,7 +16,8 @@ setup(
     packages=find_packages(),
     scripts=['dgtools/dgasm.py', 'dgtools/dgsim.py', \
              'dgtools/dginspect.py', 'dgtools/dgui.py', \
-             'dgtools/dgform.py', 'dgtools/dgbf.py'],
+             'dgtools/dgform.py', 'dgtools/dgbf.py', \
+             'dgtools/dgsust.py'],
     package_data={'dgtools':['css_themes/*.css']},
     install_requires=['click', 'pyparsing', 'urwid', 'pygments', 'intelhex'],
     python_requires='>=3.6',
