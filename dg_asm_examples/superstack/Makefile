@@ -1,5 +1,7 @@
-sust_code.dsf: sust_code.ssf
-	dgsust.py sust_code.ssf>sust_code.dsf
+SUST_CODE=sust_code.ssf
+
+sust_code.dsf: $(SUST_CODE)
+	dgsust.py $(SUST_CODE)>sust_code.dsf
 		
 sust_code.dgb:sust_code.dsf
 	dgasm.py sust_code.dsf -g 2U 

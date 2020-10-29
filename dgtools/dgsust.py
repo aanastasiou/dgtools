@@ -121,7 +121,7 @@ def get_superstack_parser():
 
     def _cycle(s, loc, toks):
         return {"statements": f"CALL f_cycle\n",
-                "dependencies": {"f_cycle"}}
+                "dependencies": {"f_cycle","f_peek"}}
 
     def _rcycle(s, loc, toks):
         return {"statements": f"CALL f_rcycle\n",
