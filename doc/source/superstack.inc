@@ -1,5 +1,5 @@
-A Superstack compiler for Digirule
-==================================
+Superstack
+==========
 
 Along with Brainfuck, Superstack is another one of those "esoteric" programming languages.
 
