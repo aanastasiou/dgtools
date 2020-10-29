@@ -1,5 +1,7 @@
-bf_code.dsf:bf_code.bfc
-	dgbf.py bf_code.bfc>bf_code.dsf
+BF_SOURCE = bf_assign.bfc
+
+bf_code.dsf:$(BF_SOURCE)
+	dgbf.py $(BF_SOURCE)>bf_code.dsf
 	
 bf_code.dgb:bf_code.dsf
 	dgasm.py bf_code.dsf -g 2U
@@ -9,6 +11,7 @@ bf_code_trace.html:bf_code.dgb
 	dgsim.py bf_code.dgb -mn 1500 -I -ts dp -ts tape:$$tape_offset --theme plain
 	
 html:bf_code_trace.html
+	echo $(BF_SOURCE)
 	xdg-open bf_code_trace.html
 
 clean:

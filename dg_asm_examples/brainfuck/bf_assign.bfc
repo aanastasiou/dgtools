@@ -1,0 +1,20 @@
+Copy the first cell to the second cell
+
+Notice here: Assignment in brainfuck is
+"destructive"
+
+In A=B the value of B is set to zero at 
+the end of the operation
+
+
++++++++       Initial value at tape(0)
+[  
+    ->+>+<<   Copy to tape(1) and tape(2) 
+]
+>>            The copy destroys tape(0) which is 
+              restored here from tape(2) with another 
+              assignment
+[
+    -<<+>>
+]
+<<

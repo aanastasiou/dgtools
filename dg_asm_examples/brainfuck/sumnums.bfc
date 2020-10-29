@@ -1,0 +1,17 @@
+Sum a list of bytes
+
+The evaluation of data on the tape proceeds as:
+1: m = {0 1 2 3 4}
+2: m = {0 1 2 7}
+3: m = {0 1 9}
+4: m = {0 10}
+
+>               Reserve the first byte as 0 to terminate the loop
++>++>+++>++++   Preload memory with sequence 1 2 3 4
+[               While the current cell is not zero
+    >           Move to the last cell in the summation (current sum)
+    [           Add the last two cells
+     -<+>
+    ]
+    <<          Check if we have reached that first cell (that is zero)
+]

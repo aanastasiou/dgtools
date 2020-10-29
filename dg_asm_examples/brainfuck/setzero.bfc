@@ -1,0 +1,9 @@
+In Brainfuck iteration (while) and conditional branching
+are inseperable
+
+Setting any memory location to zero
+
++++++ Set the first cell to 5 (as an example)
+[
+    -   While the cell's value is not zero keep decreasing
+]
