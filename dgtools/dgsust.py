@@ -17,6 +17,13 @@ import functools
 def get_superstack_parser():
     """
     Returns the complete Superstack parser --> Digirule ASM.
+    
+    Notes:
+        * This compiler is more involved than brainfuck's. 
+        * In the brainfuck compiler, every language command was translated (more or less) directly to assembly
+        * With Superstack, there are lots of "structural" similarities between the commands resulting in each one of 
+          them having common "dependencies"
+        * Therefore, each parsing rule returns the common (dependency) and differing (command) part of an implementation
     """
     def _get_label_tag(tag_chars="0123456789", N=12):
         return "".join([tag_chars[random.randint(0,len(tag_chars)-1)] for n in range(N)])
@@ -128,7 +135,9 @@ def get_superstack_parser():
                 "dependencies": {"f_rcycle"}}
         
     def _emit_asm(s, loc, toks):
+        # Prologue
         config_code = ".EQU status_reg=252\n.EQU in_dev=253\n.EQU out_dev=255\n.EQU zero_bit=0\n.EQU carry_bit=1\n"
+        # Dependencies
         deps_code = {"f_rand": "f_rand:\nRANDA\nCOPYAR head_val_1\nCOPYRA head_val\nCBR carry_bit status_reg\nSUBRA head_val_1\nBCRSC carry_bit status_reg\nJUMP f_rand\nCOPYRR head_val_1 head_val\nRETURN\n", 
                      "f_rev":"f_rev:\nCOPYRA head_ptr\nSUBLA stack\nSWAPRA head_ptr\nCBR carry_bit status_reg\nSHIFTRR head_ptr\nSWAPRA head_ptr\nCOPYRR head_ptr head_val\nDECR head_val\nCOPYLR stack head_val_1\nCOPYLR 16 f_custom_ins\nswap_again:\nCALL f_custom_ins\nCBR carry_bit status_reg\nSUBLA 1\nBCRSS zero_bit status_reg\nJUMP f_rev_adjust_and_loop\nRETURN\nf_rev_adjust_and_loop:\nDECR head_val\nINCR head_val_1\nJUMP swap_again\n",
                      "f_peek":"f_peek:\nDECR head_ptr\nCOPYIR head_ptr head_val_1\nINCR head_ptr\nRETURN\n",
@@ -172,6 +181,7 @@ def get_superstack_parser():
                "".join([deps_code[k] for k in deps])+ \
                postcode
         
+    # Define the parser. This is almost plain Superstack with very minor changes.
     sust_literal = pyparsing.Group(pyparsing.Regex("[0-9]+"))("LITERAL").setParseAction(_push_literal)
     sust_stack_data = pyparsing.Group(pyparsing.OneOrMore(pyparsing.Regex("[0-9]+").setParseAction(lambda s, loc, toks:int(toks[0]))))("STACK_DATA").setParseAction(list)
     sust_add = pyparsing.Group(pyparsing.Regex("[Aa][Dd][Dd]"))("ADD").setParseAction(_add)
@@ -209,6 +219,7 @@ def get_superstack_parser():
                        sust_outputascii ^ sust_inputascii ^ sust_pop ^ sust_swap ^ sust_cycle ^ sust_rcycle ^ sust_dup ^ 
                        sust_rev ^  sust_quit ^ sust_debug ^ sust_if_block ^ sust_comment)
     sust_program = (pyparsing.Optional(sust_stack_data) + pyparsing.OneOrMore(sust_statement)).setParseAction(_emit_asm)
+    # Parse but ignore
     sust_program.ignore(sust_debug)
     sust_program.ignore(sust_comment)
     return sust_program
@@ -217,9 +228,9 @@ def get_superstack_parser():
 @click.command()
 @click.argument("input_file", type=click.File("rt"))
 def main(input_file):
+    # Get the parser
     sust2asm_parser = get_superstack_parser()
     try:
-        # parsed_pro = sust2asm_parser.parseString(input_file.read(), parseAll=True)
         dg_asm_text = sust2asm_parser.parseString(input_file.read(), parseAll=True)
         sys.stdout.write(dg_asm_text[0])
     except pyparsing.ParseException as pe:
