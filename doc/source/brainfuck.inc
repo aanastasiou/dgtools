@@ -32,14 +32,14 @@ constrained computer.
 
 But, there is also an impressive little thing happening right here. 
 
-If Brainfuck is enough to write **any** program and it is possible for an instruction set to express a 
-Brainfuck program, then we can use Brainfuck's "model" to do away with the intricacies and details of the ASM 
-instruction set itself and program the hardware straight in Brainfuck...to carry out **any** computation.
+If brainfuck is enough to write **any** program and it is possible for an instruction set to express a 
+brainfuck program, then we can use brainfuck's "model" to do away with the intricacies and details of the ASM 
+instruction set itself and program the hardware straight in brainfuck...to carry out **any** computation.
 
-Since Brainfuck assumes that it runs on a system with some basic facilities (Memory, Input/Output, Arithmetic unit), 
-then Brainfuck **BECOMES** a sort-of Assembly language for that system [1]_.
+Since brainfuck assumes that it runs on a system with some basic facilities (Memory, Input/Output, Arithmetic unit), 
+then brainfuck **BECOMES** a sort-of Assembly language for that system [1]_.
 
-And with this, the objective was set: *"Is it possible to write a Brainfuck compiler for the Digirule?"*
+And with this, the objective was set: *"Is it possible to write a brainfuck compiler for the Digirule?"*
 
 Needless to say, if you have reached this point, that it **is** possible. And given the proliferation of computer 
 languages, compilers, transpilers, etc, it is not even a "new" idea.
@@ -47,11 +47,11 @@ languages, compilers, transpilers, etc, it is not even a "new" idea.
 It is however fun to have done and if you are interested in finding out more about its inner workings keep reading. 
 
 Alternatively, you can simply jump to the practical section that outlines the Brainfuck programs you can use with 
-the Brainfuck compiler.
+the brainfuck compiler.
 
 
 
-The Brainfuck "System"
+The brainfuck "system"
 ----------------------
 
 Brainfuck, as a language, is associated with an underlying machine that is very close, in form, 
@@ -104,22 +104,22 @@ These "peripherals" are the targets of its extremely small and simple instructio
 At this point, it might be tempting to start piecing these little atoms (the instructions) together, to form bigger 
 molecules (programs, libraries, etc).
 
-Bear with me here however, because we will soon be writing Brainfuck programs that execute on the Digirule.
+Bear with me here however, because we will soon be writing brainfuck programs that execute on the Digirule.
 
 
-From Brainfuck to Digirule ASM
+From brainfuck to Digirule ASM
 ------------------------------
 
 Implementing the machine
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-A Brainfuck memory "tape" is quite simply an array. An array in Digirule Assembly can be represented by a base memory 
+A brainfuck memory "tape" is quite simply an array. An array in Digirule Assembly can be represented by a base memory 
 address (the start of the array) and an offset to a particular memory cell. Let's call this array...``tape``. 
 
 If you would like to catch up with representing arrays in ASM and Digirule ASM in particular, you might want to see 
 :ref:`this first <array_indexing>`
 
-Having defined the array, we also need to define its offset. Notice here that in Brainfuck, the offset to the 
+Having defined the array, we also need to define its offset. Notice here that in brainfuck, the offset to the 
 memory is the "Data Pointer". So, let's define a "variable" called ``dp``, representing the current position within the 
 array.
 
@@ -133,7 +133,7 @@ and data led display "peripherals". Both look like simple data transfers between
 Transpiling the commands
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-With very little overhead, it is possible to map the Brainfuck commands to Digirule (**2U**) assembly. This will be 
+With very little overhead, it is possible to map the brainfuck commands to Digirule (**2U**) assembly. This will be 
 demonstrated here by walking through the implementation of three commands: 
 
 #. The "Move Right" (``>``)
@@ -150,8 +150,8 @@ The naive implementation of the first is:
 
     INCR dp
     
-However, notice that Brainfuck does not have literals. In plain simple Brainfuck, it is impossible to specify ``12`` 
-as a value somewhere along the "tape". So, the literal ``12``, in Brainfuck is expressed as ``++++++++++++`` which leads 
+However, notice that Brainfuck does not have literals. In plain simple brainfuck, it is impossible to specify ``12`` 
+as a value somewhere along the "tape". So, the literal ``12``, in brainfuck is expressed as ``++++++++++++`` which leads 
 to adding 12 units to the initial value of the memory tape cell. 
 
 The 
@@ -159,7 +159,7 @@ naive implementation therefore, leads to 12 calls to ``INCR`` and more generally
 bytes of memory. Here, :math:`\text{reps}` stands for the number of times the ``+`` symbol appears at a 
 specific point in the input program.
 
-For this reason, the Brainfuck transpiler, "catches" the repeated application of ``+ - > <`` and converts them to the 
+For this reason, the brainfuck transpiler, "catches" the repeated application of ``+ - > <`` and converts them to the 
 more efficient:
 
 ::
@@ -244,14 +244,14 @@ If that value becomes non-zero, execution jumps at the end of the loop.
 Prologue and Epilogue parts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In addition to compiling a Brainfuck program, we also need to do some housekeeping tasks on entry and exit to a given 
+In addition to compiling a brainfuck program, we also need to do some housekeeping tasks on entry and exit to a given 
 program.
 
 On entry, we need to initialise ``dp`` to the start of the ``tape`` and this would be our "prologue".
 
 And at the end of the program we need to add the declarations for ``dp``, ``tape`` and the indirect ``INCR`` instruction.
 
-In the end, the "skeleton" of a given Brainfuck program always follows the following Digirule ASM structure:
+In the end, the "skeleton" of a given brainfuck program always follows the following Digirule ASM structure:
 
 ::
 
@@ -274,18 +274,18 @@ In the end, the "skeleton" of a given Brainfuck program always follows the follo
     tape:
     
 
-And this is it, a Brainfuck compiler by which we can program the Digirule without 
+And this is it, a brainfuck compiler by which we can program the Digirule without 
 using a single ASM instruction.
 
 
-Using `dgtools` to compile Brainfuck programs
+Using `dgtools` to compile brainfuck programs
 ---------------------------------------------
 
-The Brainfuck compiler is called :ref:`dgbf <dgbf_desc>` and produces a Digirule Assembly source code file (a `.dsf`) 
+The brainfuck compiler is called :ref:`dgbf <dgbf_desc>` and produces a Digirule Assembly source code file (a `.dsf`) 
 that is then compiled to an executable by `dgasm`. ``dgbf`` accepts a single filename and produces output right thrugh 
 ``stdout``.
 
-Given the Brainfuck code in some file ``bf_code.bfc``, a typical command line session goes like this:
+Given the brainfuck code in some file ``bf_code.bfc``, a typical command line session goes like this:
 
 ::
 
@@ -306,7 +306,7 @@ For more information on compiling Digirule ASM programs in general, see :ref:`he
 Let's try this with a simple program.
 
 
-``Hello World`` in Brainfuck
+``Hello World`` in brainfuck
 ----------------------------
 
 Brainfuck programming deserves a separate section devoted to the way of thinking one needs to adopt to achieve 
@@ -351,26 +351,26 @@ Alternatively, you can skip the whole "user interaction" part and try out a simp
 Conclusion
 ----------
 
-There are a tonne of Brainfuck compilers out there. And if you think of a compiler itself as a program, 
-there are even Brainfuck interpreters. That is, programs written in Brainfuck that 
-*accept a Brainfuck program and re-produce its result*. 
+There are a tonne of brainfuck compilers out there. And if you think of a compiler itself as a program, 
+there are even Brainfuck interpreters. That is, programs written in brainfuck that 
+*accept a brainfuck program and re-produce its result*. 
 
-Modern Brainfuck compilers can be created with a size very close to the total memory of a machine such as the Digirule 
+Modern brainfuck compilers can be created with a size very close to the total memory of a machine such as the Digirule 
 (256 bytes) when written in ASM.
 
 But since we have to fit **both** data **and** code in the span of 256 bytes, it was looking as if a compiler that reads 
-Brainfuck and produces Digirule Assembly was more suitable for this goal.
+brainfuck and produces Digirule Assembly was more suitable for this goal.
 
-Writing programs in Brainfuck is a really good brain teaser, but, it has an incredibly 
+Writing programs in brainfuck is a really good brain teaser, but, it has an incredibly 
 high cost: Speed...and high maintenance...and unreadable code...
 
 It is trivial to show that the speed of execution of adding two numbers depends on the numbers themselves. The higher 
-the numbers, the slower the speed that the program will execute.
+the numbers, the slower the speed that the progam will execute.
 
-Yet, this has not stopped people from using Brainfuck to `write anything from interpreters to whole operating 
+Yet, this has not stopped people from using brainfuck to `write anything from interpreters to whole operating 
 systems. <https://github.com/search?q=brainfuck>`_. Knowing that it **is** doable is a slippery slope to the tar pit.
 
-For our purposes, Brainfuck is a wonderful demonstrator of a basic "model" of computation, one that is based on a linear 
+For our purposes, brainfuck is a wonderful demonstrator of a basic "model" of computation, one that is based on a linear 
 memory segment to carry out any computation.
 
 And from this perspective it is not the only one. 

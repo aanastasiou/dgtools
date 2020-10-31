@@ -1,43 +1,53 @@
-Superstack
-==========
+Super Stack!
+============
 
-Along with Brainfuck, Superstack is another one of those "esoteric" programming languages.
+If you tried to write simple programs with brainfuck, you may have ended up processing data as if the "tape" was not 
+random access but a stack.
 
-The motivation for creating a compiler for it was two-fold:
-
-#. Stack machines represent yet another model for computation.
-#. Operations over a stack are very important for evaluating mathematical expressions.
-
-Just as it was done for Brainfuck, this section first shows the basic parts of the "machine" that the language 
-assumes and then proceeds with their implementation in Digirule ASM and finally some indiciative superstack programs.
+`Stack machines <https://en.wikipedia.org/wiki/Stack_machine>`_ represent yet another model for computation.
 
 
-The Superstack "system"
------------------------
+Just as it was done for brainfuck, this section first shows the basic parts of the "machine" that the language 
+assumes and then proceeds with their implementation in Digirule ASM and finally some indicative Super Stack! programs.
 
-Unsurprisingly, given its name, all computation in Superstack occurs over a stack. We have already seen 
-:ref:`how to create a stack and its fundamental operations before <stack_imp>` and there is nothing more to add here.
+
+The Super Stack! "system"
+-------------------------
+
+A Super Stack! system is composed of Memory, an Arithmetic Logic Unit and basic Input/Output (I/O).
+
+Memory
+^^^^^^
+Unsurprisingly, all computation in Super Stack! occurs over a memory space that is organised as a stack. 
+We have already seen :ref:`how to create a stack and its fundamental operations in Digirule ASM <stack_imp>` and 
+there is nothing more to add to that here. 
 
 A stack is treated just like an array, but unlike an array, all operations take place via a ``head_ptr`` (or, head 
-pointer). Consequently, the stack data structure is updated via two operations:
+pointer). Consequently, the index of this array can only be controlled via two operations:
 
-#. ``Push``, to extend the stack by a value
+#. ``Push``, to store a value on the stack
 #. ``Pop``, to remove a value from the stack
 
-Again, both of these operations **always** reference the top of the stack.
+Again, both of these operations **always** reference the **top** of the stack, a mode of accessing it that is also known 
+as *First In First Out (FIFO)*.
 
-The Superstack system also has an Arithmetic Logic Unit which operates over the top of the stack and can carry out 
-the four basic arithmetic operations (plus modulo), the two shifts (left and right) and 3 basic logical operations. 
+Arithmetic Logic Unit
+^^^^^^^^^^^^^^^^^^^^^
+The Super Stack! system also has an Arithmetic Logic Unit that operates at the top of the stack and can carry out 
+the four basic arithmetic operations plus modulo, the two shifts (left and right) and the 3 fundamental logical 
+operations. 
 
-And finally, the Superstack can read a value from the input and output a value to the output. This might sound similar 
-to Brainuck's facilities, *but*, Superstack extends those because in addition to ``input, output``, it also has commands 
-``inputascii, outputascii`` and these can be mapped to different "devices" on the 2U Digirule model.
+Input / Output
+^^^^^^^^^^^^^^
+And finally, the Super Stack! system can read a value from the input and output a value to the output. This might sound 
+similar to brainuck's facilities, *but*, Super Stack! extends those because in addition to ``input, output``, it also 
+has commands ``inputascii, outputascii`` and these can be mapped to different "devices" on the 2U Digirule model.
 
 
-The Superstack Language
+The Super Stack! Language
 -----------------------
 
-Superstack is not as minimalistic as Brainfuck and while "porting" it over to the Digirule, I modified it slightly.
+Super Stack! is not as minimalistic as brainfuck and while "porting" it over to the Digirule, I modified it slightly.
 The complete set of commands is as follows:
 
 +----------------------------------------+-------------------------------------------------------------------------+
@@ -57,9 +67,9 @@ The complete set of commands is as follows:
 +----------------------------------------+-------------------------------------------------------------------------+
 | ``mod``                                | Pops two numbers, performs ``div``, pushes the modulo of that ``div``   |
 +----------------------------------------+-------------------------------------------------------------------------+
-| ``shl`` (Added in Digirule SuperStack) | Pops two numbers, shifts the first left by the second bits, ptronts     |
+| ``shl``(Added in Digirule Super Stack!)| Pops two numbers, shifts the first left by the second bits, ptronts     |
 +----------------------------------------+-------------------------------------------------------------------------+
-| ``shr`` (Added in Digirule SuperStack) | Same as ``shl`` but shifts to the right                                 |
+| ``shr``(Added in Digirule Super Stack!)| Same as ``shl`` but shifts to the right                                 |
 +----------------------------------------+-------------------------------------------------------------------------+
 | **Logic commands**                                                                                               |
 +----------------------------------------+-------------------------------------------------------------------------+
@@ -121,13 +131,13 @@ The complete set of commands is as follows:
 +----------------------------------------+-------------------------------------------------------------------------+
 
 
-From SuperStack to Digirule ASM
--------------------------------
+From Super Stack! to Digirule ASM
+---------------------------------
 
-Implementing the Superstack "system"
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Implementing the Super Stack! "system"
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The Superstack "system" as it was described earlier corresponds to three I/O devices on the Digirule:
+The Super Stack! "system" as it was described earlier corresponds to three I/O devices on the Digirule:
 
 #. The keyboard (``input``)
 #. The data LEDs (``output``)
@@ -167,19 +177,19 @@ Where ``some_symbol`` is a one byte memory location.
 Transpiling the commands
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Transpiling superstack to Digirule ASM is relatively straightforward but slightly more complicated than Brainfuck.
+Transpiling Super Stack! to Digirule ASM is relatively straightforward but slightly more complicated than brainfuck.
 
-This is because, in Superstack, a language "symbol" implies a small program composed of more than one ASM instructions
+This is because, in Super Stack!, a language "symbol" implies a small program composed of more than one ASM instructions
 and the way these are pieced together now starts to become an important factor for memory size (and to some extent 
 performance).
 
-It would be useful here to further classify Superstack's commands by arity because it will help in explaining some 
+It would be useful here to further classify Super Stack!'s commands by arity because it will help in explaining some 
 basic patterns that arise. Arity is jargon for "the number of arguments in a function".
 
 This classification is as follows:
 
 +---------+-------------------+----------------------------------------------+
-| Arity   | Stack operation   | Superstack commands                          |
+| Arity   | Stack operation   | Super Stack! commands                          |
 +=========+===================+==============================================+
 | Nullary |  PUSH             | ``input``, ``inputascii``                    |       
 |         +-------------------+----------------------------------------------+
@@ -258,9 +268,6 @@ embeding them one level down in the *Binary/Unary* function pattern. This is bec
 
 
 
-
-
-
 For example, the general call to ``add`` is translated to:
 
 ::
@@ -306,11 +313,11 @@ are simply called directly.
 Prologue and epilogue parts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Every Digirule transpiled Superstack program includes a prologue with all ``.EQU`` directives and the standard 
+Every Digirule transpiled Super Stack! program includes a prologue with all ``.EQU`` directives and the standard 
 initialisation of the stack.
 
-Superstack programs almost always include some sort of data before commands. For example, to add two numbers the 
-superstack code is:
+Super Stack! programs almost always include some sort of data before commands. For example, to add two numbers the 
+Super Stack! code is:
 
 ::
 
@@ -320,13 +327,13 @@ Normally, the transpiler would emit code to push value 1 to the stack twice. Ins
 for pushing values, the transpiler catches this condition and simply pre-loads the stack with data.
 
 Finally, the epilogue part includes declarations for setting up the stack, its head pointer and concatenating together 
-the "dependencies" imposed by commands earlier in the program (e.g. the sub-routines that implement the Superstack 
+the "dependencies" imposed by commands earlier in the program (e.g. the sub-routines that implement the Super Stack! 
 functions).
 
 Putting it all together
 -----------------------
 
-Here is the general skeleton of a Superstack program transpiled in Digirule ASM:
+Here is the general skeleton of a Super Stack! program transpiled in Digirule ASM:
 
 ::
 
