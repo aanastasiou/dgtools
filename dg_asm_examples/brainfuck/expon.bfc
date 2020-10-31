@@ -1,0 +1,17 @@
+Repeated addition leads to multiplication and repeated 
+multiplication leads to exponentiation which is a fancy 
+word for "raise to the power of"
+
+To raise 2 to the power of 3 repeatedly multiply 2 until you 
+don't have to anymore (8=1*2*2*2)
+
++              The current multiplicant (First memory cell)          
+>>
++++            The exponent of 3        (THIRD memory cell)
+[              While the exponent is non zero
+    <<         Go back to the first cell
+    [>++<-]    Run the multiplication code (performs multiplicant*2)
+    >          Move to the SECOND cell in memory
+    [<+>-]     Take the last product and make it the new multiplicant
+    >-         Decrease the exponent by 1
+]              Loop until the exponent is zero

@@ -1,0 +1,22 @@
+Assignment in Brainfuck
+Copy the value of the first cell to the second cell
+
++++++     Set the initial value of the first cell (here 5)
+[         This loop copies the first cell to cells 2 AND 3
+    -         Decrease first cell value
+    >+>+      Increase second and third cell values
+    <<        Go back to first cell to decide on loop termination
+]
+
+At this point the memory looks like: 0 5 5
+The original 5 at memory cell 1 has been wiped out
+Let's bring it back
+
+>>
+[        This loop copies the third cell to the first cell
+    -<<+ Reduce third cell by 1 increase first cell by 1
+    >>   Go back to the third cell to decide on loop termination
+]
+
+At this point the memory looks like: 5 5 0 and 
+we have achieved the copy

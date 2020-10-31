@@ -1,0 +1,13 @@
+Multiplication of two integers as repeated addition
+Here we multiply 2 by 5
+
+The multiplicant is entered in the first cell
+The result is produced in the second cell
+
+++         Initialise the first cell to the multiplier (here 2)
+[          Now loop as long as the current cell (cell 1) is not 0
+    -      Decrease the multiplier by one
+    >      Move to the second cell (the result cell)
+    +++++  Increase its value by the multiplicant
+    <      Go back to the first cell to evaluate the loop condition
+]

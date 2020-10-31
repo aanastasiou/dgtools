@@ -1,0 +1,13 @@
+In Brainfuck literals are entered as "an accumulation of ones"
+
+This program creates a short increasing sequence of bytes in memory
+
++
+>
+++
+>
++++
+>
+++++
+>
++++++

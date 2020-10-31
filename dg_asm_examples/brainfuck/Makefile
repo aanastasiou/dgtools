@@ -1,5 +1,7 @@
-bf_code.dsf:bf_code.bfc
-	dgbf.py bf_code.bfc>bf_code.dsf
+BF_CODE=bf_code.bfc
+
+bf_code.dsf:$(BF_CODE)
+	dgbf.py $(BF_CODE)>bf_code.dsf
 	
 bf_code.dgb:bf_code.dsf
 	dgasm.py bf_code.dsf -g 2U
@@ -13,8 +15,7 @@ html:bf_code_trace.html
 
 clean:
 	rm bf_code.dsf
+	rm *.hex
 	rm *.dgb
 	rm bf_code_trace.html
-	rm bf_code_html.html
 	rm *.css
-	rm *.hex
