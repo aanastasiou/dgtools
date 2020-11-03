@@ -1,1 +1,12 @@
-1 3 if swap 2 mul swap 1 sub fi 
+# Bit Shift Left
+
+1 3     # Preload the stack to do (1 << 3) 
+
+if        # While the top value (exponent) is non-zero
+    swap  # Bring up the base (here, 1)
+    2     # 
+    mul   # Multiply by 2
+    swap  # Bring up the exponent
+    1     # Decrease the exponent by 1
+    sub
+fi 

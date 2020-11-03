@@ -1,1 +1,0 @@
-4 if dup 1 and 48 add outputascii 1 shr fi

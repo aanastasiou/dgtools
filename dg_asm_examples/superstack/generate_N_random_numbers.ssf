@@ -1,1 +1,17 @@
-7 if 26 random 65 add swap 1 sub fi
+# Generate a sequence of N random numbers
+# Where N is set by the user
+# Here, generating a random string of 7 characters
+
+0 7            # Preload stack with N
+if             # While the length is non-zero
+    cycle      # Save the current length at the bottom of the stack
+    pop        # Delete the current length
+    26         # Load the maximum random int to generate
+    random     # Generate random num
+    65         # Add "A" (ASCII 65)
+    add      
+    dup        # Duplicate the top of the stack
+    rcycle     # Recall the current length from the bottom of the stack
+    1          # Reduce current length by one
+    sub
+fi

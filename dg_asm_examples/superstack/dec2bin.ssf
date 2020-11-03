@@ -1,3 +1,0 @@
-32 7 if dup 1 swap if swap 2 mul swap 1 sub fi rcycle and dup if 1 0 fi pop 48 add outputascii 1 sub fi
-
-Way too long, needs shr,shl

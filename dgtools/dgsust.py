@@ -228,13 +228,16 @@ def get_superstack_parser():
 @click.command()
 @click.argument("input_file", type=click.File("rt"))
 def main(input_file):
+    """
+    dgtools Super Stack! to ASM compiler.
+    """
     # Get the parser
     sust2asm_parser = get_superstack_parser()
     try:
         dg_asm_text = sust2asm_parser.parseString(input_file.read(), parseAll=True)
         sys.stdout.write(dg_asm_text[0])
     except pyparsing.ParseException as pe:
-        print(str(pe))
+        print(f"dgsust:{str(pe)}")
         sys.exit(-1)
 
 if __name__ == "__main__":

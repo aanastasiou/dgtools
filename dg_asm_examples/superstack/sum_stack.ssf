@@ -1,1 +1,11 @@
-0 0 1 8 7 4 5 6 if dup rcycle add cycle pop fi
+# Produce the sum of a sequence of integers
+
+0 0 1 8 7 4 5 6  # Pre load the stack 
+
+if            # While the top of the stack is non-zero 
+    dup       # Duplicate the top value
+    rcycle    # Fetch the last sum from the bottom of the stack
+    add       # Add last sum and current top
+    cycle     # Save current sum to bottom
+    pop       # Move to the next value
+fi

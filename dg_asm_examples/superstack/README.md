@@ -1,18 +1,39 @@
-# Superstack programs
+# Super Stack! Programs
 
-* dec2bin
-    * Converts decimal to binary
+To compile and simulate the programs in this directory, type the following on your terminal:
 
-* find_length.ssf
-    * Find the length of a zero terminated sequence
+```
+    > make clean;make SUST_CODE=<full name of Super Stack source file from below> html
+```
 
-* find_max.ssf
-    * Find the maximum of a sequence
+If you simply do a:
 
-* generate_N_random_numbers.ssf
+```
+    > make html;
+```
 
-* shift_left.ssf
+you will compile and simulate the DEFAULT selection from below.
 
-* sum_stack.ssf
+## Some Super Stack! programs in this directory
 
-* xor.ssf 
+* `sust_code.ssf`
+    * DEFAULT
+    * Subtraction by addition
+    
+* `find_length.ssf`
+    * Find the length of a zero terminated sequence of numbers.
+
+* `find_max.ssf`
+    * Find the maximum of a sequence.
+
+* `generate_N_random_numbers.ssf`
+    * Self explanatory
+
+* `shift_left.ssf`
+    * Self explanatory
+
+* `sum_stack.ssf`
+    * Self explanatory
+
+* `xor.ssf`
+    * Calculate a 2-input XOR by doing !AB + A!B

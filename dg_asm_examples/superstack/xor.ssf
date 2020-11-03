@@ -1,1 +1,18 @@
-0 0 1 swap cycle swap dup rcycle swap cycle swap dup rcycle 255 xor and cycle pop swap 255 xor and dup rcycle or quit
+# Plain simple Exclusive OR
+# Super Stack! does provide an XOR operation but 
+# here we are recreating XORs formula as:
+# NOT A AND B OR A AND NOT B or !AB+A!B
+
+# Initial stack data values (That is A and B)
+0 0 1 
+# Duplicate the data values 
+swap cycle swap dup rcycle swap cycle swap dup rcycle 
+# AB!
+255 xor and 
+# Save the result
+cycle
+# !AB 
+pop swap 255 xor and 
+# AB! + !AB
+dup rcycle or 
+quit
