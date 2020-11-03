@@ -282,7 +282,7 @@ Using `dgtools` to compile brainfuck programs
 ---------------------------------------------
 
 The brainfuck compiler is called :ref:`dgbf <dgbf_desc>` and produces a Digirule Assembly source code file (a `.dsf`) 
-that is then compiled to an executable by `dgasm`. ``dgbf`` accepts a single filename and produces output right thrugh 
+that is then compiled to an executable by `dgasm`. ``dgbf`` accepts a single filename and produces output right through 
 ``stdout``.
 
 Given the brainfuck code in some file ``bf_code.bfc``, a typical command line session goes like this:

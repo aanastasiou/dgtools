@@ -1,14 +1,32 @@
 Super Stack!
 ============
 
-If you tried to write simple programs with brainfuck, you may have ended up processing data as if the "tape" was not 
-random access but a stack.
+Super Stack! by way of brainfuck
+--------------------------------
 
-`Stack machines <https://en.wikipedia.org/wiki/Stack_machine>`_ represent yet another model for computation.
+If you tried to write simple programs with brainfuck, you may have found yourself working with data "locally".
+That is, even though brainfuck does not impose any restrictions on how memory can be accessed (Random Access), 
+memory tends to be accessed in blocks of closely located locations.
 
+Take for example the most elementary computation, that of calculating ```1+1``` (```+>+[-<+>]```). The operands are 
+placed on two sequential locations in memory. And when evaluating more complex expressions, with operator precedence 
+or brackets, the result of an operation can well be one of the operands of the next operation, therefore, it is only 
+reasonable to keep them close together.
 
-Just as it was done for brainfuck, this section first shows the basic parts of the "machine" that the language 
-assumes and then proceeds with their implementation in Digirule ASM and finally some indicative Super Stack! programs.
+In fact, there is a whole class of computing machines whose operation does not require random memory access at all.
+
+These are called `Stack machines <https://en.wikipedia.org/wiki/Stack_machine>`_.
+
+Stack machines represent yet another model of computation that is **immensely** convenient. It therefore made sense to 
+demonstrate its properties over a resource constrained CPU system such as the one on the Digirule.
+
+For this purpose, I selected "Super Stack!", an esoteric minimialist stack based language that is higher level than 
+brainfuck and closer to more "natural ways" of programming computers.
+
+This section documents a Super Stack! compiler that emits Digirule Assembly. 
+
+Just as it was done for brainfuck, we first show the basic parts of the "machine" that the language 
+assumes and then proceeds with the implementation in Digirule ASM and finally some indicative Super Stack! programs.
 
 
 The Super Stack! "system"
@@ -16,44 +34,51 @@ The Super Stack! "system"
 
 A Super Stack! system is composed of Memory, an Arithmetic Logic Unit and basic Input/Output (I/O).
 
+
 Memory
 ^^^^^^
+
 Unsurprisingly, all computation in Super Stack! occurs over a memory space that is organised as a stack. 
 We have already seen :ref:`how to create a stack and its fundamental operations in Digirule ASM <stack_imp>` and 
 there is nothing more to add to that here. 
 
 A stack is treated just like an array, but unlike an array, all operations take place via a ``head_ptr`` (or, head 
-pointer). Consequently, the index of this array can only be controlled via two operations:
+pointer) that can only be controlled via two operations and **never** directly:
 
 #. ``Push``, to store a value on the stack
 #. ``Pop``, to remove a value from the stack
 
-Again, both of these operations **always** reference the **top** of the stack, a mode of accessing it that is also known 
-as *First In First Out (FIFO)*.
+Both of these operations **always** reference the **top** of the stack, a mode of accessing it that is also known 
+as `First In First Out (FIFO) <https://en.wikipedia.org/wiki/Stack_(abstract_data_type)>`_.
+
 
 Arithmetic Logic Unit
 ^^^^^^^^^^^^^^^^^^^^^
+
 The Super Stack! system also has an Arithmetic Logic Unit that operates at the top of the stack and can carry out 
 the four basic arithmetic operations plus modulo, the two shifts (left and right) and the 3 fundamental logical 
 operations. 
 
+
 Input / Output
 ^^^^^^^^^^^^^^
+
 And finally, the Super Stack! system can read a value from the input and output a value to the output. This might sound 
 similar to brainuck's facilities, *but*, Super Stack! extends those because in addition to ``input, output``, it also 
 has commands ``inputascii, outputascii`` and these can be mapped to different "devices" on the 2U Digirule model.
 
 
-The Super Stack! Language
------------------------
+The Super Stack! language
+-------------------------
 
 Super Stack! is not as minimalistic as brainfuck and while "porting" it over to the Digirule, I modified it slightly.
+
 The complete set of commands is as follows:
 
 +----------------------------------------+-------------------------------------------------------------------------+
 | Command                                |   Side effect                                                           |
 +========================================+=========================================================================+
-| Any literal BYTE value (1,42,255, etc) | Immediately pushed on to the stack. Equivalent to ``NUM push``          |
+| Any literal BYTE value (1,42,255, etc) | Immediately pushed on to the stack.                                     |
 +----------------------------------------+-------------------------------------------------------------------------+
 | **Arithmetic commands**                                                                                          |
 +----------------------------------------+-------------------------------------------------------------------------+
@@ -141,7 +166,8 @@ The Super Stack! "system" as it was described earlier corresponds to three I/O d
 
 #. The keyboard (``input``)
 #. The data LEDs (``output``)
-#. The Universal Asynchronous Rx/Tx (UART). That is, the serial port. (``inputascii``, ``outputascii``)
+#. The Universal Asynchronous Rx/Tx (UART). 
+    * That is, the serial port. (``inputascii``, ``outputascii``)
 
 These are all complementary calls and almost identical in structure. For example, the first two expand to:
 
@@ -183,8 +209,13 @@ This is because, in Super Stack!, a language "symbol" implies a small program co
 and the way these are pieced together now starts to become an important factor for memory size (and to some extent 
 performance).
 
-It would be useful here to further classify Super Stack!'s commands by arity because it will help in explaining some 
-basic patterns that arise. Arity is jargon for "the number of arguments in a function".
+It would be useful here to further classify Super Stack!'s commands by two key characteristics that help in explaining 
+some basic patterns that arise (and that we will exploit). These are:
+
+1. Arity. 
+    * `Arity <https://en.wikipedia.org/wiki/Arity>`_ is jargon for "the number of arguments in a function".
+2. Stack operation
+    * Whether its operation requires a value to be pushed on or poped from the stack.
 
 This classification is as follows:
 
@@ -217,12 +248,12 @@ back on to the stack.
 These are followed, in number of commands, by the unary ones. These require only one operand and their structure is 
 exactly the same as above but only consisting of a single pop. 
 
-And finally, we have the nullary commands. The result of 
-these functions is independent from the state of the stack. ``quit`` for example will simply interrupt program 
+And finally, we have the nullary commands. Commands that take no arguments. The result of 
+these is independent from the state of the stack. ``quit`` for example will simply interrupt program 
 execution and ``rev`` will reverse the stack whether it contains zero or more values.
 
-Although the optimisation process was incremental, it is worth showing here very briefly the key idea of the progressive
-reductions that were applied to the code.
+It is worth showing here very briefly the key idea of the progressive
+reductions that these patterns lead us to perform:
 
 The binary functions, conform to :math:`y = f(x_1,x_2)` and therefore, in ASM, all end up looking like:
 
@@ -231,11 +262,11 @@ The binary functions, conform to :math:`y = f(x_1,x_2)` and therefore, in ASM, a
     
     pop op1
     pop op2
-    call binary_function
+    call binary_function  # Whatever that may be
     push result
     return
         
-This pattern *includes* the unary pattern, where functions look like :math:`y=f(x_1)`, too:
+This pattern *includes* the unary pattern too, where functions look like :math:`y=f(x_1)` :
 
 ::
 
@@ -260,12 +291,9 @@ is which function to call after it has poped two values from the stack. And in d
 duplication for unary functions, since they are **nested** in the binary pattern.
 
 The same observation holds for nullary functions that *return a result*. These conform to the :math:`y=f()` pattern and 
-basically imply simply calling the function. In this case however, there is no additional memory saving from 
+basically imply just calling the function. In this case however, there is no additional memory saving from 
 embeding them one level down in the *Binary/Unary* function pattern. This is because a call to *Binary/Unary* costs 
 5 bytes: 3 bytes to set the ``binary_unary_function`` it needs to call and 2 bytes to make the call. 
-
-
-
 
 
 For example, the general call to ``add`` is translated to:
@@ -314,7 +342,7 @@ Prologue and epilogue parts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Every Digirule transpiled Super Stack! program includes a prologue with all ``.EQU`` directives and the standard 
-initialisation of the stack.
+code that initialises the stack.
 
 Super Stack! programs almost always include some sort of data before commands. For example, to add two numbers the 
 Super Stack! code is:
@@ -324,7 +352,7 @@ Super Stack! code is:
     1 1 add quit
     
 Normally, the transpiler would emit code to push value 1 to the stack twice. Instead of wasting memory by emitting code 
-for pushing values, the transpiler catches this condition and simply pre-loads the stack with data.
+for pushing values, the transpiler catches this "pattern" and simply pre-loads the stack with data.
 
 Finally, the epilogue part includes declarations for setting up the stack, its head pointer and concatenating together 
 the "dependencies" imposed by commands earlier in the program (e.g. the sub-routines that implement the Super Stack! 
@@ -363,6 +391,7 @@ Here is the general skeleton of a Super Stack! program transpiled in Digirule AS
     CALLI f_custom_ins
     CALL f_push
     RETURN
+    ...
     f_custom_ins:
     .DB 0
     head_val:
@@ -375,3 +404,43 @@ Here is the general skeleton of a Super Stack! program transpiled in Digirule AS
     stack:
     .DB 1,2
     stack_offset:
+
+
+Using `dgtools` to compile Super Stack! programs
+------------------------------------------------
+
+The Super Stack! compiler is called :ref:`dgsust <dgsust_desc>` and produces a Digirule Assembly source code file 
+(a `.dsf`) that is then compiled to an executable by `dgasm`. 
+
+``dgsust`` accepts a single filename and produces output right through ``stdout``.
+
+Given the Super Stack! code in some file ``sust_code.ssf``, a typical command line session goes like this:
+
+::
+
+    \> dgsust.py sust_code.ssf>asm_code.dsf    # Brainfuck --> Assembly
+    \> dgasm.py asm_code.dsf -g 2U             # Assembly --> Executable (Notice that the target is 2U)
+    \> dgsim.py asm_code.dgb -I                # Simulation
+    \> xdg-open asm_code_trace.html            # Output
+    
+
+.. note::
+    Notice how ``dgsim.py`` was called with ``-I``, putting it in interactive mode. 
+    This is necessary only if your program contains the 4 I/O commands and you would like to 
+    really try entering different numbers yourself. If ``-I`` is not provided, then 
+    ``dgsim.py`` will ignore the I/O commands.
+
+For more information on compiling Digirule ASM programs in general, see :ref:`here <intro-topics>`.
+
+Let's try this with a simple program.
+
+
+``Hello World`` in Super Stack!
+-------------------------------
+
+Most ``hello world`` programs are just that: A snippet of code that outputs that phrase. 
+
+
+Conclusion
+----------
+
