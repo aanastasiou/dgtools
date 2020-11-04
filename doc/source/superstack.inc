@@ -4,7 +4,7 @@ Super Stack!
 Super Stack! by way of brainfuck
 --------------------------------
 
-If you tried to write simple programs with brainfuck, you may have found yourself working with data "locally".
+If you tried to write some programs with brainfuck, you may have found yourself working with data "locally".
 That is, even though brainfuck does not impose any restrictions on how memory can be accessed (Random Access), 
 memory tends to be accessed in blocks of closely located locations.
 
@@ -15,13 +15,13 @@ reasonable to keep them close together.
 
 In fact, there is a whole class of computing machines whose operation does not require random memory access at all.
 
-These are called `Stack machines <https://en.wikipedia.org/wiki/Stack_machine>`_.
+These are the `Stack machines <https://en.wikipedia.org/wiki/Stack_machine>`_.
 
-Stack machines represent yet another model of computation that is **immensely** convenient. It therefore made sense to 
+Stack machines represent yet another model of computation that is **immensely** practical. It therefore made sense to 
 demonstrate its properties over a resource constrained CPU system such as the one on the Digirule.
 
-For this purpose, I selected "Super Stack!", an esoteric minimialist stack based language that is higher level than 
-brainfuck and closer to more "natural ways" of programming computers.
+For this purpose, I selected `Super Stack! <https://esolangs.org/wiki/Super_Stack!>`_, an esoteric minimalist stack 
+based language that is higher level than brainfuck and closer to more "natural ways" of programming computers.
 
 This section documents a Super Stack! compiler that emits Digirule Assembly. 
 
