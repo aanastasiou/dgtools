@@ -1,17 +1,18 @@
 Super Stack!
 ============
 
+
 Super Stack! by way of brainfuck
 --------------------------------
 
 If you tried to write some programs with brainfuck, you may have found yourself working with data "locally".
-That is, even though brainfuck does not impose any restrictions on how memory can be accessed (Random Access), 
+That is, even though brainfuck does not impose any restrictions on how exactly memory can be accessed (Random Access), 
 memory tends to be accessed in blocks of closely located locations.
 
-Take for example the most elementary computation, that of calculating ```1+1``` (```+>+[-<+>]```). The operands are 
+Take for example the most elementary computation, that of calculating ``1+1`` (``+>+[-<+>]``). The operands are 
 placed on two sequential locations in memory. And when evaluating more complex expressions, with operator precedence 
-or brackets, the result of an operation can well be one of the operands of the next operation, therefore, it is only 
-reasonable to keep them close together.
+or brackets, the result of an operation can well be one of the operands of the next operation, therefore, it makes sense 
+to keep them close together.
 
 In fact, there is a whole class of computing machines whose operation does not require random memory access at all.
 
@@ -71,89 +72,90 @@ has commands ``inputascii, outputascii`` and these can be mapped to different "d
 The Super Stack! language
 -------------------------
 
-Super Stack! is not as minimalistic as brainfuck and while "porting" it over to the Digirule, I modified it slightly.
+Super Stack! is not as minimalistic as brainfuck and while "porting" it over to the Digirule, I modified it slightly so 
+that it produces more efficient code.
 
 The complete set of commands is as follows:
 
-+----------------------------------------+-------------------------------------------------------------------------+
-| Command                                |   Side effect                                                           |
-+========================================+=========================================================================+
-| Any literal BYTE value (1,42,255, etc) | Immediately pushed on to the stack.                                     |
-+----------------------------------------+-------------------------------------------------------------------------+
-| **Arithmetic commands**                                                                                          |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``add``                                | Pops two numbers, adds them, *pushes the result on the stack* (ptronts) |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``sub``                                | Pops two numbers, subtracts **the first from the second**, ptronts      |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``mul``                                | Pops two numbers, multiplies them, ptronts.                             |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``div``                                | Pops two numbers, divides **the first by the second**, ptronts          |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``mod``                                | Pops two numbers, performs ``div``, pushes the modulo of that ``div``   |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``shl``(Added in Digirule Super Stack!)| Pops two numbers, shifts the first left by the second bits, ptronts     |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``shr``(Added in Digirule Super Stack!)| Same as ``shl`` but shifts to the right                                 |
-+----------------------------------------+-------------------------------------------------------------------------+
-| **Logic commands**                                                                                               |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``and``                                | Pops two numbers, applies AND, ptronts.                                 |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``or``                                 | Pops two numbers, applies OR, ptronts.                                  |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``xor``                                | Pops two numbers, applies XOR, ptronts.                                 |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``nand``                               | **Not implemented.** Substitute with ``and 255 xor``                    |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``not``                                | **Not implemented.** Substitute with ``255 xor``                        |
-+----------------------------------------+-------------------------------------------------------------------------+
-| **Input / Output**                                                                                               |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``output``                             | Pops the top number sends it to the output followed by a space char.    |
-|                                        | **On the Digirule:** Sends the number to the Data Leds.                 |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``input``                              | Receives a single number from input and push it on the stack.           |
-|                                        | **On the Digirule:** Asks for user input from the onboard keyboard.     |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``outputascii``                        | Pops the top number and outputs it as an ascii character.               |
-|                                        | **On the Digirule:** Sends the number to the serial port                |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``inputascii``                         | Receives a string of characters from input and pushes each on the stack | 
-|                                        | **backwards**.                                                          |
-|                                        | **On the Digirule:** receives a number from the serial port.            |
-+----------------------------------------+-------------------------------------------------------------------------+
-| **Stack commands**                                                                                               |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``pop``                                | Pops the top number and discards it.                                    |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``swap``                               | Swaps the top two numbers.                                              |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``cycle``                              | Makes the bottom value of the stack equal to the one at the top of the  | 
-|                                        | stack. **Does not pop a value**.                                        | 
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``rcycle``                             | The opposite of ``cycle`` (the top cell is assigned the bottom cell     | 
-|                                        | value). **Does not pop a value**.                                       |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``dup``                                | Duplicates the top number.                                              |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``rev``                                | Reverses the entire stack.                                              |
-+----------------------------------------+-------------------------------------------------------------------------+
-| **Other commands**                                                                                               |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``random``                             | Pops the top number, pushes a random number **from 0 to the number      |  
-|                                        | popped minus 1**.                                                       |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``if``                                 | Equivalent to a ``while`` loop. The conditional is on the top value of  | 
-|                                        | the stack. Does not pop the top value.                                  |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``fi``                                 | Marks the end of the loop.                                              | 
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``quit``                               | Terminates the program.                                                 |
-+----------------------------------------+-------------------------------------------------------------------------+
-| ``debug``                              | Outputs the entire stack. (Does not pop anything).                      |
-|                                        | Not implemented on the Digirule.                                        | 
-+----------------------------------------+-------------------------------------------------------------------------+
++------------------------------------------+-------------------------------------------------------------------------+
+| Command                                  |   Side effect                                                           |
++==========================================+=========================================================================+
+| Any literal BYTE value (1,42,255, etc)   | Immediately pushed on to the stack.                                     |
++------------------------------------------+-------------------------------------------------------------------------+
+| **Arithmetic commands**                                                                                            |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``add``                                  | Pops two numbers, adds them, *pushes the result on the stack* (ptronts) |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``sub``                                  | Pops two numbers, subtracts **the first from the second**, ptronts      |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``mul``                                  | Pops two numbers, multiplies them, ptronts.                             |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``div``                                  | Pops two numbers, divides **the first by the second**, ptronts          |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``mod``                                  | Pops two numbers, performs ``div``, pushes the modulo of that ``div``   |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``shl`` (Added in Digirule Super Stack!) | Pops two numbers, shifts the first left by the second bits, ptronts     |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``shr`` (Added in Digirule Super Stack!) | Same as ``shl`` but shifts to the right                                 |
++------------------------------------------+-------------------------------------------------------------------------+
+| **Logic commands**                                                                                                 |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``and``                                  | Pops two numbers, applies AND, ptronts.                                 |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``or``                                   | Pops two numbers, applies OR, ptronts.                                  |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``xor``                                  | Pops two numbers, applies XOR, ptronts.                                 |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``nand``                                 | **Not implemented.** Substitute with ``and 255 xor``                    |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``not``                                  | **Not implemented.** Substitute with ``255 xor``                        |
++------------------------------------------+-------------------------------------------------------------------------+
+| **Input / Output**                                                                                                 |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``output``                               | Pops the top number sends it to the output followed by a space char.    |
+|                                          | **On the Digirule:** Sends the number to the Data Leds.                 |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``input``                                | Receives a single number from input and push it on the stack.           |
+|                                          | **On the Digirule:** Asks for user input from the onboard keyboard.     |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``outputascii``                          | Pops the top number and outputs it as an ascii character.               |
+|                                          | **On the Digirule:** Sends the number to the serial port                |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``inputascii``                           | Receives a string of characters from input and pushes each on the stack | 
+|                                          | **backwards**.                                                          |
+|                                          | **On the Digirule:** receives a number from the serial port.            |
++------------------------------------------+-------------------------------------------------------------------------+
+| **Stack commands**                                                                                                 |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``pop``                                  | Pops the top number and discards it.                                    |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``swap``                                 | Swaps the top two numbers.                                              |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``cycle``                                | Makes the bottom value of the stack equal to the one at the top of the  | 
+|                                          | stack. **Does not pop a value**.                                        | 
++------------------------------------------+-------------------------------------------------------------------------+
+| ``rcycle``                               | The opposite of ``cycle`` (the top cell is assigned the bottom cell     | 
+|                                          | value). **Does not pop a value**.                                       |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``dup``                                  | Duplicates the top number.                                              |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``rev``                                  | Reverses the entire stack.                                              |
++------------------------------------------+-------------------------------------------------------------------------+
+| **Other commands**                                                                                                 |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``random``                               | Pops the top number, pushes a random number **from 0 to the number      |  
+|                                          | popped minus 1**.                                                       |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``if``                                   | Equivalent to a ``while`` loop. The conditional is on the top value of  | 
+|                                          | the stack. Does not pop the top value.                                  |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``fi``                                   | Marks the end of the loop.                                              | 
++------------------------------------------+-------------------------------------------------------------------------+
+| ``quit``                                 | Terminates the program.                                                 |
++------------------------------------------+-------------------------------------------------------------------------+
+| ``debug``                                | Outputs the entire stack. (Does not pop anything).                      |
+|                                          | Not implemented on the Digirule.                                        | 
++------------------------------------------+-------------------------------------------------------------------------+
 
 
 From Super Stack! to Digirule ASM
@@ -181,7 +183,8 @@ and
 
     COPYRR some_symbol out_dev
     
-Where ``in_dev, out_dev`` are the Digirule registers, here defined with dgasm directive ``.EQU``.
+Where ``in_dev, out_dev`` are the Digirule registers, here defined with dgasm directive ``.EQU`` (see section 
+:ref:`_sust_prol_epi` for their definition).
 
 Similarly, the ascii counterparts expand to:
 
@@ -220,7 +223,7 @@ some basic patterns that arise (and that we will exploit). These are:
 This classification is as follows:
 
 +---------+-------------------+----------------------------------------------+
-| Arity   | Stack operation   | Super Stack! commands                          |
+| Arity   | Stack operation   | Super Stack! commands                        |
 +=========+===================+==============================================+
 | Nullary |  PUSH             | ``input``, ``inputascii``                    |       
 |         +-------------------+----------------------------------------------+
@@ -334,9 +337,10 @@ are simply called directly.
 .. note::
     You might notice here that ``cycle`` is included in the unary commands, although calling ``cycle`` does not require
     that a value is poped. However, as a function, ``cycle`` requires one parameter from the stack. It could be 
-    re-written as ``pop cycle push``, to show that it does not modify the stack, but it could not be implemented like 
-    this, because calls to ``push`` and ``pop`` are costly.
+    re-written as ``pop cycle push``, to show that it does not modify the stack, but it would not be wise to implement
+    it exactly like this, because calls to ``push`` and ``pop`` are costly.
 
+:: _sust_prol_epi:
 
 Prologue and epilogue parts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -351,12 +355,49 @@ Super Stack! code is:
 
     1 1 add quit
     
-Normally, the transpiler would emit code to push value 1 to the stack twice. Instead of wasting memory by emitting code 
-for pushing values, the transpiler catches this "pattern" and simply pre-loads the stack with data.
+Normally, the transpiler would emit code to push value 1 to the stack twice. Instead of wasting memory for this "setup" 
+code, the transpiler catches this "pattern" and simply pre-loads the stack with data.
 
 Finally, the epilogue part includes declarations for setting up the stack, its head pointer and concatenating together 
 the "dependencies" imposed by commands earlier in the program (e.g. the sub-routines that implement the Super Stack! 
 functions).
+
+Handling errors
+~~~~~~~~~~~~~~~
+What happens if we try to pop the empty stack or push on to a full stack?
+
+An error condition.
+
+Both the ``f_push`` and ``f_pop`` operations perform checks before carrying out their operation and never allow the 
+stack to over or under flow. This error condition is handled by ``f_stack_error``. This is included along with a 
+typical ``f_push, f_pop`` pair:
+
+:: DigiruleASM
+    f_push:
+    COPYRA head_ptr
+    SUBLA 253
+    BCRSC zero_bit status_reg
+    JUMP f_stack_error
+    COPYRI head_val head_ptr
+    INCR head_ptr
+    RETURN
+
+    f_pop:
+    COPYRA head_ptr
+    CBR carry_bit status_reg
+    SUBLA stack
+    BCRSC zero_bit status_reg
+    JUMP f_stack_error
+    DECR head_ptr
+    COPYIR head_ptr head_val
+    RETURN
+
+    f_stack_error:
+    COPYLR 0xFF out_dev
+    JUMP f_stack_error
+
+
+This is signaled on the Digirule 2U hardware by turning the LEDs on and stopping the execution of the program.
 
 Putting it all together
 -----------------------
@@ -438,7 +479,10 @@ Let's try this with a simple program.
 ``Hello World`` in Super Stack!
 -------------------------------
 
-Most ``hello world`` programs are just that: A snippet of code that outputs that phrase. 
+Most ``hello world`` programs are just that: A snippet of code that outputs that phrase. Here however we are taking a 
+different approach, demonstrating a couple of different ways that we can do addition.
+
+The most straightforward way  
 
 
 Conclusion

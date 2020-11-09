@@ -182,7 +182,7 @@ def get_superstack_parser():
                postcode
         
     # Define the parser. This is almost plain Superstack with very minor changes.
-    sust_literal = pyparsing.Group(pyparsing.Regex("[0-9]+"))("LITERAL").setParseAction(_push_literal)
+    sust_literal = pyparsing.Group(pyparsing.Regex("-?[0-9]+"))("LITERAL").setParseAction(_push_literal)
     sust_stack_data = pyparsing.Group(pyparsing.OneOrMore(pyparsing.Regex("[0-9]+").setParseAction(lambda s, loc, toks:int(toks[0]))))("STACK_DATA").setParseAction(list)
     sust_add = pyparsing.Group(pyparsing.Regex("[Aa][Dd][Dd]"))("ADD").setParseAction(_add)
     sust_sub = pyparsing.Group(pyparsing.Regex("[Ss][Uu][Bb]"))("SUB").setParseAction(_sub)
