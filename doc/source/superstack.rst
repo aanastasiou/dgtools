@@ -277,7 +277,7 @@ The binary functions, conform to :math:`y \leftarrow f(x_1,x_2)` and therefore, 
 
 ::
 
-    Binary Function Call Pattern:
+    # Binary Function Call Pattern:
     
     pop op1
     pop op2
@@ -289,7 +289,7 @@ This pattern *includes* the unary pattern too, where functions look like :math:`
 
 ::
 
-    Binary / Unary Function Call Pattern:
+    # Binary / Unary Function Call Pattern:
     
     binary:
     pop op1
@@ -309,7 +309,7 @@ To avoid this duplication, we can capture this general pattern in a ``generic_bi
 is which function to call after it has poped two values from the stack. And in doing so, we would also be reducing 
 duplication for unary functions, since they are **nested** in the binary pattern.
 
-The same observation holds for nullary functions that *return a result*. These conform to the :math:`y=f()` pattern and 
+The same observation holds for nullary functions that *return a result*. These conform to the :math:`y \leftarrow f()` pattern and 
 basically imply just calling the function. In this case however, there is no additional memory saving from 
 embeding them one level down in the *Binary/Unary* function pattern. This is because a call to *Binary/Unary* costs 
 5 bytes: 3 bytes to set the ``binary_unary_function`` it needs to call and 2 bytes to make the call. 
