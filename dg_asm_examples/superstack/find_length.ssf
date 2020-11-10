@@ -1,0 +1,12 @@
+# Find the length of a sequence of numbers by
+# iterating until a zero is encountered
+
+0 0 1 2 3 4 5 6 7 8 9 10   # Pre load the stack 
+
+if                         # While the top is non-zero
+    rcycle                 # Fetch the current counter from bottom of stack
+    1                      # Add 1 to current length
+    add 
+    cycle                  # Save the current length
+    pop                    # Discard one number from the stack
+fi

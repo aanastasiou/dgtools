@@ -38,7 +38,6 @@ Alternatively, you can now try out online any of the examples in these pages via
    code_projects
 
 
-
 Indices and tables
 ==================
 

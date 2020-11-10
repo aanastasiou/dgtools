@@ -1,0 +1,24 @@
+# Find the maximum of a sequence of numbers
+
+0 0 1 3 5 7 2 14    # Preload the stack 
+
+if                  # While the top is non-zero
+    swap            # Compare the two numbers at the top of the stack
+    cycle
+    swap
+    dup          
+    rcycle 
+    sub 
+    dup 
+    128 
+    and 
+    if 
+        pop 
+        pop 
+        0 
+        0 
+    fi 
+    pop 
+    add 
+    swap 
+fi

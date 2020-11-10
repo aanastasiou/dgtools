@@ -4,4 +4,9 @@
 Volume 3 - Compilers
 ====================
 
-.. include:: brainfuck.inc
+.. toctree::
+   :maxdepth: 3
+   :caption: Contents:
+   
+   brainfuck.rst
+   superstack.rst

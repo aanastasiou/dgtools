@@ -58,3 +58,11 @@ Extras
 -----------
 
 .. automodule:: dgtools.dgbf
+
+
+.. _dgsust_desc:
+
+``dgsust.py``
+-------------
+
+.. automodule:: dgtools.dgsust

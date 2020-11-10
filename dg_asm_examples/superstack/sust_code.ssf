@@ -1,0 +1,8 @@
+# Subtraction by complement two addition
+8 3        # Initial stack content
+sub        # Plain simple subtraction (produces a 5)
+
+8          # Now load the stack again
+3 255 xor  # Invert 3 and add 1
+1 add
+add        # Subtraction by addition (Produces 5 too)

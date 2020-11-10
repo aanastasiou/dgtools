@@ -6,6 +6,8 @@ The programs in this sections are re-using concepts and
 techniques that are introduced in the ref:`section about the basics <vol_0>`.
         
 
+.. _stack_imp:
+
 Implement A Stack
 =================
 
