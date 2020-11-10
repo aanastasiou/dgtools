@@ -1,4 +1,4 @@
-BF_CODE=bf_code.bfc
+BF_CODE=assign.bfc
 
 bf_code.dsf:$(BF_CODE)
 	dgbf.py $(BF_CODE)>bf_code.dsf
