@@ -1,4 +1,6 @@
+Version 1.0.3 
   * Added the Superstack compiler and its documentation
+  * Added a few basic brainfuck programs that were presented via dgrdo.org
 
 Version 1.0.2 2020-10-14
     * DB directive can now unroll string literals
