@@ -1,6 +1,17 @@
 Super Stack!
 ============
 
+This section describes the process behind creating a Super Stack! compiler that produces efficient Digirule 2U ASM code. 
+
+If you simply want to know how to compile Super Stack! programs using dgtools, you can jump straight to 
+:ref:`compile_sust_dgtools`.
+
+For a brief overview of Super Stack!'s commands, see section :ref:`sust_lang` and 
+`this link <https://esolangs.org/wiki/Super_Stack!>`_.
+
+The rest of the sections outline the basic machine that the language targets and how the compiler adapts this "abstract"
+machine to the Digirule 2U hardware. 
+
 
 From brainfuck to Super Stack! 
 ------------------------------
@@ -70,6 +81,8 @@ And finally, the Super Stack! system can read a value from the input and output 
 similar to brainuck's facilities, *but*, Super Stack! extends those because in addition to ``input, output``, it also 
 has commands ``inputascii, outputascii`` and these can be mapped to different "devices" on the 2U Digirule model.
 
+
+.. _sust_lang:
 
 The Super Stack! language
 -------------------------
@@ -465,6 +478,9 @@ Here is the general skeleton of a Super Stack! program transpiled in Digirule AS
     .DB 1,2
     stack_offset:     # stack_offset is a label and at program initialisation always points at the end of the stack.
 
+
+
+.. _compile_sust_dgtools:
 
 Using `dgtools` to compile Super Stack! programs
 ------------------------------------------------

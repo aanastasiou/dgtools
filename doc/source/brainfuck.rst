@@ -1,6 +1,17 @@
 Brainfuck
 =========
 
+This section describes a brainfuck compiler that produces an almost one-to-one mapping between brainfuck 
+commands and their implementation in Digirule 2U ASM code. 
+
+If you simply want to know how to compile brainfuck programs using dgtools, you can jump straight to 
+:ref:`compile_bf_dgtools`.
+
+For a brief overview of brainfuck's commands, see section :ref:`bf_lang`.
+
+The rest of the sections outline the basic machine that the language targets and how the compiler adapts it to the 
+Digirule 2U hardware. 
+
 Brain what?...and why?
 ----------------------
 
@@ -74,6 +85,8 @@ Brainfuck targets a "machine" that is composed of the following peripherals:
 4. An input device; and 
 5. An output device.
 
+
+.. _bf_lang:
 
 The instruction set
 ^^^^^^^^^^^^^^^^^^^
@@ -277,6 +290,8 @@ In the end, the "skeleton" of a given brainfuck program always follows the follo
 And this is it, a brainfuck compiler by which we can program the Digirule without 
 using a single ASM instruction.
 
+
+.. _compile_bf_dgtools:
 
 Using `dgtools` to compile brainfuck programs
 ---------------------------------------------
