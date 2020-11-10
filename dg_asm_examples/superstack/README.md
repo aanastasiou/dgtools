@@ -37,3 +37,6 @@ you will compile and simulate the DEFAULT selection from below.
 
 * `xor.ssf`
     * Calculate a 2-input XOR by doing !AB + A!B
+
+* ``add_two_nums.dsf``
+    * This is simply the compiled ``add_two_nums.ssf``

@@ -1,0 +1,64 @@
+.EQU status_reg=252
+.EQU in_dev=253
+.EQU out_dev=255
+.EQU zero_bit=0
+.EQU carry_bit=1
+COPYLR stack head_ptr
+start_program:
+COPYRR in_dev head_val
+CALL f_push
+COPYRR in_dev head_val
+CALL f_push
+COPYLR f_add f_custom_ins
+CALL f_binary_unary
+CALL f_pop
+COPYRR head_val out_dev
+HALT
+HALT
+f_stack_error:
+COPYLR 0xFF out_dev
+JUMP f_stack_error
+f_binary_unary:
+CALL f_pop
+COPYRR head_val head_val_1
+f_unary:
+CALL f_pop
+CALLI f_custom_ins
+CALL f_push
+RETURN
+f_push:
+COPYRA head_ptr
+SUBLA 253
+BCRSC zero_bit status_reg
+JUMP f_stack_error
+COPYRI head_val head_ptr
+INCR head_ptr
+RETURN
+
+f_add:
+COPYRA head_val_1
+CBR carry_bit status_reg
+ADDRA head_val
+COPYAR head_val
+RETURN
+f_custom_ins:
+.DB 0
+head_val:
+.DB 0
+head_val_1:
+.DB 0
+RETURN
+f_pop:
+COPYRA head_ptr
+CBR carry_bit status_reg
+SUBLA stack
+BCRSC zero_bit status_reg
+JUMP f_stack_error
+DECR head_ptr
+COPYIR head_ptr head_val
+RETURN
+
+head_ptr:
+.DB 0
+stack:
+.DB 0

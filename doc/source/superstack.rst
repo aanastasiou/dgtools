@@ -2,8 +2,8 @@ Super Stack!
 ============
 
 
-Super Stack! by way of brainfuck
---------------------------------
+From brainfuck to Super Stack! 
+------------------------------
 
 If you tried to write some programs with brainfuck, you may have found yourself working with data "locally".
 That is, even though brainfuck does not impose any restrictions on how exactly memory can be accessed (Random Access), 
@@ -19,15 +19,17 @@ In fact, there is a whole class of computing machines whose operation does not r
 These are the `Stack machines <https://en.wikipedia.org/wiki/Stack_machine>`_.
 
 Stack machines represent yet another model of computation that is **immensely** practical. It therefore made sense to 
-demonstrate its properties over a resource constrained CPU system such as the one on the Digirule.
+try to explore it over a resource constrained CPU system such as the one on the Digirule.
 
-For this purpose, I selected `Super Stack! <https://esolangs.org/wiki/Super_Stack!>`_, an esoteric minimalist stack 
-based language that is higher level than brainfuck and closer to more "natural ways" of programming computers.
+For this purpose, I selected `Super Stack! <https://esolangs.org/wiki/Super_Stack!>`_.
 
-This section documents a Super Stack! compiler that emits Digirule Assembly. 
+Super Stack! is an esoteric stack based language designed by `Orange <https://esolangs.org/wiki/Super_Stack!>`_. It 
+is higher level than brainfuck and closer to more "natural ways" of programming computers. 
+
+This section documents a Super Stack! compiler that reads in Super Stack! and emits the equivalent Digirule Assembly. 
 
 Just as it was done for brainfuck, we first show the basic parts of the "machine" that the language 
-assumes and then proceeds with the implementation in Digirule ASM and finally some indicative Super Stack! programs.
+assumes and then proceed with the implementation in Digirule ASM and finally an indicative Super Stack! program.
 
 
 The Super Stack! "system"
@@ -50,7 +52,7 @@ pointer) that can only be controlled via two operations and **never** directly:
 #. ``Pop``, to remove a value from the stack
 
 Both of these operations **always** reference the **top** of the stack, a mode of accessing it that is also known 
-as `First In First Out (FIFO) <https://en.wikipedia.org/wiki/Stack_(abstract_data_type)>`_.
+as `First In First Out (LIFO) <https://en.wikipedia.org/wiki/Stack_(abstract_data_type)>`_.
 
 
 Arithmetic Logic Unit
@@ -184,7 +186,7 @@ and
     COPYRR some_symbol out_dev
     
 Where ``in_dev, out_dev`` are the Digirule registers, here defined with dgasm directive ``.EQU`` (see section 
-:ref:`_sust_prol_epi` for their definition).
+:ref:`sust_prol_epi` for their definition).
 
 Similarly, the ascii counterparts expand to:
 
@@ -258,9 +260,10 @@ execution and ``rev`` will reverse the stack whether it contains zero or more va
 It is worth showing here very briefly the key idea of the progressive
 reductions that these patterns lead us to perform:
 
-The binary functions, conform to :math:`y = f(x_1,x_2)` and therefore, in ASM, all end up looking like:
+The binary functions, conform to :math:`y \leftarrow f(x_1,x_2)` and therefore, in ASM, all end up looking like:
 
 ::
+
     Binary Function Call Pattern:
     
     pop op1
@@ -269,7 +272,7 @@ The binary functions, conform to :math:`y = f(x_1,x_2)` and therefore, in ASM, a
     push result
     return
         
-This pattern *includes* the unary pattern too, where functions look like :math:`y=f(x_1)` :
+This pattern *includes* the unary pattern too, where functions look like :math:`y \leftarrow f(x_1)` :
 
 ::
 
@@ -286,8 +289,8 @@ This pattern *includes* the unary pattern too, where functions look like :math:`
 And finally, we have the nullary functions and those unary ones that do not receive any parameters from the stack, 
 **but** do return values on it.
 
-In a naive implementation, the program ``[1 1 add 2 sub]`` (or ``1 + 1 - 2``) would include this pattern twice when
-the only difference between the two calls is the ``call binary_function`` part. 
+In a naive implementation, the program ``[1 1 add 2 sub]`` (or ``1 + 1 - 2``) would include this basic skeleton twice 
+when the only difference between the two calls is in just the one line that contains the ``call binary_function`` part. 
 
 To avoid this duplication, we can capture this general pattern in a ``generic_binary`` function whose only parameter 
 is which function to call after it has poped two values from the stack. And in doing so, we would also be reducing 
@@ -340,7 +343,7 @@ are simply called directly.
     re-written as ``pop cycle push``, to show that it does not modify the stack, but it would not be wise to implement
     it exactly like this, because calls to ``push`` and ``pop`` are costly.
 
-:: _sust_prol_epi:
+.. _sust_prol_epi:
 
 Prologue and epilogue parts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -362,17 +365,24 @@ Finally, the epilogue part includes declarations for setting up the stack, its h
 the "dependencies" imposed by commands earlier in the program (e.g. the sub-routines that implement the Super Stack! 
 functions).
 
+
 Handling errors
 ~~~~~~~~~~~~~~~
+
 What happens if we try to pop the empty stack or push on to a full stack?
 
-An error condition.
+Very bad things. The way programs are laid out in the 256 bytes of memory is to place the code first, followed by the 
+stack memory space, followed by the memory mapped devices. Therefore, any unchecked underflow would start erasing code 
+and similarly any unchecked overflow would overwrite the status register which usually holds temporary state for 
+iterations.
 
-Both the ``f_push`` and ``f_pop`` operations perform checks before carrying out their operation and never allow the 
-stack to over or under flow. This error condition is handled by ``f_stack_error``. This is included along with a 
-typical ``f_push, f_pop`` pair:
+To avoid this, both the ``f_push`` and ``f_pop`` operations perform checks before carrying out their operation and 
+never allow the stack to over or under flow. This error condition is handled by ``f_stack_error`` which simply
+turns the data LEDs on and stops the execution of the program. ``f_stack_error`` is included  along with a typical 
+``f_push, f_pop`` pair forming the block:
 
-:: DigiruleASM
+::
+
     f_push:
     COPYRA head_ptr
     SUBLA 253
@@ -397,7 +407,6 @@ typical ``f_push, f_pop`` pair:
     JUMP f_stack_error
 
 
-This is signaled on the Digirule 2U hardware by turning the LEDs on and stopping the execution of the program.
 
 Putting it all together
 -----------------------
@@ -406,16 +415,23 @@ Here is the general skeleton of a Super Stack! program transpiled in Digirule AS
 
 ::
 
+    # PROLOGUE
+    # Sets up basic symbols and the stack
+    
     .EQU status_reg=252
     .EQU in_dev=253
     .EQU out_dev=255
     .EQU zero_bit=0
     .EQU carry_bit=1
     COPYLR stack_offset head_ptr    # Initialise stack
+    
+    # MAIN PROGRAM
     start_program:
     ...
     ...
     HALT
+    
+    # SUB-ROUTINES
     f_add:
     CALL f_preamble
     COPYRA head_val_1
@@ -435,16 +451,19 @@ Here is the general skeleton of a Super Stack! program transpiled in Digirule AS
     ...
     f_custom_ins:
     .DB 0
+    # INTERNAL TEMPORARY REGISTERS / COMMAND ARGUMENTS
     head_val:
     .DB 0
     head_val_1:
     .DB 0
     RETURN
-    head_ptr:
+    
+    # STACK
+    head_ptr:         # The head pointer keeps track of the top of the stack
     .DB 0
     stack:
     .DB 1,2
-    stack_offset:
+    stack_offset:     # stack_offset is a label and at program initialisation always points at the end of the stack.
 
 
 Using `dgtools` to compile Super Stack! programs
@@ -459,7 +478,7 @@ Given the Super Stack! code in some file ``sust_code.ssf``, a typical command li
 
 ::
 
-    \> dgsust.py sust_code.ssf>asm_code.dsf    # Brainfuck --> Assembly
+    \> dgsust.py sust_code.ssf>asm_code.dsf    # Super Stack! --> Assembly
     \> dgasm.py asm_code.dsf -g 2U             # Assembly --> Executable (Notice that the target is 2U)
     \> dgsim.py asm_code.dgb -I                # Simulation
     \> xdg-open asm_code_trace.html            # Output
@@ -479,12 +498,44 @@ Let's try this with a simple program.
 ``Hello World`` in Super Stack!
 -------------------------------
 
-Most ``hello world`` programs are just that: A snippet of code that outputs that phrase. Here however we are taking a 
-different approach, demonstrating a couple of different ways that we can do addition.
+Most ``hello world`` programs are just that: A snippet of code that outputs that phrase. This is possible on the 
+Digirule 2U, but frankly, quite boring. All that you do is load a bunch of bytes on the stack and shift them out to the 
+serial interface.
 
-The most straightforward way  
+Instead, just as it was done for brainfuck,  we are taking a different approach, demonstrating addition. The following 
+program accepts two numbers from the user, adds them and turns the data LEDs on.
+
+In Super Stack! :
+
+::
+
+    input   # Reads a value from the keyboard and pushes it on the stack
+    input   # Repeats the above
+    add     # Pops the top two values, adds them and puses the result on 
+            # to the stack
+    output  # Pops the top value and sends it to the data LEDs
+    quit
+
+This is compiled down to Digirule ASM as:
+
+.. literalinclude:: ../../dg_asm_examples/superstack/add_two_nums.dsf
+    :language: DigiruleASM
+    :linenos:
+
 
 
 Conclusion
 ----------
 
+Super Stack! captures the simplicity and power of stack based computing and is a perfect fit for programming on  
+resource constrained CPUs such as the Digirule.
+
+Although it is an "esolang", it is already very close to a usable language. With a little bit of effort we can turn 
+the ``if, fi`` pair to an ``if [run this] else [run this] fi`` kind of construct. And with a little bit more effort we 
+can add the ability to work with references so that we can push arbitrary values from anywhere in memory on to the stack.
+And at that point, we would also be able to "tag" a certain portion of the stack with a symbol so that when it is 
+next "seen", it executes that portion of the stack. This would then pave the way for the ability to write arbitrary 
+precision arithmetic functions and to an extent introduce rudimentary "data types".
+
+But if we did all this, we would have then derived `Forth <https://en.wikipedia.org/wiki/Forth_(programming_language)>`_, 
+out of Super Stack!
