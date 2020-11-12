@@ -3,13 +3,18 @@ Super Stack!
 
 This section describes the process behind creating a Super Stack! compiler that produces efficient Digirule 2U ASM code. 
 
+Super Stack! is a stack based language with 26 commands and its syntax follows the postfix notation. The abstract machine 
+that Super Stack! addresses corresponds nicely with the peripherals of a resource constrained CPU such as the Digirule.
+Specifically, with the dgtools Super Stack! compiler you can produce code that uses both the onboard keyboard, led display 
+as well as the serial port. 
+
 If you simply want to know how to compile Super Stack! programs using dgtools, you can jump straight to 
 :ref:`compile_sust_dgtools`.
 
-For a brief overview of Super Stack!'s commands, see section :ref:`sust_lang` and 
+For a brief overview of Super Stack!'s commands and syntax, see section :ref:`sust_lang` and 
 `this link <https://esolangs.org/wiki/Super_Stack!>`_.
 
-The rest of the sections outline the basic machine that the language targets and how the compiler adapts this "abstract"
+The rest of the sections outline the abstract machine that the language targets and how the compiler adapts this "abstract"
 machine to the Digirule 2U hardware. 
 
 
@@ -99,27 +104,27 @@ The complete set of commands is as follows:
 +------------------------------------------+-------------------------------------------------------------------------+
 | **Arithmetic commands**                                                                                            |
 +------------------------------------------+-------------------------------------------------------------------------+
-| ``add``                                  | Pops two numbers, adds them, *pushes the result on the stack* (ptronts) |
+| ``add``                                  | Pops two numbers, adds them, *Pushes The Result On The Stack* (ptrots)  |
 +------------------------------------------+-------------------------------------------------------------------------+
-| ``sub``                                  | Pops two numbers, subtracts **the first from the second**, ptronts      |
+| ``sub``                                  | Pops two numbers, subtracts **the first from the second**, ptrots       |
 +------------------------------------------+-------------------------------------------------------------------------+
-| ``mul``                                  | Pops two numbers, multiplies them, ptronts.                             |
+| ``mul``                                  | Pops two numbers, multiplies them, ptrots.                              |
 +------------------------------------------+-------------------------------------------------------------------------+
-| ``div``                                  | Pops two numbers, divides **the first by the second**, ptronts          |
+| ``div``                                  | Pops two numbers, divides **the first by the second**, ptrots           |
 +------------------------------------------+-------------------------------------------------------------------------+
 | ``mod``                                  | Pops two numbers, performs ``div``, pushes the modulo of that ``div``   |
 +------------------------------------------+-------------------------------------------------------------------------+
-| ``shl`` (Added in Digirule Super Stack!) | Pops two numbers, shifts the first left by the second bits, ptronts     |
+| ``shl`` (Added in Digirule Super Stack!) | Pops two numbers, shifts the first left by the second bits, ptrots      |
 +------------------------------------------+-------------------------------------------------------------------------+
 | ``shr`` (Added in Digirule Super Stack!) | Same as ``shl`` but shifts to the right                                 |
 +------------------------------------------+-------------------------------------------------------------------------+
 | **Logic commands**                                                                                                 |
 +------------------------------------------+-------------------------------------------------------------------------+
-| ``and``                                  | Pops two numbers, applies AND, ptronts.                                 |
+| ``and``                                  | Pops two numbers, applies AND, ptrots.                                  |
 +------------------------------------------+-------------------------------------------------------------------------+
-| ``or``                                   | Pops two numbers, applies OR, ptronts.                                  |
+| ``or``                                   | Pops two numbers, applies OR, ptrots.                                   |
 +------------------------------------------+-------------------------------------------------------------------------+
-| ``xor``                                  | Pops two numbers, applies XOR, ptronts.                                 |
+| ``xor``                                  | Pops two numbers, applies XOR, ptrots.                                  |
 +------------------------------------------+-------------------------------------------------------------------------+
 | ``nand``                                 | **Not implemented.** Substitute with ``and 255 xor``                    |
 +------------------------------------------+-------------------------------------------------------------------------+
@@ -130,7 +135,7 @@ The complete set of commands is as follows:
 | ``output``                               | Pops the top number sends it to the output followed by a space char.    |
 |                                          | **On the Digirule:** Sends the number to the Data Leds.                 |
 +------------------------------------------+-------------------------------------------------------------------------+
-| ``input``                                | Receives a single number from input and push it on the stack.           |
+| ``input``                                | Receives a single number from input and pushes it on the stack.         |
 |                                          | **On the Digirule:** Asks for user input from the onboard keyboard.     |
 +------------------------------------------+-------------------------------------------------------------------------+
 | ``outputascii``                          | Pops the top number and outputs it as an ascii character.               |
@@ -171,6 +176,49 @@ The complete set of commands is as follows:
 | ``debug``                                | Outputs the entire stack. (Does not pop anything).                      |
 |                                          | Not implemented on the Digirule.                                        | 
 +------------------------------------------+-------------------------------------------------------------------------+
+
+The structure of the language, the way the arguments are passed to the commands and the way the commands themselves 
+are then called, is also following the "stack" way of accessing the memory.
+
+This is most commonly known as `Reverse Polish Notation <https://en.wikipedia.org/wiki/Reverse_Polish_notation>`_, or,
+**postfix** notation and it might feel a little bit odd at first but is incredibly practical.
+
+With postfix notation, the arguments to a command are given **BEFORE** the command itself. Consider addition for example, 
+denoted here by the familiar **+** symbol. The most common way to express an addition is by writing something like:
+:math:`1+1`. Here, the operator is placed *between* the operands following the `infix notation <https://en.wikipedia.org/wiki/Infix_notation>`_.
+
+The exact same thing but written in **post** fix notation is expressed as :math:`1 1 +`. 
+
+This is an incredibly useful way of thinking about expressions (mentally) that also translates to a very easy way of 
+parsing them so that they can be processed by a program. 
+
+Consider for example, the expression :math:`3 \times 4 + 5 \times 9`. Parsing this example in infix 
+notation *requires* that we first locate the multiplications and somehow first reduce them to their results 
+before performing the addition.
+
+With postfix notation, the same expression is written as :math:`\text{3 4} \times \text{5 9} \times +`. Notice here how 
+the multiplications are carried out independently while at the same time preparing the operands for the addition.
+
+We could further break down that 9 into a :math:`2 \times 4 + 1`, resulting in 
+:math:`\text{3 4} \times \text{5 2 4} \times 1 + \times +`. 
+This would result in the following series of operations: 
+:math:`( (\text{3 4} \times) (5 ( (\text{2 4} \times) 1 + ) \times) + )`.
+
+Notice here how the expression is evaluated from left to right simply by "pushing" the operands on the stack, followed 
+by the operator. When an operator is encountered, two operands are poped from the stack, the result is worked out and 
+the result itself is then pushed on to the stack where it can partcipate to the next operation and so on.
+
+Here is what this looks like for :math:`\text{3 4} \times \text{5 9} \times +`. Notice here that the top of the stack 
+is the right-most element:
+
+::
+
+    stack=[]
+    stack=[3 4 *]
+    stack=[12]
+    stack=[12 5 9 *]
+    stack=[12 45 +]
+    stack=[57]
 
 
 From Super Stack! to Digirule ASM
@@ -285,7 +333,7 @@ The binary functions, conform to :math:`y \leftarrow f(x_1,x_2)` and therefore, 
     push result
     return
         
-This pattern *includes* the unary pattern too, where functions look like :math:`y \leftarrow f(x_1)` :
+This pattern *includes* the unary pattern too, where functions look like :math:`y \leftarrow g(x_1)` :
 
 ::
 
@@ -300,7 +348,7 @@ This pattern *includes* the unary pattern too, where functions look like :math:`
     return
     
 And finally, we have the nullary functions and those unary ones that do not receive any parameters from the stack, 
-**but** do return values on it.
+**but** do return values on it (that is :math:`y \leftarrow h()`).
 
 In a naive implementation, the program ``[1 1 add 2 sub]`` (or ``1 + 1 - 2``) would include this basic skeleton twice 
 when the only difference between the two calls is in just the one line that contains the ``call binary_function`` part. 
@@ -309,8 +357,8 @@ To avoid this duplication, we can capture this general pattern in a ``generic_bi
 is which function to call after it has poped two values from the stack. And in doing so, we would also be reducing 
 duplication for unary functions, since they are **nested** in the binary pattern.
 
-The same observation holds for nullary functions that *return a result*. These conform to the :math:`y \leftarrow f()` pattern and 
-basically imply just calling the function. In this case however, there is no additional memory saving from 
+The same observation holds for nullary functions that *return a result*. These conform to the :math:`y \leftarrow f()` 
+pattern and basically imply just calling the function. In this case however, there is no additional memory saving from 
 embeding them one level down in the *Binary/Unary* function pattern. This is because a call to *Binary/Unary* costs 
 5 bytes: 3 bytes to set the ``binary_unary_function`` it needs to call and 2 bytes to make the call. 
 
