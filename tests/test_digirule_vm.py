@@ -23,13 +23,13 @@ def get_vm_hash(dg_vm):
     :returns: A hash that is derived by all variables that contribute to the VM's state.
     :rtype: int
     """
-    hash_obj = list(dg_vm._mem)
-    hash_obj.extend([dg_vm._acc,
-                     dg_vm._pc,
-                     dg_vm._mem[252], 
-                     dg_vm._mem[253], 
-                     dg_vm._mem[254], 
-                     dg_vm._mem[255]])
+    hash_obj = list(dg_vm.mem._mem)
+    #hash_obj.extend([dg_vm._acc,
+    ##                 dg_vm._pc,
+    #                 dg_vm._mem[252], 
+    #                 dg_vm._mem[253], 
+    #                 dg_vm._mem[254], 
+    #                 dg_vm._mem[255]])
     hash_obj.extend(dg_vm._ppc)
     return hash(base64.b64encode(bytearray(hash_obj)))
     
@@ -47,8 +47,9 @@ def get_vm_hash_after_exec(a_program, use_this_vm=None):
     """
     if use_this_vm is None:
         vm = Digirule()
-        vm.load_program(a_program)
-        vm.goto(0)
+        vm.mem.load(a_program)
+        # vm.mem.load(a_program)
+        vm.pc = 0
     else:
         vm = use_this_vm
         
@@ -67,10 +68,6 @@ def test_constants():
     assert vm._ZERO_FLAG_BIT == 1
     assert vm._CARRY_FLAG_BIT == 2
     assert vm._ADDRLED_FLAG_BIT == 4
-    assert vm._status_reg_ptr == 252
-    assert vm._bt_reg_ptr == 253
-    assert vm._addrled_reg_ptr == 254
-    assert vm._dataled_reg_ptr == 255
     assert vm._interactive_callback is None
 
     
@@ -101,7 +98,7 @@ def test_NOP():
     vm_hash = get_vm_hash_after_exec(test_program)
     
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
+    vm_expected.mem.load(test_program)
     vm_expected._pc = 2
     assert get_vm_hash(vm_expected) == vm_hash
     
@@ -117,7 +114,7 @@ def test_SPEED():
     vm_hash = get_vm_hash_after_exec(test_program)
     
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
+    vm_expected.mem.load(test_program)
     vm_expected._pc = 3
     vm_expected._speed_setting = 3
     
@@ -135,9 +132,9 @@ def test_COPYLR():
     vm_hash = get_vm_hash_after_exec(test_program)
     
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
+    vm_expected.mem.load(test_program)
     vm_expected._pc = 4
-    vm_expected._mem[4] = 42
+    vm_expected.mem[4] = 42
     
     assert get_vm_hash(vm_expected) == vm_hash
 
@@ -153,7 +150,7 @@ def test_COPYLA():
     vm_hash = get_vm_hash_after_exec(test_program)
     
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
+    vm_expected.mem.load(test_program)
     vm_expected._acc = 42
     vm_expected._pc = 3
     
@@ -171,8 +168,8 @@ def test_COPYAR():
     vm_hash = get_vm_hash_after_exec(test_program)
     
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
-    vm_expected._mem[3] = 0
+    vm_expected.mem.load(test_program)
+    vm_expected.mem[3] = 0
     vm_expected._pc = 3
     
     assert get_vm_hash(vm_expected) == vm_hash
@@ -189,7 +186,7 @@ def test_COPYRA():
     vm_hash = get_vm_hash_after_exec(test_program)
     
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
+    vm_expected.mem.load(test_program)
     vm_expected._acc = 42
     vm_expected._pc = 3
     
@@ -207,8 +204,8 @@ def test_COPYRR():
     vm_hash = get_vm_hash_after_exec(test_program)
     
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
-    vm_expected._mem[5] = 42
+    vm_expected.mem.load(test_program)
+    vm_expected.mem[5] = 42
     vm_expected._pc = 4
     
     assert get_vm_hash(vm_expected) == vm_hash
@@ -223,14 +220,14 @@ def test_ADDLA():
     """
     test_program = [8, 1, 0]
     vm = Digirule()
-    vm.load_program(test_program)
+    vm.mem.load(test_program)
     vm._acc = 0xFF
     vm_hash = get_vm_hash_after_exec(test_program, vm)
     
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
+    vm_expected.mem.load(test_program)
     vm_expected._acc = 0
-    vm_expected._mem[252] = 3
+    vm_expected.mem[252] = 3
     vm_expected._pc = 3
     
     assert get_vm_hash(vm_expected) == vm_hash
@@ -245,14 +242,14 @@ def test_ADDRA():
     """
     test_program = [9, 3, 0, 1]
     vm = Digirule()
-    vm.load_program(test_program)
+    vm.mem.load(test_program)
     vm._acc = 0xFF
     vm_hash = get_vm_hash_after_exec(test_program, vm)
     
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
+    vm_expected.mem.load(test_program)
     vm_expected._acc = 0
-    vm_expected._mem[252] = 3
+    vm_expected.mem[252] = 3
     vm_expected._pc = 3
     
     assert get_vm_hash(vm_expected) == vm_hash
@@ -270,14 +267,14 @@ def test_SUBLA():
     
     # Test setting the zero flag
     vm = Digirule()
-    vm.load_program(test_program)
+    vm.mem.load(test_program)
     vm._acc = 1
     vm_hash = get_vm_hash_after_exec(test_program, vm)
     
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
+    vm_expected.mem.load(test_program)
     vm_expected._acc = 0
-    vm_expected._mem[252] = 1
+    vm_expected.mem[252] = 1
     vm_expected._pc = 3
     
     assert get_vm_hash(vm_expected) == vm_hash, "Failed the zero flag part of the test."
@@ -287,7 +284,7 @@ def test_SUBLA():
     vm.goto(0)
     vm_hash = get_vm_hash_after_exec(test_program, vm)
     vm_expected._acc = 0xFF
-    vm_expected._mem[252] = 2
+    vm_expected.mem[252] = 2
 
     assert get_vm_hash(vm_expected) == vm_hash, "Failed the carry flag part of the test."
     
@@ -304,14 +301,14 @@ def test_SUBRA():
     
     # Test setting the zero flag
     vm = Digirule()
-    vm.load_program(test_program)
+    vm.mem.load(test_program)
     vm._acc = 1
     vm_hash = get_vm_hash_after_exec(test_program, vm)
     
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
+    vm_expected.mem.load(test_program)
     vm_expected._acc = 0
-    vm_expected._mem[252] = 1
+    vm_expected.mem[252] = 1
     vm_expected._pc = 3
     
     assert get_vm_hash(vm_expected) == vm_hash, "Failed the zero flag part of the test."
@@ -321,7 +318,7 @@ def test_SUBRA():
     vm.goto(0)
     vm_hash = get_vm_hash_after_exec(test_program, vm)
     vm_expected._acc = 0xFF
-    vm_expected._mem[252] = 2
+    vm_expected.mem[252] = 2
 
     assert get_vm_hash(vm_expected) == vm_hash, "Failed the carry flag part of the test."
 
@@ -339,9 +336,9 @@ def test_ANDLA():
     vm_hash = get_vm_hash_after_exec(test_program)
     
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
+    vm_expected.mem.load(test_program)
     vm_expected._acc = 0
-    vm_expected._mem[252] = 1
+    vm_expected.mem[252] = 1
     vm_expected._pc = 3
     
     assert get_vm_hash(vm_expected) == vm_hash
@@ -360,9 +357,9 @@ def test_ANDRA():
     vm_hash = get_vm_hash_after_exec(test_program)
     
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
+    vm_expected.mem.load(test_program)
     vm_expected._acc = 0
-    vm_expected._mem[252] = 1
+    vm_expected.mem[252] = 1
     vm_expected._pc = 3
     
     assert get_vm_hash(vm_expected) == vm_hash
@@ -381,9 +378,9 @@ def test_ORLA():
     vm_hash = get_vm_hash_after_exec(test_program)
     
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
+    vm_expected.mem.load(test_program)
     vm_expected._acc = 0
-    vm_expected._mem[252] = 1
+    vm_expected.mem[252] = 1
     vm_expected._pc = 3
     
     assert get_vm_hash(vm_expected) == vm_hash
@@ -401,9 +398,9 @@ def test_ORRA():
     vm_hash = get_vm_hash_after_exec(test_program)
     
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
+    vm_expected.mem.load(test_program)
     vm_expected._acc = 0
-    vm_expected._mem[252] = 1
+    vm_expected.mem[252] = 1
     vm_expected._pc = 3
     
     assert get_vm_hash(vm_expected) == vm_hash
@@ -421,14 +418,14 @@ def test_XORLA():
     test_program = [16, 0xFF, 0]
     
     vm = Digirule()
-    vm.load_program(test_program)
+    vm.mem.load(test_program)
     vm._acc = 0xFF
     vm_hash = get_vm_hash_after_exec(test_program, vm)
     
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
+    vm_expected.mem.load(test_program)
     vm_expected._acc = 0
-    vm_expected._mem[252] = 1
+    vm_expected.mem[252] = 1
     vm_expected._pc = 3
     
     assert get_vm_hash(vm_expected) == vm_hash
@@ -446,14 +443,14 @@ def test_XORRA():
     test_program = [17, 3, 0, 0xFF]
     
     vm = Digirule()
-    vm.load_program(test_program)
+    vm.mem.load(test_program)
     vm._acc = 0xFF
     vm_hash = get_vm_hash_after_exec(test_program, vm)
     
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
+    vm_expected.mem.load(test_program)
     vm_expected._acc = 0x00
-    vm_expected._mem[252] = 1
+    vm_expected.mem[252] = 1
     vm_expected._pc = 3
     
     assert get_vm_hash(vm_expected) == vm_hash
@@ -471,9 +468,9 @@ def test_DECR():
     vm_hash = get_vm_hash_after_exec(test_program)
     
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
-    vm_expected._mem[3] = 0
-    vm_expected._mem[252] = 1
+    vm_expected.mem.load(test_program)
+    vm_expected.mem[3] = 0
+    vm_expected.mem[252] = 1
     vm_expected._pc = 3
     
     assert get_vm_hash(vm_expected) == vm_hash
@@ -491,9 +488,9 @@ def test_INCR():
     vm_hash = get_vm_hash_after_exec(test_program)
     
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
-    vm_expected._mem[3] = 0
-    vm_expected._mem[252] = 1
+    vm_expected.mem.load(test_program)
+    vm_expected.mem[3] = 0
+    vm_expected.mem[252] = 1
     vm_expected._pc = 3
     
     assert get_vm_hash(vm_expected) == vm_hash
@@ -509,13 +506,13 @@ def test_DECRJZ():
     test_program = [20, 3, 0, 0x02, 0x00]
     
     vm = Digirule()
-    vm.load_program(test_program)
+    vm.mem.load(test_program)
     vm_hash = get_vm_hash_after_exec(test_program, vm)
     
     # Test normal execution without hitting zero
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
-    vm_expected._mem[3] = 0x01
+    vm_expected.mem.load(test_program)
+    vm_expected.mem[3] = 0x01
     vm_expected._pc = 3
     
     assert get_vm_hash(vm_expected) == vm_hash, "Failed to continue when condition not met."
@@ -527,8 +524,8 @@ def test_DECRJZ():
     with pytest.raises(DgtoolsErrorProgramHalt):
         vm.run()
     vm_hash = get_vm_hash(vm)
-    vm_expected._mem[3] = 0x00
-    vm_expected._mem[252] = 1
+    vm_expected.mem[3] = 0x00
+    vm_expected.mem[252] = 1
     vm_expected._pc = 5
 
     assert get_vm_hash(vm_expected) == vm_hash, "Failed in jumping when condition is met."
@@ -544,13 +541,13 @@ def test_INCRJZ():
     test_program = [21, 3, 0, 0xFE, 0x00]
     
     vm = Digirule()
-    vm.load_program(test_program)
+    vm.mem.load(test_program)
     vm_hash = get_vm_hash_after_exec(test_program, vm)
     
     # Test normal execution without hitting zero
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
-    vm_expected._mem[3] = 0xFF
+    vm_expected.mem.load(test_program)
+    vm_expected.mem[3] = 0xFF
     vm_expected._pc = 3
     
     assert get_vm_hash(vm_expected) == vm_hash, "Failed to continue when condition not met."
@@ -559,8 +556,8 @@ def test_INCRJZ():
     with pytest.raises(DgtoolsErrorProgramHalt):
         vm.run()
     vm_hash = get_vm_hash(vm)
-    vm_expected._mem[3] = 0x00
-    vm_expected._mem[252] = 1
+    vm_expected.mem[3] = 0x00
+    vm_expected.mem[252] = 1
     vm_expected._pc = 5
 
     assert get_vm_hash(vm_expected) == vm_hash, "Failed in jumping when condition is met."
@@ -576,14 +573,14 @@ def test_SHIFTRL():
     test_program = [22, 3, 0, 0x81]
     
     vm = Digirule()
-    vm.load_program(test_program)
+    vm.mem.load(test_program)
     vm_hash = get_vm_hash_after_exec(test_program, vm)
     
     # Test normal execution without hitting zero
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
-    vm_expected._mem[3] = 0x02
-    vm_expected._mem[252] = 0x02
+    vm_expected.mem.load(test_program)
+    vm_expected.mem[3] = 0x02
+    vm_expected.mem[252] = 0x02
     vm_expected._pc = 3
     
     assert get_vm_hash(vm_expected) == vm_hash
@@ -599,14 +596,14 @@ def test_SHIFTRR():
     test_program = [23, 3, 0, 0x81]
     
     vm = Digirule()
-    vm.load_program(test_program)
+    vm.mem.load(test_program)
     vm_hash = get_vm_hash_after_exec(test_program, vm)
     
     # Test normal execution without hitting zero
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
-    vm_expected._mem[3] = 0x40
-    vm_expected._mem[252] = 0x02
+    vm_expected.mem.load(test_program)
+    vm_expected.mem[3] = 0x40
+    vm_expected.mem[252] = 0x02
     vm_expected._pc = 3
     
     assert get_vm_hash(vm_expected) == vm_hash
@@ -622,13 +619,13 @@ def test_CBR():
     test_program = [24, 5, 4, 0, 0xFF]
     
     vm = Digirule()
-    vm.load_program(test_program)
+    vm.mem.load(test_program)
     vm_hash = get_vm_hash_after_exec(test_program, vm)
     
     # Test normal execution without hitting zero
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
-    vm_expected._mem[4] = 0xDF
+    vm_expected.mem.load(test_program)
+    vm_expected.mem[4] = 0xDF
     vm_expected._pc = 4
     
     assert get_vm_hash(vm_expected) == vm_hash
@@ -644,13 +641,13 @@ def test_SBR():
     test_program = [25, 5, 4, 0, 0x00]
     
     vm = Digirule()
-    vm.load_program(test_program)
+    vm.mem.load(test_program)
     vm_hash = get_vm_hash_after_exec(test_program, vm)
     
     # Test normal execution without hitting zero
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
-    vm_expected._mem[4] = 32
+    vm_expected.mem.load(test_program)
+    vm_expected.mem[4] = 32
     vm_expected._pc = 4
     
     assert get_vm_hash(vm_expected) == vm_hash
@@ -670,11 +667,11 @@ def test_BCRSC():
     vm_hash_when_set = get_vm_hash_after_exec(test_program_bit_set)
     
     vm_expected_clear = Digirule()
-    vm_expected_clear.load_program(test_program_bit_clear)
+    vm_expected_clear.mem.load(test_program_bit_clear)
     vm_expected_clear._pc = 6
     
     vm_expected_set = Digirule()
-    vm_expected_set.load_program(test_program_bit_set)
+    vm_expected_set.mem.load(test_program_bit_set)
     vm_expected_set._pc = 4
     
     assert vm_hash_when_clear == get_vm_hash(vm_expected_clear), "Failed when bit is clear."
@@ -695,11 +692,11 @@ def test_BCRSS():
     vm_hash_when_set = get_vm_hash_after_exec(test_program_bit_set)
     
     vm_expected_clear = Digirule()
-    vm_expected_clear.load_program(test_program_bit_clear)
+    vm_expected_clear.mem.load(test_program_bit_clear)
     vm_expected_clear._pc = 4
     
     vm_expected_set = Digirule()
-    vm_expected_set.load_program(test_program_bit_set)
+    vm_expected_set.mem.load(test_program_bit_set)
     vm_expected_set._pc = 6
     
     assert vm_hash_when_clear == get_vm_hash(vm_expected_clear), "Failed when bit is clear."
@@ -717,7 +714,7 @@ def test_JUMP():
     vm_hash = get_vm_hash_after_exec(test_program)
     
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
+    vm_expected.mem.load(test_program)
     vm_expected._pc = 4
     
     assert vm_hash == get_vm_hash(vm_expected)
@@ -735,7 +732,7 @@ def test_CALL():
     
     # Notice here, the test program calls the routine which immediately HALTs
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
+    vm_expected.mem.load(test_program)
     vm_expected._ppc = [2]
     vm_expected._pc = 4
     
@@ -751,13 +748,13 @@ def test_RETLA():
     """
     test_program = [0,0,0,30,42]
     vm = Digirule()
-    vm.load_program(test_program)
+    vm.mem.load(test_program)
     vm.goto(3)
     vm._ppc = [0]
     vm_hash = get_vm_hash_after_exec(test_program, vm)
     
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
+    vm_expected.mem.load(test_program)
     vm_expected._pc = 1
     vm_expected._acc = 42
     
@@ -773,13 +770,13 @@ def test_RETURN():
     """
     test_program = [0,0,0,31]
     vm = Digirule()
-    vm.load_program(test_program)
+    vm.mem.load(test_program)
     vm.goto(3)
     vm._ppc = [0]
     vm_hash = get_vm_hash_after_exec(test_program, vm)
     
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
+    vm_expected.mem.load(test_program)
     vm_expected._pc = 1
     
     assert vm_hash == get_vm_hash(vm_expected)
@@ -796,7 +793,7 @@ def test_ADDRPC():
     vm_hash = get_vm_hash_after_exec(test_program)
     
     vm_expected = Digirule()
-    vm_expected.load_program(test_program)
+    vm_expected.mem.load(test_program)
     vm_expected._pc = 4
     
     assert vm_hash == get_vm_hash(vm_expected)

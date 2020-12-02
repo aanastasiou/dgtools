@@ -99,7 +99,8 @@ def trace_program(program, output_file, skip_n=0, max_n=200, trace_title="",
     """
     # Setup the VM
     machine = BUILTIN_MODELS[program.version]()
-    machine.load_program(program.program)
+    #machine.load_program(program.program)
+    machine.mem.load(program.program)
     
     if in_interactive_mode:
         machine.set_default_callbacks()
@@ -132,13 +133,13 @@ def trace_program(program, output_file, skip_n=0, max_n=200, trace_title="",
                 dgen.close_tag("header")
                 dgen.table_h(["Program Counter:","Accumulator:", "Status Reg:","Button Register:", "Addr.Led Register:",
                               "Data Led Register:", "Speed setting:", "Program counter stack:"],
-                             [[f"0x{machine._pc:02X}"], 
-                              [machine._acc],
-                              [machine._mem[machine._status_reg_ptr]], 
-                              [machine._mem[machine._bt_reg_ptr]], 
-                              [machine._mem[machine._addrled_reg_ptr]], 
-                              [machine._mem[machine._dataled_reg_ptr]], 
-                              [machine._speed_setting], 
+                             [[f"0x{machine.pc:02X}"], 
+                              [machine.mem["Acc"]],
+                              [machine.mem["STATUS"]], 
+                              [machine.mem["INPUT"]], 
+                              [machine.mem["ADDR_LED"]], 
+                              [machine.mem["DATA_LED"]], 
+                              [machine.mem["SPEED"]], 
                               # [machine._ppc]],
                               [",".join(list(map(lambda x:f"0x{x:02X}",machine._ppc)))]],
                               attrs={"class":"table_machine_state"})
@@ -150,11 +151,11 @@ def trace_program(program, output_file, skip_n=0, max_n=200, trace_title="",
                     dgen.open_tag("header")
                     dgen.heading(f"Full memory dump:",3)
                     dgen.close_tag("header")
-                    dgen.table_hv([[f"{machine._mem[n]:02X}" for n in range(m,m+16)] for m in range(0,256,16)],
+                    dgen.table_hv([[f"{machine.mem[n]:02X}" for n in range(m,m+16)] for m in range(0,256,16)],
                                   mem_space_heading_h, 
                                   mem_space_heading_v,
                                   attrs={"class":"table_memory_space"},
-                                  cell_attrs={(machine._pc // 16,machine._pc-(machine._pc // 16)):{"class":"current_pc"}})
+                                  cell_attrs={(machine.pc // 16,machine.pc-(machine.pc // 16)):{"class":"current_pc"}})
                     dgen.close_tag("section")
                 
                 # Extra symbols
@@ -168,7 +169,7 @@ def trace_program(program, output_file, skip_n=0, max_n=200, trace_title="",
                     
                     symbol_values = []
                     for a_symbol in extra_symbols:
-                        raw_bytes = machine._mem[a_symbol[1]:(a_symbol[1]+a_symbol[2])]
+                        raw_bytes = machine.mem[a_symbol[1]:(a_symbol[1]+a_symbol[2])]
                         if len(raw_bytes)>1:
                             chr_bytes = "".join(map(lambda x:chr(x), raw_bytes))
                         else:
@@ -189,7 +190,7 @@ def trace_program(program, output_file, skip_n=0, max_n=200, trace_title="",
                 dgen.heading("Onboard I/O",3)
                 dgen.close_tag("header")
                 dgen.table_h(["Address LEDs","Data LEDs","Button Switches"],
-                             [machine.addr_led, machine.data_led, machine.button_sw],
+                             [[machine.mem["ADDR_LED"]], [machine.mem["DATA_LED"]], [machine.mem["INPUT"]]],
                              attrs={"class":"table_onboard_io"})
                 dgen.close_tag("section")
                 
@@ -341,12 +342,11 @@ def dgsim(input_file, output_trace_file, output_memdump_file, title,
                                                 in_interactive_mode=interactive_mode, 
                                                 with_mem_dump=with_dump, 
                                                 extra_symbols=extra_symbols)
-                                                
-        machine_after_execution_archive = DGB_Archive(machine_after_execution._mem, 
+        machine_after_execution_archive = DGB_Archive(list(machine_after_execution.mem._mem), 
                                                       compiled_program.labels, version=compiled_program.version)
         
         machine_after_execution_archive.save(output_memdump_file)
-    
+
     except Exception as e:
         print(f"dgsim: {str(e)}")
         sys.exit(1)

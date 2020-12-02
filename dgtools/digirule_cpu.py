@@ -21,7 +21,7 @@ class MemorySpaceDigirule(DGMemorySpaceBase):
         self._mem_len = 256
         self._mem = bytearray([0 for k in range(0, self._mem_len + self._mem_base)])
         
-class Digirule(DGCPU):
+class DigiruleBase(DGCPU):
     def __init__(self):
         super().__init__()
         self._mem_space = MemorySpaceDigirule()
@@ -36,39 +36,7 @@ class Digirule(DGCPU):
         # it prompts the user for input
         self._interactive_callback = None
         # Instruction set lookup
-        self._ins_lookup = {0:self._halt,
-                            1:self._nop,
-                            2:self._speed,
-                            3:self._copylr,
-                            4:self._copyla,
-                            5:self._copyar,
-                            6:self._copyra,
-                            7:self._copyrr,
-                            8:self._addla,
-                            9:self._addra,
-                           10:self._subla,
-                           11:self._subra,
-                           12:self._andla,
-                           13:self._andra,
-                           14:self._orla,
-                           15:self._orra,
-                           16:self._xorla,
-                           17:self._xorra,
-                           18:self._decr,
-                           19:self._incr,
-                           20:self._decrjz,
-                           21:self._incrjz,
-                           22:self._shiftrl,
-                           23:self._shiftrr,
-                           24:self._cbr,
-                           25:self._sbr,
-                           26:self._bcrsc,
-                           27:self._bcrss,
-                           28:self._jump,
-                           29:self._call,
-                           30:self._retla,
-                           31:self._return,
-                           32:self._addrpc}
+        self._ins_lookup = {}
 
     @property 
     def interactive_callback(self):
@@ -382,4 +350,3 @@ class Digirule(DGCPU):
                   asm_jump ^ asm_call ^ asm_retla ^ asm_return ^ asm_addrpc)
 
         return asm_statement
-

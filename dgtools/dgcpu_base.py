@@ -20,6 +20,8 @@ class DGMemorySpaceBase:
         if absolute:
             return self._mem[offset]
         else:
+            if issubclass(type(offset), slice):
+                return list(self._mem[slice(self._mem_base + offset.start, self._mem_base + offset.stop, offset.step)])
             return self._mem[self._mem_base + offset]
     
     def _mem_wr(self, offset, value, absolute=False):
@@ -27,6 +29,8 @@ class DGMemorySpaceBase:
         if absolute:
             self._mem[offset] = value
         else:
+            #if subclass(type(offset), slice):
+            #    self._mem[slice(self._mem_base + offset.start, self._mem_base + offset.stop, offset.step)] = value
             self._mem[self._mem_base + offset] = value
         return self
 
@@ -60,7 +64,7 @@ class DGMemorySpaceBase:
             return self._reg_rd_bit(idx[0], idx[1])
         if issubclass(type(idx), str):
             return self._reg_rd(idx)
-        elif issubclass(type(idx), int):
+        elif issubclass(type(idx), (int, slice)):
             return self._mem_rd(idx)
             
     def __setitem__(self, idx, a_value, n_bit=None):
@@ -70,12 +74,13 @@ class DGMemorySpaceBase:
             if n_bit is not None:
                 return self._reg_wr_bit(idx, n_bit, a_value)
             return self._reg_wr(idx, a_value)
-        elif issubclass(type(idx), int):
+        elif issubclass(type(idx), (int, slice)):
             return self._mem_wr(idx, a_value)
         
             
     def load(self,a_program):
-        self._mem = bytearray(a_program)
+        self._mem = bytearray([0 for k in range(0, self._mem_len + self._mem_base)])
+        self._mem[self._mem_base:self._mem_base+len(a_program)] = a_program
         
     def save(self):
         return self._mem
