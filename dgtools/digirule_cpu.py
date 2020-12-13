@@ -28,9 +28,9 @@ class DigiruleBase(DGCPU):
         self._pc_reg = "PC"
         self._ppc = []
         # The status reg contains the zero flag (bit 0) and the carry flag (bit 1)
-        self._ZERO_FLAG_BIT = 1 << 0 # Directly convert bits to their binary representations here
-        self._CARRY_FLAG_BIT = 1 << 1
-        self._ADDRLED_FLAG_BIT = 1 << 2     
+        self._ZERO_FLAG_BIT = 0 # Directly convert bits to their binary representations here
+        self._CARRY_FLAG_BIT = 1
+        self._ADDRLED_FLAG_BIT = 2     
         # To put the Digirule in interactive mode, set interactive_callback to an appropriate callback.
         # When a Digirule is in Interactive Mode and an instruction comes to read from the button register
         # it prompts the user for input
@@ -156,10 +156,10 @@ class DigiruleBase(DGCPU):
         self.mem["STATUS", self._ZERO_FLAG_BIT] = ((new_value==0) & 0xFF)
 
     def _subla(self):
-        new_value = self._get_acc_value() - self._read_next()
-        self._set_acc_value(new_value)
-        self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
-        self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
+        new_value = self.mem["Acc"] - self._read_next()
+        self.mem["Acc"] = new_value 
+        self.mem["STATUS", self._ZERO_FLAG_BIT] = self.mem["Acc"] == 0
+        self.mem["STATUS", self._CARRY_FLAG_BIT] = (new_value > 255 or new_value < 0)
 
     def _subra(self):
         new_value = self._get_acc_value() - self._rd_mem(self._read_next())

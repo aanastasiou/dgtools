@@ -150,18 +150,19 @@ class Digirule(DGCPU):
 
     def _addla(self):
         new_value = self.mem["Acc"] + self._read_next()
-        self.mem["Acc"] = new_value
+        self.mem["Acc"] = (new_value & 0xFF)
         self.mem["STATUS", self._ZERO_FLAG_BIT] = ((self.mem["Acc"]==0) & 0xFF)
         self.mem["STATUS", self._CARRY_FLAG_BIT] = ((new_value > 255 or new_value < 0) & 0xFF)
-
+        
     def _addra(self):
-        new_value = (self.mem["Acc"] + self.mem[self._read_next()]) & 0xFF
-        self.mem["Acc"] = new_value 
-        self.mem["STATUS", self._ZERO_FLAG_BIT] = ((new_value==0) & 0xFF)
-
+        new_value = self.mem["Acc"] + self.mem[self._read_next()]
+        self.mem["Acc"] = new_value & 0xFF
+        self.mem["STATUS", self._ZERO_FLAG_BIT] = ((self.mem["Acc"] == 0) & 0xFF)
+        self.mem["STATUS", self._CARRY_FLAG_BIT] = ((new_value > 255 or new_value < 0) & 0xFF)
+    
     def _subla(self):
         new_value = self.mem["Acc"] - self._read_next()
-        self.mem["Acc"] = new_value
+        self.mem["Acc"] = new_value & 0xFF
         self.mem["STATUS", self._ZERO_FLAG_BIT] = (self.mem["Acc"]==0)
         self.mem["STATUS", self._CARRY_FLAG_BIT] = (new_value > 255 or new_value < 0)
         #self._set_status_reg(self._ZERO_FLAG_BIT, self.mem["Acc"]==0)
@@ -169,7 +170,7 @@ class Digirule(DGCPU):
 
     def _subra(self):
         new_value = self.mem["Acc"] - self.mem[self._read_next()]
-        self.mem["Acc"] = new_value
+        self.mem["Acc"] = new_value & 0xFF
         
         self.mem["STATUS", self._ZERO_FLAG_BIT] = (self.mem["Acc"]==0)
         self.mem["STATUS", self._CARRY_FLAG_BIT] = (new_value > 255 or new_value < 0)
@@ -207,7 +208,7 @@ class Digirule(DGCPU):
         # self._set_status_reg(self._ZERO_FLAG_BIT, self.mem["Acc"]==0)
 
     def _xorra(self):
-        new_value = self.mem["Acc"] ^ self._rd_mem(self._read_next())
+        new_value = self.mem["Acc"] ^ self.mem[self._read_next()]
         self.mem["Acc"] = new_value
         self.mem["STATUS", self._ZERO_FLAG_BIT] = (self.mem["Acc"]==0)
         # self._set_status_reg(self._ZERO_FLAG_BIT, self.mem["Acc"]==0)
@@ -230,7 +231,8 @@ class Digirule(DGCPU):
         addr = self._read_next()
         value = (self.mem[addr] - 1) & 0xFF
         self.mem[addr] = value
-        self._set_status_reg(self._ZERO_FLAG_BIT,value==0)
+        self.mem["STATUS", self._ZERO_FLAG_BIT] = (value==0)
+        # self._set_status_reg(self._ZERO_FLAG_BIT,value==0)
         if value == 0:
             self.pc+=2
 
@@ -238,7 +240,8 @@ class Digirule(DGCPU):
         addr = self._read_next()
         value = (self.mem[addr] + 1) & 0xFF
         self.mem[addr] = value
-        self._set_status_reg(self._ZERO_FLAG_BIT,value==0)
+        self.mem["STATUS", self._ZERO_FLAG_BIT] = (value==0)
+        # self._set_status_reg(self._ZERO_FLAG_BIT,value==0)
         if value == 0:
             self.pc += 2
             
@@ -246,15 +249,18 @@ class Digirule(DGCPU):
         addr = self._read_next()
         value = self.mem[addr]
         next_carry_value = 1 if value & 128 == 128 else 0
-        self.mem[addr] = ((value<<1) & 0xFF)|self._get_status_reg(self._CARRY_FLAG_BIT)
-        self._set_status_reg(self._CARRY_FLAG_BIT,next_carry_value)
+        self.mem[addr] = ((value<<1) & 0xFF) | self.mem["STATUS", self._CARRY_FLAG_BIT]
+        self.mem["STATUS", self._CARRY_FLAG_BIT] = next_carry_value
+        # self._set_status_reg(self._CARRY_FLAG_BIT,next_carry_value)
 
     def _shiftrr(self):
         addr = self._read_next()
         value = self.mem[addr]
         next_carry_value = 1 if value & 1 == 1 else 0
-        self.mem[addr] = ((value>>1) & 0xFF)|(self._get_status_reg(self._CARRY_FLAG_BIT) << 7)
-        self._set_status_reg(self._CARRY_FLAG_BIT,next_carry_value)
+        self.mem[addr] = ((value>>1) & 0xFF) | self.mem["STATUS", self._CARRY_FLAG_BIT] << 7
+        # self.mem[addr] = ((value>>1) & 0xFF)|(self._get_status_reg(self._CARRY_FLAG_BIT) << 7)
+        self.mem["STATUS", self._CARRY_FLAG_BIT] = next_carry_value
+        # self._set_status_reg(self._CARRY_FLAG_BIT,next_carry_value)
 
     def _cbr(self):
         bit_to_clear = self._read_next()
@@ -290,7 +296,6 @@ class Digirule(DGCPU):
         
     def _retla(self):
         self.mem["Acc"] = self._read_next()
-        # TODO: MED, If you get a RETLA without first having called CALL, it should raise an exception at compile time.
         self._pop_pc()
 
     def _return(self):
