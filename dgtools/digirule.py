@@ -515,74 +515,73 @@ class Digirule2U(Digirule):
     def _swapra(self):
         mem_addr = self._read_next()
         mem_val = self.mem[mem_addr]
-        current_acc_value = self._acc
-        self._acc = mem_val
-        self._wr_mem(mem_addr, current_acc_value)
+        current_acc_value = self.mem["Acc"]
+        self.mem["Acc"] = mem_val
+        self.mem[mem_addr] = current_acc_value
 
     def _swaprr(self):
         mem_addr_left = self._read_next()
         mem_addr_right = self._read_next()
-        mem_val_left =  self._rd_mem(mem_addr_left)
-        mem_val_right = self._rd_mem(mem_addr_right)
-        self._wr_mem(mem_addr_left, mem_val_right)
-        self._wr_mem(mem_addr_right, mem_val_left)
+        mem_val_left =  self.mem[mem_addr_left]
+        mem_val_right = self.mem[mem_addr_right]
+        self.mem[mem_addr_left] = mem_val_right
+        self.mem[mem_addr_right] = mem_val_left
         
     def _addla(self):
         new_value = self.mem["Acc"] + self._read_next()
-        if self._get_status_reg(self._CARRY_FLAG_BIT):
+        if self.mem["STATUS", self._CARRY_FLAG_BIT]:
             new_value+=1
-        self._set_acc_value(new_value)
-        self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
-        self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
+        self.mem["Acc"] = new_value
+        self.mem["STATUS", self._ZERO_FLAG_BIT] = (self._acc==0)
+        self.mem["STATUS", self._CARRY_FLAG_BIT] = (new_value > 255 or new_value < 0)
 
     def _addra(self):
-        new_value = self.mem["Acc"] + self._rd_mem(self._read_next())
-        if self._get_status_reg(self._CARRY_FLAG_BIT):
+        new_value = self.mem["Acc"] + self.mem[self._read_next()]
+        if self.mem["STATUS", self._CARRY_FLAG_BIT]:
             new_value+=1
-        self._set_acc_value(new_value)
-        self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
-        self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
+        self.mem["Acc"] = new_value
+        self.mem["STATUS", self._ZERO_FLAG_BIT] = (self.mem["Acc"] == 0)
+        self.mem["STATUS", self._CARRY_FLAG_BIT] = ((new_value > 255 or new_value < 0) & 0xFF)
 
     def _subla(self):
-        new_value = self._get_acc_value() - self._read_next()
-        if self._get_status_reg(self._CARRY_FLAG_BIT):
+        new_value = self.mem["Acc"] - self._read_next()
+        if self.mem["STATUS", self._CARRY_FLAG_BIT]:
             new_value-=1
-        self._set_acc_value(new_value)
-        self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
-        self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
+        self.mem["Acc"] = new_value
+        self.mem["STATUS", self._ZERO_FLAG_BIT] = (self.mem["Acc"] == 0)
+        self.mem["STATUS", self._CARRY_FLAG_BIT] = ((new_value > 255 or new_value < 0) & 0xFF)
 
     def _subra(self):
-        new_value = self._get_acc_value() - self._rd_mem(self._read_next())
-        if self._get_status_reg(self._CARRY_FLAG_BIT):
+        new_value = self.mem["Acc"] - self.mem[self._read_next()]
+        if self.mem["STATUS", self._CARRY_FLAG_BIT]:
             new_value-=1
-        self._set_acc_value(new_value)
-        self._set_status_reg(self._ZERO_FLAG_BIT, self._acc==0)
-        self._set_status_reg(self._CARRY_FLAG_BIT, (new_value > 255 or new_value < 0))
+        self.mem["Acc"] = new_value
+        self.mem["STATUS", self._ZERO_FLAG_BIT] = (self.mem["Acc"]==0)
+        self.mem["STATUS", self._CARRY_FLAG_BIT] = ((new_value > 255 or new_value < 0) & 0xFF)
     
     def _mul(self):
         mem_addr_left = self._read_next()
-        mem_val_left = self._rd_mem(mem_addr_left)
+        mem_val_left = self.mem[mem_addr_left]
         mem_addr_right = self._read_next()
-        mem_val_right = self._rd_mem(mem_addr_right)
+        mem_val_right = self.mem[mem_addr_right]
         product = mem_val_left * mem_val_right
-        self._wr_mem(mem_addr_left,product & 0xFF)
-        self._set_status_reg(self._CARRY_FLAG_BIT, product > 255)
-        self._set_status_reg(self._ZERO_FLAG_BIT, (product & 0xFF) == 0)
+        self.mem[mem_addr_left] = (product & 0xFF)
+        self.mem["STATUS", self._CARRY_FLAG_BIT] = ((product > 255) & 0xFF)
+        self.mem["STATUS", self._ZERO_FLAG_BIT] = ((product & 0xFF) == 0)
         
     def _div(self):
-        # TODO: MED, This can raise a divide by zero warning / exception too
         mem_addr_left = self._read_next()
-        mem_val_left = self._rd_mem(mem_addr_left)
+        mem_val_left = self.mem[mem_addr_left]
         mem_addr_right = self._read_next()
-        mem_val_right = self._rd_mem(mem_addr_right)
+        mem_val_right = self.mem[mem_addr_right]
         if mem_val_right == 0:
             # This is the default division by zero behaviour
             raise DgtoolsErrorProgramHalt("Division by zero.")
         div_res = mem_val_left // mem_val_right
-        self._wr_mem(mem_addr_left, div_res & 0xFF)
-        self._set_acc_value(mem_val_left % mem_val_right)
-        self._set_status_reg(self._ZERO_FLAG_BIT, (div_res & 0xFF) == 0)
-        self._set_status_reg(self._CARRY_FLAG_BIT, self._get_acc_value() == 0) 
+        self.mem[mem_addr_left] = (div_res & 0xFF)
+        self.mem["Acc"] = (mem_val_left % mem_val_right)
+        self.mem["STATUS", self._ZERO_FLAG_BIT] = ((div_res & 0xFF) == 0)
+        self.mem["STATUS", self._CARRY_FLAG_BIT] = (self.mem["Acc"] == 0) 
         
     def _copyli(self):
         literal = self._read_next()
@@ -611,38 +610,38 @@ class Digirule2U(Digirule):
     def _copyir(self):
         i_addr = self._read_next()
         mem_addr = self._read_next()
-        i_addr_value = self._rd_mem(self._rd_mem(i_addr))
-        self._wr_mem(mem_addr,i_addr_value)
-        self._set_status_reg(self._ZERO_FLAG_BIT, i_addr_value == 0)
+        i_addr_value = self.mem[self.mem[i_addr]]
+        self.mme[mem_addr] = i_addr_value
+        self.mem["STATUS", self._ZERO_FLAG_BIT] = (i_addr_value == 0)
     
     def _copyii(self):
         i_addr_l = self._read_next()
         i_addr_r = self._read_next()
-        i_addr_l_value = self._rd_mem(self._rd_mem(i_addr_l))
-        self._wr_mem(self._rd_mem(i_addr_r), i_addr_l_value)
-        self._set_status_reg(self._ZERO_FLAG_BIT, i_addr_l_value == 0)
+        i_addr_l_value = self.mem[self.mem[i_addr_l]]
+        self.mem[self.mem[i_addr_r]] = i_addr_l_value
+        self.mem["STATUS", self._ZERO_FLAG_BIT] = (i_addr_l_value == 0)
         
     def _calli(self):
         self._push_pc()
         i_addr = self._read_next()
-        self._pc = self._rd_mem(i_addr)
+        self.pc = self.mem[i_addr]
         
     def _jumpi(self):
         i_addr = self._read_next()
-        self._pc = self._rd_mem(i_addr)
+        self.pc = self.mem[i_addr]
         
     def _comout(self):
         if self._comout_callback is not None:
-            self._comout_callback(self._acc)
+            self._comout_callback(self.mem["Acc"])
         
     def _comin(self):
         if self._comin_callback is not None:
-            self._set_acc_value(self._comin_callback())
+            self.mem["Acc"] = self._comin_callback()
         
     def _comrdy(self):
         # Comms is always "ready" in emulation.
         # TODO: MED, Maybe this can be matched to a more realistic behaviour once comout, comin are connected to real files.
-        self._set_status_reg(self._ZERO_FLAG_BIT, 0)
+        self.mem["STATUS", self._ZERO_FLAG_BIT] = 0
         
     # TODO: MID, Reduce code duplication in _comin, _comout
     def _pinout(self):
