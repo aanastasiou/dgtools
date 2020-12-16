@@ -2,7 +2,13 @@
 
 Contains all tests for the Digirule2U Virtual Machine.
 
+:author: Athanasios Anastasiou
+:date: Dec 2020 
+
 """
+
+# TODO: HIGH, Need to include all possible test cases
+# TODO: HIGH, Reduce code duplication between the tests
 
 from dgtools.digirule import Digirule2U
 from dgtools.exceptions import DgtoolsErrorProgramHalt
@@ -21,12 +27,6 @@ def get_vm_hash(dg_vm):
     :rtype: int
     """
     hash_obj = list(dg_vm.mem._mem)
-    #hash_obj.extend([dg_vm._acc,
-    ##                 dg_vm._pc,
-    #                 dg_vm._mem[252], 
-    #                 dg_vm._mem[253], 
-    #                 dg_vm._mem[254], 
-    #                 dg_vm._mem[255]])
     hash_obj.extend(dg_vm._ppc)
     return hash(base64.b64encode(bytearray(hash_obj)))
     
@@ -150,5 +150,80 @@ def test_DIV():
     vm_expected.pc = 4
     vm_expected.mem[4] = 4
     vm_expected.mem["Acc"] = 1
+    
+    assert vm_hash == get_vm_hash(vm_expected)
+
+
+def test_ADDLA():
+    """
+    ADDLA on the 2U adds through carry.
+
+    Program bytes used   : 2
+    Status flags affected: None    
+    """
+    test_program = [4, 3, 17, 2, 0]
+    vm_hash = get_vm_hash_after_exec(test_program)
+    
+    # Notice here, the test program calls the routine which immediately HALTs
+    vm_expected = Digirule2U()
+    vm_expected.mem.load(test_program)
+    vm_expected.pc = 5
+    vm_expected.mem["Acc"] = 5
+    
+    assert vm_hash == get_vm_hash(vm_expected)
+
+
+def test_ADDRA():
+    """
+    ADDRA on the 2U adds through carry.
+
+    Program bytes used   : 2
+    Status flags affected: None    
+    """
+    test_program = [4, 3, 18, 5, 0, 12]
+    vm_hash = get_vm_hash_after_exec(test_program)
+    
+    # Notice here, the test program calls the routine which immediately HALTs
+    vm_expected = Digirule2U()
+    vm_expected.mem.load(test_program)
+    vm_expected.pc = 5
+    vm_expected.mem["Acc"] = 15
+    
+    assert vm_hash == get_vm_hash(vm_expected)
+
+
+def test_SUBLA():
+    """
+    SUBLA on the 2U subtracts through carry.
+
+    Program bytes used   : 2
+    Status flags affected: None    
+    """
+    test_program = [4, 9, 19, 5, 0]
+    vm_hash = get_vm_hash_after_exec(test_program)
+    
+    # Notice here, the test program calls the routine which immediately HALTs
+    vm_expected = Digirule2U()
+    vm_expected.mem.load(test_program)
+    vm_expected.pc = 5
+    vm_expected.mem["Acc"] = 4
+    
+    assert vm_hash == get_vm_hash(vm_expected)
+
+def test_SUBRA():
+    """
+    SUBRA on the 2U subtracts through carry.
+
+    Program bytes used   : 2
+    Status flags affected: None    
+    """
+    test_program = [4, 9, 19, 5, 0 , 5]
+    vm_hash = get_vm_hash_after_exec(test_program)
+    
+    # Notice here, the test program calls the routine which immediately HALTs
+    vm_expected = Digirule2U()
+    vm_expected.mem.load(test_program)
+    vm_expected.pc = 5
+    vm_expected.mem["Acc"] = 4
     
     assert vm_hash == get_vm_hash(vm_expected)

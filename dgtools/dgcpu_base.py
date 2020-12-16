@@ -118,3 +118,19 @@ class DGCPU:
         except KeyError as ke:
             #raise DgtoolsErrorOpcodeNotSupported(f"Opcode {cmd} not understood")
             pass
+            
+    def run(self, max_n=2500):
+        """
+        Executes commands from the current program counter until a HALT opcode.
+        """
+        cnt = self._exec_next()
+        n = 0
+        while n<2500:
+            cnt = self._exec_next()
+            n+=1
+            
+        raise DgtoolsErrorProgramHalt(f"Program exceeded preset max_n={max_n}.")
+            
+    def step(self):
+        return self._exec_next()
+

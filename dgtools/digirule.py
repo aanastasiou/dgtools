@@ -303,23 +303,6 @@ class Digirule(DGCPU):
         
     def _addrpc(self):
         self.pc += self._read_next()
-
-    
-    def run(self, max_n=2500):
-        """
-        Executes commands from the current program counter until a HALT opcode.
-        """
-        cnt = self._exec_next()
-        n = 0
-        while n<2500:
-            cnt = self._exec_next()
-            n+=1
-            
-        raise DgtoolsErrorProgramHalt(f"Program exceeded preset max_n={max_n}.")
-            
-    def step(self):
-        return self._exec_next()
-        
                
     @staticmethod
     def get_asm_statement_def(existing_defs):
@@ -532,7 +515,7 @@ class Digirule2U(Digirule):
         if self.mem["STATUS", self._CARRY_FLAG_BIT]:
             new_value+=1
         self.mem["Acc"] = new_value
-        self.mem["STATUS", self._ZERO_FLAG_BIT] = (self._acc==0)
+        self.mem["STATUS", self._ZERO_FLAG_BIT] = (self.mem["Acc"]==0)
         self.mem["STATUS", self._CARRY_FLAG_BIT] = (new_value > 255 or new_value < 0)
 
     def _addra(self):
