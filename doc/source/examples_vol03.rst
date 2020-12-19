@@ -8,5 +8,5 @@ Volume 3 - Compilers
    :maxdepth: 3
    :caption: Contents:
    
-   brainfuck.rst
-   superstack.rst
+   brainfuck
+   superstack

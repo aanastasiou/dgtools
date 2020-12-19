@@ -166,12 +166,45 @@ This program can be tried out in one of the ways that were explained previously.
     address it points to in memory. The **value** of a symbol is the literal that was assigned to it through the 
     ``.EQU`` directive.
 
-Keying the program in
-^^^^^^^^^^^^^^^^^^^^^
 
-Since this program now produces some sort of visible output we can try to "key it in" to the Digirule 2. 
+Transfering the program to the Digirule
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To make this process easier, ``dginspect`` includes the ``-b`` option that "dumps" the complete assembled memory 
+There are two ways to transfer your program to the Digirule, either via manually keying it in or transfering it via 
+the serial port (on the Digirule 2U).
+
+If you have a Digirule 2U, the transfer process is straightforward on Linux but involves a number of steps to identify 
+and setup your serial communcations port. These are as follows:
+
+If you don't know which "device" your Digirule 2U uses:
+
+1. Plug the Digirule 2U in
+2. Find out which device file corresponds to the serial port
+    a. The easiest way to do this is by ``> dmesg|egrep FTDI`` to which your OS will respond with something like
+       ``[ 6093.755022] usb 2-2: FTDI USB Serial Device converter now attached to ttyUSB0``. 
+    b. From this we know that the serial port the Digirule 2U is connected on is at ``/dev/ttyUSB0``.
+3. Make sure that you can write to the serial port
+    a. By default, the serial port's access rights might be restricted. But since we know that the only thing that 
+       is attached to this serial port is the Digirule 2U, we can go ahead and allow read/write access to it with:
+       ``> sudo chmod o+rw /dev/ttyUSB0``.
+
+Once you know which "device" the Digirule 2U uses:
+
+1. Set the communications port parameters
+    a. The simplest way to do this is with ``> stty -F /dev/ttyUSB0 9600``
+    
+2. Put the Digirule 2U in "programming mode" by holding down "Load" and "Next" on the device.
+
+3. Send the ``.hex`` file
+    * When you use ``dgasm.py`` with ``-g 2U``, a ``.hex`` file containing the binary is also produced. 
+      To send it to the device, type ``> cat some_hex_file.hex>/dev/ttyUSB0`` substituting of course for the 
+      ``.hex`` file you are trying to send and ``/dev/ttyUSB0`` for the device the Digirule2U is identified as 
+      on your computer.
+
+4. Click "Run" on the device.
+
+
+To key the program in manually ``dginspect.py`` includes the ``-b`` option that "dumps" the complete assembled memory 
 region as pairs of ``ADDR:VALUE`` values *formatted in binary*. 
 
 To key the program in, just make sure that a given memory address on 
@@ -217,6 +250,7 @@ In either case, the binary dump for ``simpleadd_3.dgb`` would look like this:
     ...
     ...
     ...
+
 
 
 

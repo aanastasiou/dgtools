@@ -3,7 +3,8 @@
 # message to the COM port:
 # /<display><number>
 # For example: /0128 sets display 0 to 128 and /1128 sets display 1 to 128
-
+#
+# Constants that will be used throughout the program
 .EQU led_reg=255
 .EQU addrled_reg=254
 .EQU status_reg=252
@@ -11,59 +12,59 @@
 .EQU carry_bit=1
 .EQU addrd_bit=2
 
-SBR addrd_bit status_reg
-check_input:
-COMRDY
-BCRSS zero_bit status_reg
+SBR addrd_bit status_reg    # Enable control of the Addr.LEDs
+check_input:                # Main Loop
+COMRDY                      # If a byte was received, break
+BCRSS zero_bit status_reg   #    from the main loop
 JUMP load_new_values
-display_values:
-COPYRR M1 led_reg
+display_values:             # Otherwise, keep displaying
+COPYRR M1 led_reg           # data.
 COPYRR M2 addrled_reg
 JUMP check_input
 
 load_new_values:
 CBR carry_bit status_reg
 COMIN
-SUBLA 47 # Is it /?
+SUBLA 47                    # Is it the / character?
 BCRSS zero_bit status_reg
-JUMP display_values
+JUMP display_values         # If not go back to displaying the values
 CBR carry_bit status_reg
 COMIN
 SUBLA 48
-BCRSC carry_bit status_reg # Is the display a positive number?
+BCRSC carry_bit status_reg  # Is the display a positive number?
 JUMP display_values
 ADDLA M1
 COPYAR R0
 CBR carry_bit status_reg
-COMIN
+COMIN                       # Receive the first byte...
 SUBLA 48
 COPYAR R1
-COPYLR 100 R2
+COPYLR 100 R2               # Multiply by 100
 MUL R1 R2
-COMIN
+COMIN                       # Receive the second byte...
 SUBLA 48
 COPYAR R2
 COPYRA R1
-COPYLR 10 R1
+COPYLR 10 R1                # Multiply by 10
 MUL R2 R1
-ADDRA R2
+ADDRA R2                    # Add it to the previous product
 COPYAR R2
-COMIN
+COMIN                       # And finally receive the third byte
 SUBLA 48
-ADDRA R2
-COPYAI R0
-JUMP display_values
+ADDRA R2                    # And add it to the previous sum.
+COPYAI R0                   # Now transfer the result to either M1 or M2
+JUMP display_values         # Get back to the main loop
 
 
+# Variables required by the program.
 R0:
 .DB 0
-
 R1:
 .DB 0
-
 R2:
 .DB 0
 
+# The two display bytes for each bar
 M1:
 .DB 0
 M2:
