@@ -11,3 +11,4 @@ Volume 2 - More complex ASM programs
    pov
    int2str
    lfsr
+   hud
