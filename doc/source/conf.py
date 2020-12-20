@@ -22,7 +22,7 @@ copyright = '2020, Athanasios Anastasiou'
 author = 'Athanasios Anastasiou'
 
 # The full version, including alpha/beta/rc tags
-release = '1.0.3'
+release = '1.0.4'
 
 
 # -- General configuration ---------------------------------------------------
@@ -31,7 +31,6 @@ release = '1.0.3'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ["sphinx.ext.autodoc",
-              "sphinxcontrib.youtube",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

@@ -8,9 +8,9 @@ other "event" you can describe with an integer number from 0 to 255.
 
 Here is what we are aiming for:
 
-..  youtube:: xsmHa0TSajQ
-    :width: 640
-    :height: 480
+.. raw:: html
+    
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/xsmHa0TSajQ" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 
 What is the display?

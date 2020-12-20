@@ -89,7 +89,7 @@ in `dg_asm_eamples/`.
 
 ## dgrdo.org
 
-The ASM toolchain along with the brainfuck and Super Stack! compilers is available online at `https://www.dgrdo.org`. 
+The ASM toolchain along with the brainfuck and Super Stack! compilers is available online at https://www.dgrdo.org. 
 For more information see [this introduction on its functionality](https://www.dgrdo.org/static/info/about/index.html)
 
 Enjoy!
