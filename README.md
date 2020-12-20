@@ -1,3 +1,5 @@
+![](https://dgtools.readthedocs.io/en/latest/_images/full_banner_dg.png)
+
 # dgtools
 
 dgtools is a complete toolkit for developing software for the [Digirule](https://bradsprojects.com/digirule2/) 
@@ -29,8 +31,12 @@ series (`2A/2U`) of hardware by [bradsprojects](https://bradsprojects.com).
 These tools work together to write, debug and simulate code for the Digirule 2 prior to transfering it to the 
 actual hardware. 
 
-`dgtools` also includes some "extras", such as a Sublime text `.dsf` ASM plugin, a console gui (`dgui`) that can handle 
-compilation/simulation in one step and a code formatter (`dgform`).
+`dgtools` also includes some "extras", such as:
+
+1. A Sublime text `.dsf` ASM plugin, 
+2. A console gui (`dgui.py`) that can handle compilation/simulation in one step 
+3. A code formatter (`dgform.py`), to pretty print source code.
+4. [Brainfuck](https://esolangs.org/wiki/Brainfuck) and [Super Stack!](https://esolangs.org/wiki/Super_Stack!) compilers for the Digirule 2U.
 
 The most common workflow is to:
 
@@ -80,6 +86,11 @@ Once you familiarise yourself with the tools and Digirule's ASM, you might want 
 [the advanced walkthrough](https://dgtools.readthedocs.io/en/latest/advanced_topics.html) or 
 check out other [programming examples](https://dgtools.readthedocs.io/en/latest/code_projects.html) 
 in `dg_asm_eamples/`.
+
+## dgrdo.org
+
+The ASM toolchain along with the brainfuck and Super Stack! compilers is available online at `https://www.dgrdo.org`. 
+For more information see [this introduction on its functionality](https://www.dgrdo.org/static/info/about/index.html)
 
 Enjoy!
 

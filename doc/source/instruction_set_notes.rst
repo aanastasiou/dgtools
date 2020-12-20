@@ -5,7 +5,8 @@ Notes on the instruction set
 .. note::
 
     This section applies mainly to the Digirule2/Digirule2A instruction set. The main ideas about providing an 
-    efficient instruction set for a CPU that does not have a lot of RAM available still apply of course.
+    efficient instruction set for a CPU that does not have a lot of RAM available still apply to the Digirule 2U 
+    as well of course.
     
 
 This section contains a few notes on modifying the instruction set of a Digirule2, so that it becomes more efficient.

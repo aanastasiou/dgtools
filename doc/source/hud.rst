@@ -3,10 +3,14 @@ Heads Up Display
 
 This is a short note on how to turn your Digirule 2U to an auxiliary little display for up to 2 different parameters.
 
-With this program, the Digirule 2U is used to display up to 2 values simultaneously, right from the command line.
-
 You can use it to display all sorts of things such as your battery charge level, whether you have new email and any 
 other "event" you can describe with an integer number from 0 to 255.
+
+Here is what we are aiming for:
+
+..  youtube:: xsmHa0TSajQ
+    :width: 640
+    :height: 480
 
 
 What is the display?
@@ -16,6 +20,11 @@ Every Digirule, from version 2 to 2U is equipped with two rows of LEDs:
 
 1. The upper row, labeled ``A7, A6, A5...A0``, which is normally used to display the current memory address in binary; and
 2. The lower row, labeled ``D7, D6, D5...D0``, to display the byte value at the current memory address, also in binary.
+
+.. _fig_addr_data_leds:
+.. figure:: figures/fig_addr_data_leds.png
+    
+    The Digirule 2U with its two LED "bars" formed by the address and data leds.
 
 When the Digirule powers up, the default behaviour is to have the address LEDs to be showing the current memory address.
 
@@ -38,8 +47,10 @@ What are its commands?
 
 Our little display is built around a very very simple protocol: ``/<display><number>``. 
 
-``/`` is used as the starting character. This tells the code to read in the next value which here is either a ``0`` or 
-``1`` and this corresponds to which bar to set. Send ``/0`` to select the Data LED bar, or ``/1`` to select the 
+``/`` is used as the starting character. This notifies the code to read in the next value which here is either a ``0`` or 
+``1`` and this corresponds to which bar to set. 
+
+Send ``/0`` to select the Data LED bar, or ``/1`` to select the 
 address LED bar. The final step is to read in the BYTE value which is an integer number from 0 to 255.
 
 So, to set the Data LED bar so that it appears 50% lit (just 4 LEDs being lit), we would send ``/0015`` and similarly,
@@ -62,7 +73,7 @@ we know as zero.
 
 So, the interpretation of ``065`` simply boils down to evaluating 
 :math:`(48 - 48) \cdot 100 + (54 - 48) \cdot 10 + (53 - 48)` prior to storing the 
-received value to either the upper or lower display.
+received value (:math:`65`) to either the upper or lower display.
 
 Knowing how this is handled now only leaves putting it together with communications...
 
@@ -123,19 +134,19 @@ The next part is simply reading in bytes and converting them to a number:
     # ...
     
     load_new_values:
-    CBR carry_bit status_reg
+    BCLR carry_bit status_reg
     COMIN
     SUBLA 47                    # Is it the / character?
-    BCRSS zero_bit status_reg
+    BTSTSS zero_bit status_reg
     JUMP display_values         # If not go back to displaying the values
-    CBR carry_bit status_reg
+    BCLR carry_bit status_reg
     COMIN
     SUBLA 48
-    BCRSC carry_bit status_reg  # Is the display a positive number?
+    BTSTSC carry_bit status_reg  # Is the display a positive number?
     JUMP display_values
     ADDLA M1
     COPYAR R0
-    CBR carry_bit status_reg
+    BCLR carry_bit status_reg
     COMIN                       # Receive the first byte...
     SUBLA 48
     COPYAR R1
@@ -152,7 +163,7 @@ The next part is simply reading in bytes and converting them to a number:
     COMIN                       # And finally receive the third byte
     SUBLA 48
     ADDRA R2                    # And add it to the previous sum.
-    COPYAI R0                   # Now transfer the result to either M1 or M2 
+    COPYAI R0                   # Now transfer the result to either M1 or M2
     JUMP display_values         # Get back to the main loop
     
 
@@ -172,10 +183,10 @@ How to communicate with it from another computer?
 
 Driving the display from another computer is really straightforward and ideally, it involves:
 
-1. Setup the communications port parameters (More importantly speed)
-2. Send a message to the communications port.
+1. Setting up the communications port parameters (More importantly speed)
+2. Sending a message to the communications port.
 
-And all the "complexity" is then due to the way different Operating Systems access the port. 
+And all the "complexity" is then due to the way different operating systems access the port. 
 
 Here is how to do it on Linux:
 
@@ -183,13 +194,13 @@ If you don't know which "device" your Digirule 2U listens on:
 
 1. Plug the Digirule 2U in
 2. Find out which device file corresponds to the serial port
-    a. The easiest way to do this is by ``> dmesg|egrep FTDI`` to which your OS will respond with something like
+    a. The easiest way to do this is by ``> dmesg|egrep FTDI`` [#f1]_ to which your OS will respond with something like
        ``[ 6093.755022] usb 2-2: FTDI USB Serial Device converter now attached to ttyUSB0``. 
-    b. From this we know that the serial port the Digirule 2U is connected on is at ``/dev/ttyUSB0``.
+    b. From this we know that the serial port the Digirule 2U is connected on is at ``/dev/ttyUSB0`` [#f2]_.
 3. Make sure that you can write to the serial port
     a. By default, the serial port's access rights might be restricted. But since we know that the only thing that 
        is attached to this serial port is the Digirule 2U, we can go ahead and allow read/write access to it with:
-       ``> sudo chmod o+rw /dev/ttyUSB0``.
+       ``> sudo chmod o+rw /dev/ttyUSB0`` [#f3]_.
 
 Once you know which "device" the Digirule 2U uses:
 
@@ -203,15 +214,14 @@ Once you know which "device" the Digirule 2U uses:
 You might think that this is complicated but it is really worth the effort when you consider that on this operating 
 system, you can obtain information about every single part of its functionality.
 
-More on this later
+
+So, let's use this program to display the percentage of charge in a laptop's battery.
 
 
 Putting it all together
 -----------------------
 
-Now, let's use this program to display the percentage of charge in a laptop's battery.
-
-On Linux, you can get this figure via `upower <https://upower.freedesktop.org/>`_ which is the power management 
+On Linux, you can get this figure via `upower <https://en.wikipedia.org/wiki/UPower>`_ which is the power management 
 software layer.
 
 To obtain the exact "tag" of your battery power source, first run a:
@@ -229,7 +239,14 @@ Which will produce an enumeration similar to:
     > /org/freedesktop/UPower/devices/battery_BAT0
     > /org/freedesktop/UPower/devices/DisplayDevice
 
-These are all the devices that can be controlled via upower. To obtain information about ``battery_BAT0``, run a:
+These are all the devices that can be controlled via upower. 
+
+.. note::
+    On a desktop computer, it is unlikely that the battery "path" will be there, but 
+    you can query and select another parameter to display. The main idea is still the same.
+
+
+To obtain information about ``battery_BAT0``, run a:
 
 ::
 
@@ -269,25 +286,27 @@ This returns a large amount of information about the battery, similar to:
         1608420725	4.104	discharging    
         
 To "isolate" the "percentage" figure, we will use a `regular expression <https://en.wikipedia.org/wiki/Regular_expression>`_
-, via `grep <https://www.gnu.org/software/grep/>`_. To do this, run a:
+, via `grep <https://en.wikipedia.org/wiki/Grep>`_. To do this, run a:
 
 ::
 
     > upower -i /org/freedesktop/UPower/devices/battery_BAT0|egrep "percentage"|egrep "[0-9]+" -o
 
-Here, we are piping the output of ``upower`` to ``egrep`` to filter out the line of text that includes
-"percentage:        51%" and the output of that to another filter that only preserves strings that include one or more 
+Here, we are sending the output of ``upower`` to ``egrep`` (using the ``|`` (pipe) character [#f4]_ ) to filter out 
+the line of text that includes "percentage:        51%" and the output of that to another filter that only preserves 
+strings that include one or more 
 digits. The combined result of this is the number 51 (*without* the ``%`` sign).
 
 Now, what we want to send to the Digirule 2U is ``/0051``. We can format our number in this way by using 
-`printf <https://linux.die.net/man/3/printf>`_. To do this run a:
+`printf <https://en.wikipedia.org/wiki/Printf_(Unix)>`_. To do this run a:
 
 ::
 
     > printf '/0%03d'  `upower -i /org/freedesktop/UPower/devices/battery_BAT0|egrep "percentage"|egrep '[0-9]+' -o`
     
-The format string is identical to C's ``printf``. The other thing to notice here is the **backticks** used in the 
-``upower`` command which **first evaluate their content** and substitute it with the result.
+The format string is `identical to C's printf <https://en.wikipedia.org/wiki/Printf_format_string#Type_field>`_. 
+The other thing to notice here is the **backticks** used in the ``upower`` command which 
+**first evaluate their content** and substitute it with the result.
 
 This means that ``printf`` is asked to format **the result** of ``upower`` (51) as a string starting with ``/``, 
 followed by our "channel selector", here ``0``, followed by the charge percentage formated **always** as a 3 digit 
@@ -320,5 +339,31 @@ the displayed number. For example, for 51, it would have to be 64. Or in other w
 rounded logarithm of base 2 of 51. But, this is only a matter of further processing on the terminal, just before 
 using ``printf`` to format the final result and send it to the serial port.
 
-Finally, for a periodic display of the battery power, you can simply add this line to your `crontab <https://linux.die.net/man/1/crontab>`_
+Finally, for a periodic display of the battery power, you can simply add this line to your 
+`crontab <https://en.wikipedia.org/wiki/Cron>`_
 and have your Digirule2U display your battery power (or any other parameter you wish) at well set intervals.
+
+
+
+.. [#f1] `dmesg <https://en.wikipedia.org/wiki/Dmesg>`_ prints out a log of all kernel messages. Every time a USB device 
+         is plugged in to a computer it triggers a series of actions from registering its existence to loading the 
+         right device driver to make it available to the user. With ``dmesg|egrep FTDI`` we are filtering this log of
+         messages for those responses that were due to the FTDI chip that the Digirule 2U uses on its USB port.
+         
+.. [#f2] The reason a serial port over USB is mapped to ``/dev/ttyUSB0`` is due to the 
+         `everything is a file <https://en.wikipedia.org/wiki/Everything_is_a_file>`_ principle of Unix-like operating 
+         systems. Viewing devices as files simplifies and abstracts the different ways they are actually accessed by 
+         the lower level code. At the level of a user, reading from some ``/dev/camera`` location could well trigger 
+         image capturing on a device. The image is captured and sent back to the user who "thinks" they are reading 
+         a file. Similarly, anything sent to ``/dev/ttyUSB0`` is sent to the Digirule 2U via its serial port.
+         That ``tty``? Yeah, that stands for **TeleTYpewriter**........
+         `noisier than a mechanical keyboard <https://www.youtube.com/watch?v=7DpcwhmVaV8>`_
+         
+.. [#f3] `chmod <https://en.wikipedia.org/wiki/Chmod>`_ changes access permissions on a file. And since
+         *everything is a file*, it is possible to control access to devices as well. The reason a serial port might be 
+         restricted by default is because usually, serial ports lead to MODEMs...So, to discourage any user from 
+         fiddling with a possible communications link, access to serial ports is restricted for simple users.
+         This is also why, to change the permissions on the device, we need to use `sudo <https://en.wikipedia.org/wiki/Sudo>`_
+
+.. [#f4] `Piping <https://en.wikipedia.org/wiki/Pipeline_(Unix)>`_ is a fundamental concept and refers to allowing 
+         processes to communicate with each other over a very simple text only "channel". 

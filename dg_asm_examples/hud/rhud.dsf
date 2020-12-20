@@ -12,10 +12,10 @@
 .EQU carry_bit=1
 .EQU addrd_bit=2
 
-SBR addrd_bit status_reg    # Enable control of the Addr.LEDs
+BSET addrd_bit status_reg    # Enable control of the Addr.LEDs
 check_input:                # Main Loop
 COMRDY                      # If a byte was received, break
-BCRSS zero_bit status_reg   #    from the main loop
+BTSTSS zero_bit status_reg   #    from the main loop
 JUMP load_new_values
 display_values:             # Otherwise, keep displaying
 COPYRR M1 led_reg           # data.
@@ -23,19 +23,19 @@ COPYRR M2 addrled_reg
 JUMP check_input
 
 load_new_values:
-CBR carry_bit status_reg
+BCLR carry_bit status_reg
 COMIN
 SUBLA 47                    # Is it the / character?
-BCRSS zero_bit status_reg
+BTSTSS zero_bit status_reg
 JUMP display_values         # If not go back to displaying the values
-CBR carry_bit status_reg
+BCLR carry_bit status_reg
 COMIN
 SUBLA 48
-BCRSC carry_bit status_reg  # Is the display a positive number?
+BTSTSC carry_bit status_reg  # Is the display a positive number?
 JUMP display_values
 ADDLA M1
 COPYAR R0
-CBR carry_bit status_reg
+BCLR carry_bit status_reg
 COMIN                       # Receive the first byte...
 SUBLA 48
 COPYAR R1
