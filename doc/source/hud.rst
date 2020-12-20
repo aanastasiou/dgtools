@@ -209,5 +209,116 @@ More on this later
 Putting it all together
 -----------------------
 
+Now, let's use this program to display the percentage of charge in a laptop's battery.
+
+On Linux, you can get this figure via `upower <https://upower.freedesktop.org/>`_ which is the power management 
+software layer.
+
+To obtain the exact "tag" of your battery power source, first run a:
+
+::
+
+    > upower -e
+    
+
+Which will produce an enumeration similar to:
+
+::
+
+    > /org/freedesktop/UPower/devices/line_power_AC
+    > /org/freedesktop/UPower/devices/battery_BAT0
+    > /org/freedesktop/UPower/devices/DisplayDevice
+
+These are all the devices that can be controlled via upower. To obtain information about ``battery_BAT0``, run a:
+
+::
+
+    > upower -i /org/freedesktop/UPower/devices/battery_BAT0
+
+This returns a large amount of information about the battery, similar to:
+
+:: 
+
+      native-path:          BAT0
+      vendor:               Something
+      model:                Something else
+      serial:               7518
+      power supply:         yes
+      updated:              <Some date> ( N seconds ago)
+      has history:          yes
+      has statistics:       yes
+      battery
+        present:             yes
+        rechargeable:        yes
+        state:               discharging
+        warning-level:       none
+        energy:              21.318 Wh
+        energy-empty:        0 Wh
+        energy-full:         41.2566 Wh
+        energy-full-design:  51.3 Wh
+        energy-rate:         4.104 W
+        voltage:             11.29 V
+        time to empty:       5.2 hours
+        percentage:          51%
+        capacity:            80.4222%
+        technology:          lithium-ion
+        icon-name:          'battery-good-symbolic'
+      History (charge):
+        1608420725	51.000	discharging
+      History (rate):
+        1608420725	4.104	discharging    
+        
+To "isolate" the "percentage" figure, we will use a `regular expression <https://en.wikipedia.org/wiki/Regular_expression>`_
+, via `grep <https://www.gnu.org/software/grep/>`_. To do this, run a:
+
+::
+
+    > upower -i /org/freedesktop/UPower/devices/battery_BAT0|egrep "percentage"|egrep "[0-9]+" -o
+
+Here, we are piping the output of ``upower`` to ``egrep`` to filter out the line of text that includes
+"percentage:        51%" and the output of that to another filter that only preserves strings that include one or more 
+digits. The combined result of this is the number 51 (*without* the ``%`` sign).
+
+Now, what we want to send to the Digirule 2U is ``/0051``. We can format our number in this way by using 
+`printf <https://linux.die.net/man/3/printf>`_. To do this run a:
+
+::
+
+    > printf '/0%03d'  `upower -i /org/freedesktop/UPower/devices/battery_BAT0|egrep "percentage"|egrep '[0-9]+' -o`
+    
+The format string is identical to C's ``printf``. The other thing to notice here is the **backticks** used in the 
+``upower`` command which **first evaluate their content** and substitute it with the result.
+
+This means that ``printf`` is asked to format **the result** of ``upower`` (51) as a string starting with ``/``, 
+followed by our "channel selector", here ``0``, followed by the charge percentage formated **always** as a 3 digit 
+number. This last detail is very important to keep our decoding process simple.
+
+All that we would be missing now is sending this result to the Digirule 2U running our Heads Up Display program.
+
+To do this, run a:
+
+::
+
+    printf '/0%03d'  `upower -i /org/freedesktop/UPower/devices/battery_BAT0|egrep "percentage"|egrep '[0-9]+' -o`>/dev/ttyUSB0 >/dev/ttyUSB0
+
+
+And that is it. The Digirule 2U now displays your battery charge as a binary value.
+
+
 Conclusion
 ----------
+
+This is a nice little demo to control the displays of the Digirule 2U from a computer with a very small 
+ASM program.
+
+There are several improvements that can be applied around handling "errors" (e.g. malformated strings) but 
+these would not change the main idea of operation considerably.
+
+The script that displays the battery charge is also kept as simple as possible. An improvement of it would be 
+to convert the binary number to a "bar" display. This only includes finding the power of 2 that is closest to 
+the displayed number. For example, for 51, it would have to be 64. Or in other words, shift left 1 by the 
+rounded logarithm of base 2 of 51. But, this is only a matter of further processing on the terminal, just before 
+using ``printf`` to format the final result and send it to the serial port.
+
+Finally, for a periodic display of the battery power, you can simply add this line to your `crontab <https://linux.die.net/man/1/crontab>`_
+and have your Digirule2U display your battery power (or any other parameter you wish) at well set intervals.
