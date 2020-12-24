@@ -1,0 +1,84 @@
+.EQU led_reg=255
+.EQU addrled_reg=254
+.EQU status_reg=252
+.EQU zero_bit=0
+.EQU carry_bit=1
+.EQU addrd_bit=2
+
+SPEED 0
+BSET addrd_bit status_reg
+COPYLR 0 addrled_reg
+loop_start:
+CALL update_display
+COPYLR 0 R3
+COPYLR 8 R1 
+internal_loop:
+BCLR carry_bit status_reg
+COPYLA limit
+ADDRA R1
+COPYAR R2
+COPYIR R2 R0
+COPYRA counter
+BCLR carry_bit status_reg
+SUBRA R0
+BTSTSC carry_bit status_reg
+JUMP turn_off
+JUMP turn_on
+continue:
+DECR R1
+BTSTSS zero_bit status_reg
+JUMP internal_loop
+INCR counter
+BCLR carry_bit status_reg
+COPYRA counter
+SUBLA 6
+BTSTSC zero_bit status_reg
+CALL reset_counter
+JUMP loop_start
+
+reset_counter:
+COPYLR 0 counter
+RETURN
+
+turn_off:
+COPYLR 36 set_comm
+COPYLR R3 set_comm_target
+DECR R1
+CALL set_comm
+INCR R1
+JUMP continue
+
+turn_on:
+COPYLR 35 set_comm
+COPYLR R3 set_comm_target
+DECR R1
+CALL set_comm
+INCR R1
+JUMP continue
+
+counter:
+.DB 0
+
+R0:
+.DB 0
+
+set_comm:
+.DB 0
+R1:
+.DB 0
+set_comm_target:
+.DB 0
+RETURN
+
+R2:
+.DB 0
+
+R3:
+.DB 0
+
+update_display:
+COPYRR R3 led_reg
+RETURN
+
+limit:
+.DB -1,0,1,2,3,4,5,6,6
