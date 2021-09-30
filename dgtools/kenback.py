@@ -315,7 +315,41 @@ class Kenback(DGCPU):
         
         
     def _sub(self):
-        pass
+        inst_sub = self.mem[self.pc - 1]
+        operand = self._read_next()        
+        reg, stat_reg = {0:("A", "OC_A"),
+                         1:("B", "OC_B"),
+                         2:("X", "OC_X")}[inst_sub >> 6]
+        addr_mode = inst_sub & 7
+        
+        a = self.mem._reg_rd(reg)
+        
+        # Constant
+        if addr_mode == 3:
+            b = operand
+        # Memory
+        if addr_mode == 4:
+            b = self.mem._mem_rd(operand, absolute=True)
+        # Indirect
+        if addr_mode == 5:
+            b = self.mem._mem_rd(self.mem._mem_rd(operand, absolute=True), absolute=True)
+        # Indexed
+        if addr_mode == 6:
+            b = self.mem._mem_rd(self.mem._reg_rd("X") + operand, absolute=True)
+        # Indirect Indexed
+        if addr_mode == 7:
+            b = self.mem._mem_rd(self.mem._reg_rd("X") + \
+                                 self.mem._mem_rd(self.mem._mem_rd(operand, absolute=True), \
+                                                  absolute=True), \
+                                 absolute=True)
+
+        result = a - b
+        v_flag = int(result < -127 or result>127)
+        c_flag = int(result < 0 or result>255)
+        
+        self.mem._reg_wr(reg, result & 0xFF)
+        self.mem._reg_wr(stat_reg, v_flag + (c_flag << 1))
+        
         
     def _load(self):
         # Load a register with a value that can come from various sources.

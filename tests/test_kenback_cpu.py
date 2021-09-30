@@ -107,6 +107,23 @@ def test_ADD():
         
     assert get_vm_hash(vm_expected) == vm_hash
 
+def test_SUB():
+    """
+    Add performs, no operation.
+    
+    Program bytes used   : 1
+    Status flags affected: None
+    """
+    test_program = [1, 0, 0, 4, 11, 1, 0]
+    vm_hash = get_vm_hash_after_exec(test_program)
+    
+    vm_expected = Kenback()
+    vm_expected.mem.load(test_program)
+    vm_expected.mem["A"] = 0
+    vm_expected.pc = 7
+        
+    assert get_vm_hash(vm_expected) == vm_hash
+
 def test_LOAD():
     """
     Add performs, no operation.
