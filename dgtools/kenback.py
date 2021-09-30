@@ -311,7 +311,7 @@ class Kenback(DGCPU):
         c_flag = int(result < 0 or result>255)
         
         self.mem._reg_wr(reg, result & 0xFF)
-        self.mem._reg_wr(stat_reg, v_flag + (c_flag < 1))
+        # self.mem._reg_wr(stat_reg, v_flag + (c_flag < 1))
         
         
     def _sub(self):
