@@ -83,7 +83,6 @@ def test_HALT():
     
     vm_expected = Digirule()
     vm_expected.pc = 1
-    
     assert get_vm_hash(vm_expected) == vm_hash
 
 

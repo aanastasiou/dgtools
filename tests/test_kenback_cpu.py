@@ -44,7 +44,6 @@ def get_vm_hash_after_exec(a_program, use_this_vm=None):
     if use_this_vm is None:
         vm = Kenback()
         vm.mem.load(a_program)
-        vm.pc = 4
     else:
         vm = use_this_vm
         
@@ -65,7 +64,7 @@ def test_HALT():
     vm_hash = get_vm_hash_after_exec(test_program)
     
     vm_expected = Kenback()
-    vm_expected.pc = 1
+    vm_expected.pc = 5
     
     assert get_vm_hash(vm_expected) == vm_hash
 
@@ -77,29 +76,33 @@ def test_NOOP():
     Program bytes used   : 1
     Status flags affected: None
     """
+    
+    # Notice the program here, it is 127 followed by 0. So 127 is no-op but the following HALT is what 
+    # gracefully stops the CPU, so the program counter advances two cells in this cas rather than the one
+    # that would be expected from just the noop.
     test_program = [127,0]
     vm_hash = get_vm_hash_after_exec(test_program)
     
     vm_expected = Kenback()
     vm_expected.mem.load(test_program)
-    vm_expected.pc = 2
+    vm_expected.pc = 6
         
     assert get_vm_hash(vm_expected) == vm_hash
 
 
-def test_ADD():
-    """
-    Add performs, no operation.
+# def test_ADD():
+    # """
+    # Add performs, no operation.
     
-    Program bytes used   : 1
-    Status flags affected: None
-    """
-    test_program = [134,0]
-    vm_hash = get_vm_hash_after_exec(test_program)
+    # Program bytes used   : 1
+    # Status flags affected: None
+    # """
+    # test_program = [134,0]
+    # vm_hash = get_vm_hash_after_exec(test_program)
     
-    vm_expected = Kenback()
-    vm_expected.mem.load(test_program)
-    vm_expected.pc = 2
+    # vm_expected = Kenback()
+    # vm_expected.mem.load(test_program)
+    # # vm_expected.pc = 2
     
         
     assert get_vm_hash(vm_expected) == vm_hash
@@ -117,9 +120,6 @@ def test_LOAD():
     vm_expected = Kenback()
     vm_expected.mem.load(test_program)
     vm_expected.mem._reg_wr("A",2)
-    vm_expected.pc = 6
+    vm_expected.pc = 7
     
-    import pdb
-    pdb.set_trace()
-        
     assert get_vm_hash(vm_expected) == vm_hash

@@ -17,11 +17,9 @@ class MemorySpaceKenback(DGMemorySpaceBase):
         self._mem_len = 256
         self._mem = bytearray([0 for k in range(0, self._mem_len)])
         
-def load(self,a_program):
-    import pdb
-    pdb.set_trace()
-    super().load(a_program)
-    self._reg_wr("P",4)
+    def load(self, a_program, offset=4):
+        super().load(a_program, offset)
+        self._reg_wr("P",offset)
         
 class Kenback(DGCPU):
     def __init__(self):
@@ -289,7 +287,9 @@ class Kenback(DGCPU):
         pass
         
     def _load(self):
-        inst_load = self.mem[self.pc-1]
+        # Load a register with a value that can come from various sources.
+        
+        inst_load = self.mem[self.pc - 1]
         operand = self._read_next()        
         reg = {0:"A",
                1:"B",
@@ -313,6 +313,32 @@ class Kenback(DGCPU):
             self.mem._reg_wr(reg, self.mem._mem_rd(self.mem._reg_rd("X") + self.mem._mem_rd(self.mem._mem_rd(operand, absolute=True), absolute=True), absolute=True))
         
     def _store(self):
+        # Store a register with a value that can come from various sources.
+        
+        inst_load = self.mem[self.pc - 1]
+        operand = self._read_next()        
+        reg = {0:"A",
+               1:"B",
+               2:"X"}[inst_load >> 6]
+        addr_mode = inst_load & 7
+                    
+        # Constant
+        if addr_mode == 3:
+            self.mem._reg_wr(reg, operand)
+        # Memory
+        if addr_mode == 4:
+            self.mem._reg_wr(reg, self.mem._mem_rd(operand, absolute=True))
+        # Indirect
+        if addr_mode == 5:
+            self.mem._reg_wr(reg, self.mem._mem_rd(self.mem._mem_rd(operand, absolute=True), absolute=True))
+        # Indexed
+        if addr_mode == 6:
+            self.mem._reg_wr(reg, self.mem._mem_rd(self.mem._reg_rd("X") + operand, absolute=True))
+        # Indirect Indexed
+        if addr_mode == 7:
+            self.mem._reg_wr(reg, self.mem._mem_rd(self.mem._reg_rd("X") + self.mem._mem_rd(self.mem._mem_rd(operand, absolute=True), absolute=True), absolute=True))
+        
+        
         pass
         
     def _and(self):

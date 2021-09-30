@@ -27,6 +27,7 @@ class MemorySpaceDigirule(DGMemorySpaceBase):
                          "PC":2}
         self._mem_len = 256 
         self._mem = bytearray([0 for k in range(0, self._mem_len + self._mem_base)])
+        
 
 
 class Digirule(DGCPU):
