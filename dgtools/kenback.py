@@ -17,6 +17,12 @@ class MemorySpaceKenback(DGMemorySpaceBase):
         self._mem_len = 256
         self._mem = bytearray([0 for k in range(0, self._mem_len)])
         
+def load(self,a_program):
+    import pdb
+    pdb.set_trace()
+    super().load(a_program)
+    self._reg_wr("P",4)
+        
 class Kenback(DGCPU):
     def __init__(self):
         super().__init__()
@@ -86,7 +92,183 @@ class Kenback(DGCPU):
                           156:self._store,
                           157:self._store,
                           158:self._store,
-                          159:self._store}
+                          159:self._store,
+                          # LOGIC
+                          # AND
+                          211:self._and,
+                          212:self._and,
+                          213:self._and,
+                          214:self._and,
+                          215:self._and,
+                          # OR
+                          195:self._or,
+                          196:self._or,
+                          197:self._or,
+                          198:self._or,
+                          199:self._or,
+                          # LNEG
+                          219:self._lneg,
+                          220:self._lneg,
+                          221:self._lneg,
+                          222:self._lneg,
+                          223:self._lneg,
+                          # JUMPS
+                          # Unconditional
+                          228:self._jpd,
+                          236:self._jpi,
+                          244:self._jmd,
+                          252:self._jmi,
+                          # Conditional on A direct
+                          0O073:self._jpdnz,
+                          0O074:self._jpdz,
+                          0O075:self._jpdltz,
+                          0O076:self._jpdgez,
+                          0O077:self._jpdgz,
+                          0O053:self._jpinz,
+                          0O054:self._jpiz,
+                          0O055:self._jpiltz,
+                          0O056:self._jpigez,
+                          0O057:self._jpigz,
+                          # Conditional on A mark direct
+                          0O063:self._jmdnz,
+                          0O064:self._jmdz,
+                          0O065:self._jmdltz,
+                          0O066:self._jmdgez,
+                          0O067:self._jmdgz,
+                          # Conditional on A mark indirect
+                          0b00111011:self._jminz,
+                          0b00111100:self._jmiz,
+                          0b00111101:self._jmiltz,
+                          0b00111110:self._jmigez,
+                          0b00111111:self._jmigz,
+                          # Conditional on B direct
+                          0b01100011:self._jpdnz,
+                          0b01100100:self._jpdz,
+                          0b01100101:self._jpdltz,
+                          0b01100110:self._jpdgez,
+                          0b01100111:self._jpdgz,
+                          # Conditional on B indirect
+                          0b01101011:self._jpinz,
+                          0b01101100:self._jpiz,
+                          0b01101101:self._jpiltz,
+                          0b01101110:self._jpigez,
+                          0b01101111:self._jpigz,
+                          # Conditional on B mark direct
+                          0b01110011:self._jmdnz,
+                          0b01110100:self._jmdz,
+                          0b01110101:self._jmdltz,
+                          0b01110110:self._jmdgez,
+                          0b01110111:self._jmdgz,
+                          # Conditional on B mark indirect
+                          0b01111011:self._jminz,
+                          0b01111100:self._jmiz,
+                          0b01111101:self._jmiltz,
+                          0b01111110:self._jmigez,
+                          0b01111111:self._jmigz,
+                          # Conditional on X direct
+                          0b10100011:self._jpdnz,
+                          0b10100100:self._jpdz,
+                          0b10100101:self._jpdltz,
+                          0b10100110:self._jpdgez,
+                          0b10100111:self._jpdgz,
+                          # Conditional on X indirect
+                          0b10101011:self._jpinz,
+                          0b10101100:self._jpiz,
+                          0b10101101:self._jpiltz,
+                          0b10101110:self._jpigez,
+                          0b10101111:self._jpigz,
+                          # Conditional on X mark direct
+                          0b10110011:self._jmdnz,
+                          0b10110100:self._jmdz,
+                          0b10110101:self._jmdltz,
+                          0b10110110:self._jmdgez,
+                          0b10110111:self._jmdgz,
+                          # Conditional on X mark indirect
+                          0b10111011:self._jminz,
+                          0b10111100:self._jmiz,
+                          0b10111101:self._jmiltz,
+                          0b10111110:self._jmigez,
+                          0b10111111:self._jmigz,
+                          # SKIPS
+                          # SKIP 0
+                          0b10000010:self._skp,
+                          0b10001010:self._skp,
+                          0b10010010:self._skp,
+                          0b10011010:self._skp,
+                          0b10100010:self._skp,
+                          0b10101010:self._skp,
+                          0b10110010:self._skp,
+                          0b10111010:self._skp,
+                          # SKIP 1
+                          0b11000010:self._skp,
+                          0b11001010:self._skp,
+                          0b11010010:self._skp,
+                          0b11011010:self._skp,
+                          0b11100010:self._skp,
+                          0b11101010:self._skp,
+                          0b11110010:self._skp,
+                          0b11111010:self._skp,
+                          # SET
+                          # SET 0
+                          0b00000010:self._set,
+                          0b00001010:self._set,
+                          0b00010010:self._set,
+                          0b00011010:self._set,
+                          0b00100010:self._set,
+                          0b00101010:self._set,
+                          0b00110010:self._set,
+                          0b00111010:self._set,
+                          # SKIP 1
+                          0b01000010:self._set,
+                          0b01001010:self._set,
+                          0b01010010:self._set,
+                          0b01011010:self._set,
+                          0b01100010:self._set,
+                          0b01101010:self._set,
+                          0b01110010:self._set,
+                          0b01111010:self._set,
+                          # SHIFT
+                          # LEFT A
+                          0b10001001:self._sftl,
+                          0b10010001:self._sftl,
+                          0b10011001:self._sftl,
+                          0b10000001:self._sftl,
+                          # RIGHT A
+                          0b00001001:self._sftr,
+                          0b00010001:self._sftr,
+                          0b00011001:self._sftr,
+                          0b00000001:self._sftr,
+                          # LEFT B
+                          0b10101001:self._sftl,
+                          0b10110001:self._sftl,
+                          0b10111001:self._sftl,
+                          0b10100001:self._sftl,
+                          # RIGHT B
+                          0b00101001:self._sftr,
+                          0b00110001:self._sftr,
+                          0b00111001:self._sftr,
+                          0b00100001:self._sftr,
+                          # ROTATE
+                          # LEFT A
+                          0b11001001:self._rotl,
+                          0b11010001:self._rotl,
+                          0b11011001:self._rotl,
+                          0b11000001:self._rotl,
+                          # RIGHT A
+                          0b01001001:self._rotr,
+                          0b01011001:self._rotr,
+                          0b01010001:self._rotr,
+                          0b01000001:self._rotr,
+                          # LEFT B
+                          0b11101001:self._rotl,
+                          0b11110001:self._rotl,
+                          0b11111001:self._rotl,
+                          0b11100001:self._rotl,
+                          # RIGHT B
+                          0b01101001:self._rotr,
+                          0b01110001:self._rotr,
+                          0b01111001:self._rotr,
+                          0b01100001:self._rotr,}
         
     def _halt(self):
         """
@@ -108,16 +290,27 @@ class Kenback(DGCPU):
         
     def _load(self):
         inst_load = self.mem[self.pc-1]
-        reg_dict = {0:"A",
-                    1:"B",
-                    2:"X"}
-        addr_mode_dict = {3:"Immediate",
-                          4:"Memory",
-                          5:"Indirect",
-                          6:"Indexed",
-                          7:"IndInd"}
-        print(f"Reg:{reg_dict[inst_load >> 6]}")
-        print(f"Addr Mode:{addr_mode_dict[inst_load & 7]}")
+        operand = self._read_next()        
+        reg = {0:"A",
+               1:"B",
+               2:"X"}[inst_load >> 6]
+        addr_mode = inst_load & 7
+                    
+        # Constant
+        if addr_mode == 3:
+            self.mem._reg_wr(reg, operand)
+        # Memory
+        if addr_mode == 4:
+            self.mem._reg_wr(reg, self.mem._mem_rd(operand, absolute=True))
+        # Indirect
+        if addr_mode == 5:
+            self.mem._reg_wr(reg, self.mem._mem_rd(self.mem._mem_rd(operand, absolute=True), absolute=True))
+        # Indexed
+        if addr_mode == 6:
+            self.mem._reg_wr(reg, self.mem._mem_rd(self.mem._reg_rd("X") + operand, absolute=True))
+        # Indirect Indexed
+        if addr_mode == 7:
+            self.mem._reg_wr(reg, self.mem._mem_rd(self.mem._reg_rd("X") + self.mem._mem_rd(self.mem._mem_rd(operand, absolute=True), absolute=True), absolute=True))
         
     def _store(self):
         pass
@@ -366,145 +559,145 @@ class Kenback(DGCPU):
         ins_jmd_a_gez = pyparsing.Group(pyparsing.Regex("JMDGEZ A") + lit_value)(f"{0O066}:1")
         ins_jmd_a_gz = pyparsing.Group(pyparsing.Regex("JMDGZ A") + lit_value)(f"{0O067}:1")
         # Conditional on A mark indirect
-        ins_jmi_a_nz = pyparsing.Group(pyparsing.Regex("JMINZ A") + idc_value)
-        ins_jmi_a_z = pyparsing.Group(pyparsing.Regex("JMIZ A") + idc_value)
-        ins_jmi_a_ltz = pyparsing.Group(pyparsing.Regex("JMILTZ A") + idc_value)
-        ins_jmi_a_gez = pyparsing.Group(pyparsing.Regex("JMIGEZ A") + idc_value)
-        ins_jmi_a_gz = pyparsing.Group(pyparsing.Regex("JMIGZ A") + idc_value)
+        ins_jmi_a_nz = pyparsing.Group(pyparsing.Regex("JMINZ A") + idc_value)(f"{0b00111011}:1")
+        ins_jmi_a_z = pyparsing.Group(pyparsing.Regex("JMIZ A") + idc_value)(f"{0b00111100}:1")
+        ins_jmi_a_ltz = pyparsing.Group(pyparsing.Regex("JMILTZ A") + idc_value)(f"{0b00111101}:1")
+        ins_jmi_a_gez = pyparsing.Group(pyparsing.Regex("JMIGEZ A") + idc_value)(f"{0b00111110}:1")
+        ins_jmi_a_gz = pyparsing.Group(pyparsing.Regex("JMIGZ A") + idc_value)(f"{0b00111111}:1")
         
         # Conditional on B direct
-        ins_jpd_b_nz = pyparsing.Group(pyparsing.Regex("JPDNZ B") + lit_value)
-        ins_jpd_b_z = pyparsing.Group(pyparsing.Regex("JPDZ B") + lit_value)
-        ins_jpd_b_ltz = pyparsing.Group(pyparsing.Regex("JPDLTZ B") + lit_value)
-        ins_jpd_b_gez = pyparsing.Group(pyparsing.Regex("JPDGEZ B") + lit_value)
-        ins_jpd_b_gz = pyparsing.Group(pyparsing.Regex("JPDGZ B") + lit_value)
+        ins_jpd_b_nz = pyparsing.Group(pyparsing.Regex("JPDNZ B") + lit_value)(f"{0b01100011}:1")
+        ins_jpd_b_z = pyparsing.Group(pyparsing.Regex("JPDZ B") + lit_value)(f"{0b01100100}:1")
+        ins_jpd_b_ltz = pyparsing.Group(pyparsing.Regex("JPDLTZ B") + lit_value)(f"{0b01100101}:1")
+        ins_jpd_b_gez = pyparsing.Group(pyparsing.Regex("JPDGEZ B") + lit_value)(f"{0b01100110}:1")
+        ins_jpd_b_gz = pyparsing.Group(pyparsing.Regex("JPDGZ B") + lit_value)(f"{0b01100111}:1")
         # Conditional on B indirect
-        ins_jpi_b_nz = pyparsing.Group(pyparsing.Regex("JPINZ B") + idc_value)
-        ins_jpi_b_z = pyparsing.Group(pyparsing.Regex("JPIZ B") + idc_value)
-        ins_jpi_b_ltz = pyparsing.Group(pyparsing.Regex("JPILTZ B") + idc_value)
-        ins_jpi_b_gez = pyparsing.Group(pyparsing.Regex("JPIGEZ B") + idc_value)
-        ins_jpi_b_gz = pyparsing.Group(pyparsing.Regex("JPIGZ B") + idc_value)
+        ins_jpi_b_nz = pyparsing.Group(pyparsing.Regex("JPINZ B") + idc_value)(f"{0b01101011}:1")
+        ins_jpi_b_z = pyparsing.Group(pyparsing.Regex("JPIZ B") + idc_value)(f"{0b01101100}:1")
+        ins_jpi_b_ltz = pyparsing.Group(pyparsing.Regex("JPILTZ B") + idc_value)(f"{0b01101101}:1")
+        ins_jpi_b_gez = pyparsing.Group(pyparsing.Regex("JPIGEZ B") + idc_value)(f"{0b01101110}:1")
+        ins_jpi_b_gz = pyparsing.Group(pyparsing.Regex("JPIGZ B") + idc_value)(f"{0b01101111}:1")
         # Conditional on B mark direct
-        ins_jmd_b_nz = pyparsing.Group(pyparsing.Regex("JMDNZ B") + lit_value)
-        ins_jmd_b_z = pyparsing.Group(pyparsing.Regex("JMDZ B") + lit_value)
-        ins_jmd_b_ltz = pyparsing.Group(pyparsing.Regex("JMDLTZ B") + lit_value)
-        ins_jmd_b_gez = pyparsing.Group(pyparsing.Regex("JMDGEZ B") + lit_value)
-        ins_jmd_b_gz = pyparsing.Group(pyparsing.Regex("JMDGZ B") + lit_value)
+        ins_jmd_b_nz = pyparsing.Group(pyparsing.Regex("JMDNZ B") + lit_value)(f"{0b01110011}:1")
+        ins_jmd_b_z = pyparsing.Group(pyparsing.Regex("JMDZ B") + lit_value)(f"{0b01110100}:1")
+        ins_jmd_b_ltz = pyparsing.Group(pyparsing.Regex("JMDLTZ B") + lit_value)(f"{0b01110101}:1")
+        ins_jmd_b_gez = pyparsing.Group(pyparsing.Regex("JMDGEZ B") + lit_value)(f"{0b01110110}:1")
+        ins_jmd_b_gz = pyparsing.Group(pyparsing.Regex("JMDGZ B") + lit_value)(f"{0b01110111}:1")
         # Conditional on B mark indirect
-        ins_jmi_b_nz = pyparsing.Group(pyparsing.Regex("JMINZ B") + idc_value)
-        ins_jmi_b_z = pyparsing.Group(pyparsing.Regex("JMIZ B") + idc_value)
-        ins_jmi_b_ltz = pyparsing.Group(pyparsing.Regex("JMILTZ B") + idc_value)
-        ins_jmi_b_gez = pyparsing.Group(pyparsing.Regex("JMIGEZ B") + idc_value)
-        ins_jmi_b_gz = pyparsing.Group(pyparsing.Regex("JMIGZ B") + idc_value)
+        ins_jmi_b_nz = pyparsing.Group(pyparsing.Regex("JMINZ B") + idc_value)(f"{0b01111011}:1")
+        ins_jmi_b_z = pyparsing.Group(pyparsing.Regex("JMIZ B") + idc_value)(f"{0b01111100}:1")
+        ins_jmi_b_ltz = pyparsing.Group(pyparsing.Regex("JMILTZ B") + idc_value)(f"{0b01111101}:1")
+        ins_jmi_b_gez = pyparsing.Group(pyparsing.Regex("JMIGEZ B") + idc_value)(f"{0b01111110}:1")
+        ins_jmi_b_gz = pyparsing.Group(pyparsing.Regex("JMIGZ B") + idc_value)(f"{0b01111111}:1")
 
         # Conditional on X direct
-        ins_jpd_x_nz = pyparsing.Group(pyparsing.Regex("JPDNZ X") + lit_value)
-        ins_jpd_x_z = pyparsing.Group(pyparsing.Regex("JPDZ X") + lit_value)
-        ins_jpd_x_ltz = pyparsing.Group(pyparsing.Regex("JPDLTZ X") + lit_value)
-        ins_jpd_x_gez = pyparsing.Group(pyparsing.Regex("JPDGEZ X") + lit_value)
-        ins_jpd_x_gz = pyparsing.Group(pyparsing.Regex("JPDGZ X") + lit_value)
+        ins_jpd_x_nz = pyparsing.Group(pyparsing.Regex("JPDNZ X") + lit_value)(f"{0b10100011}:1")
+        ins_jpd_x_z = pyparsing.Group(pyparsing.Regex("JPDZ X") + lit_value)(f"{0b10100100}:1")
+        ins_jpd_x_ltz = pyparsing.Group(pyparsing.Regex("JPDLTZ X") + lit_value)(f"{0b10100101}:1")
+        ins_jpd_x_gez = pyparsing.Group(pyparsing.Regex("JPDGEZ X") + lit_value)(f"{0b10100110}:1")
+        ins_jpd_x_gz = pyparsing.Group(pyparsing.Regex("JPDGZ X") + lit_value)(f"{0b10100111}:1")
         # Conditional on X indirect
-        ins_jpi_x_nz = pyparsing.Group(pyparsing.Regex("JPINZ X") + idc_value)
-        ins_jpi_x_z = pyparsing.Group(pyparsing.Regex("JPIZ X") + idc_value)
-        ins_jpi_x_ltz = pyparsing.Group(pyparsing.Regex("JPILTZ X") + idc_value)
-        ins_jpi_x_gez = pyparsing.Group(pyparsing.Regex("JPIGEZ X") + idc_value)
-        ins_jpi_x_gz = pyparsing.Group(pyparsing.Regex("JPIGZ X") + idc_value)
+        ins_jpi_x_nz = pyparsing.Group(pyparsing.Regex("JPINZ X") + idc_value)(f"{0b10101011}:1")
+        ins_jpi_x_z = pyparsing.Group(pyparsing.Regex("JPIZ X") + idc_value)(f"{0b10101100}:1")
+        ins_jpi_x_ltz = pyparsing.Group(pyparsing.Regex("JPILTZ X") + idc_value)(f"{0b10101101}:1")
+        ins_jpi_x_gez = pyparsing.Group(pyparsing.Regex("JPIGEZ X") + idc_value)(f"{0b10101110}:1")
+        ins_jpi_x_gz = pyparsing.Group(pyparsing.Regex("JPIGZ X") + idc_value)(f"{0b10101111}:1")
         # Conditional on X mark direct
-        ins_jmd_x_nz = pyparsing.Group(pyparsing.Regex("JMDNZ X") + lit_value)
-        ins_jmd_x_z = pyparsing.Group(pyparsing.Regex("JMDZ X") + lit_value)
-        ins_jmd_x_ltz = pyparsing.Group(pyparsing.Regex("JMDLTZ X") + lit_value)
-        ins_jmd_x_gez = pyparsing.Group(pyparsing.Regex("JMDGEZ X") + lit_value)
-        ins_jmd_x_gz = pyparsing.Group(pyparsing.Regex("JMDGZ X") + lit_value)
+        ins_jmd_x_nz = pyparsing.Group(pyparsing.Regex("JMDNZ X") + lit_value)(f"{0b10110011}:1")
+        ins_jmd_x_z = pyparsing.Group(pyparsing.Regex("JMDZ X") + lit_value)(f"{0b10110100}:1")
+        ins_jmd_x_ltz = pyparsing.Group(pyparsing.Regex("JMDLTZ X") + lit_value)(f"{0b10110101}:1")
+        ins_jmd_x_gez = pyparsing.Group(pyparsing.Regex("JMDGEZ X") + lit_value)(f"{0b10110110}:1")
+        ins_jmd_x_gz = pyparsing.Group(pyparsing.Regex("JMDGZ X") + lit_value)(f"{0b10110111}:1")
         # Conditional on X mark indirect
-        ins_jmi_x_nz = pyparsing.Group(pyparsing.Regex("JMINZ X") + idc_value)
-        ins_jmi_x_z = pyparsing.Group(pyparsing.Regex("JMIZ X") + idc_value)
-        ins_jmi_x_ltz = pyparsing.Group(pyparsing.Regex("JMILTZ X") + idc_value)
-        ins_jmi_x_gez = pyparsing.Group(pyparsing.Regex("JMIGEZ X") + idc_value)
-        ins_jmi_x_gz = pyparsing.Group(pyparsing.Regex("JMIGZ X") + idc_value)
+        ins_jmi_x_nz = pyparsing.Group(pyparsing.Regex("JMINZ X") + idc_value)(f"{0b10111011}:1")
+        ins_jmi_x_z = pyparsing.Group(pyparsing.Regex("JMIZ X") + idc_value)(f"{0b10111100}:1")
+        ins_jmi_x_ltz = pyparsing.Group(pyparsing.Regex("JMILTZ X") + idc_value)(f"{0b10111101}:1")
+        ins_jmi_x_gez = pyparsing.Group(pyparsing.Regex("JMIGEZ X") + idc_value)(f"{0b10111110}:1")
+        ins_jmi_x_gz = pyparsing.Group(pyparsing.Regex("JMIGZ X") + idc_value)(f"{0b10111111}:1")
         
         # SKIPS
         # SKIP 0
-        ins_skip_0_0 = pyparsing.Group(pyparsing.Regex("SKP 0 0") + mem_value)
-        ins_skip_0_1 = pyparsing.Group(pyparsing.Regex("SKP 0 1") + mem_value)
-        ins_skip_0_2 = pyparsing.Group(pyparsing.Regex("SKP 0 2") + mem_value)
-        ins_skip_0_3 = pyparsing.Group(pyparsing.Regex("SKP 0 3") + mem_value)
-        ins_skip_0_4 = pyparsing.Group(pyparsing.Regex("SKP 0 4") + mem_value)
-        ins_skip_0_5 = pyparsing.Group(pyparsing.Regex("SKP 0 5") + mem_value)
-        ins_skip_0_6 = pyparsing.Group(pyparsing.Regex("SKP 0 6") + mem_value)
-        ins_skip_0_7 = pyparsing.Group(pyparsing.Regex("SKP 0 7") + mem_value)
+        ins_skip_0_0 = pyparsing.Group(pyparsing.Regex("SKP 0 0") + mem_value)(f"{0b10000010}:1")
+        ins_skip_0_1 = pyparsing.Group(pyparsing.Regex("SKP 0 1") + mem_value)(f"{0b10001010}:1")
+        ins_skip_0_2 = pyparsing.Group(pyparsing.Regex("SKP 0 2") + mem_value)(f"{0b10010010}:1")
+        ins_skip_0_3 = pyparsing.Group(pyparsing.Regex("SKP 0 3") + mem_value)(f"{0b10011010}:1")
+        ins_skip_0_4 = pyparsing.Group(pyparsing.Regex("SKP 0 4") + mem_value)(f"{0b10100010}:1")
+        ins_skip_0_5 = pyparsing.Group(pyparsing.Regex("SKP 0 5") + mem_value)(f"{0b10101010}:1")
+        ins_skip_0_6 = pyparsing.Group(pyparsing.Regex("SKP 0 6") + mem_value)(f"{0b10110010}:1")
+        ins_skip_0_7 = pyparsing.Group(pyparsing.Regex("SKP 0 7") + mem_value)(f"{0b10111010}:1")
         # SKIP 1
-        ins_skip_1_0 = pyparsing.Group(pyparsing.Regex("SKP 1 0") + mem_value)
-        ins_skip_1_1 = pyparsing.Group(pyparsing.Regex("SKP 1 1") + mem_value)
-        ins_skip_1_2 = pyparsing.Group(pyparsing.Regex("SKP 1 2") + mem_value)
-        ins_skip_1_3 = pyparsing.Group(pyparsing.Regex("SKP 1 3") + mem_value)
-        ins_skip_1_4 = pyparsing.Group(pyparsing.Regex("SKP 1 4") + mem_value)
-        ins_skip_1_5 = pyparsing.Group(pyparsing.Regex("SKP 1 5") + mem_value)
-        ins_skip_1_6 = pyparsing.Group(pyparsing.Regex("SKP 1 6") + mem_value)
-        ins_skip_1_7 = pyparsing.Group(pyparsing.Regex("SKP 1 7") + mem_value)
+        ins_skip_1_0 = pyparsing.Group(pyparsing.Regex("SKP 1 0") + mem_value)(f"{0b11000010}:1")
+        ins_skip_1_1 = pyparsing.Group(pyparsing.Regex("SKP 1 1") + mem_value)(f"{0b11001010}:1")
+        ins_skip_1_2 = pyparsing.Group(pyparsing.Regex("SKP 1 2") + mem_value)(f"{0b11010010}:1")
+        ins_skip_1_3 = pyparsing.Group(pyparsing.Regex("SKP 1 3") + mem_value)(f"{0b11011010}:1")
+        ins_skip_1_4 = pyparsing.Group(pyparsing.Regex("SKP 1 4") + mem_value)(f"{0b11100010}:1")
+        ins_skip_1_5 = pyparsing.Group(pyparsing.Regex("SKP 1 5") + mem_value)(f"{0b11101010}:1")
+        ins_skip_1_6 = pyparsing.Group(pyparsing.Regex("SKP 1 6") + mem_value)(f"{0b11110010}:1")
+        ins_skip_1_7 = pyparsing.Group(pyparsing.Regex("SKP 1 7") + mem_value)(f"{0b11111010}:1")
 
         # SET
         # SET 0
-        ins_set_0_0 = pyparsing.Group(pyparsing.Regex("SET 0 0") + mem_value)
-        ins_set_0_1 = pyparsing.Group(pyparsing.Regex("SET 0 1") + mem_value)
-        ins_set_0_2 = pyparsing.Group(pyparsing.Regex("SET 0 2") + mem_value)
-        ins_set_0_3 = pyparsing.Group(pyparsing.Regex("SET 0 3") + mem_value)
-        ins_set_0_4 = pyparsing.Group(pyparsing.Regex("SET 0 4") + mem_value)
-        ins_set_0_5 = pyparsing.Group(pyparsing.Regex("SET 0 5") + mem_value)
-        ins_set_0_6 = pyparsing.Group(pyparsing.Regex("SET 0 6") + mem_value)
-        ins_set_0_7 = pyparsing.Group(pyparsing.Regex("SET 0 7") + mem_value)
+        ins_set_0_0 = pyparsing.Group(pyparsing.Regex("SET 0 0") + mem_value)(f"{0b00000010}:1")
+        ins_set_0_1 = pyparsing.Group(pyparsing.Regex("SET 0 1") + mem_value)(f"{0b00001010}:1")
+        ins_set_0_2 = pyparsing.Group(pyparsing.Regex("SET 0 2") + mem_value)(f"{0b00010010}:1")
+        ins_set_0_3 = pyparsing.Group(pyparsing.Regex("SET 0 3") + mem_value)(f"{0b00011010}:1")
+        ins_set_0_4 = pyparsing.Group(pyparsing.Regex("SET 0 4") + mem_value)(f"{0b00100010}:1")
+        ins_set_0_5 = pyparsing.Group(pyparsing.Regex("SET 0 5") + mem_value)(f"{0b00101010}:1")
+        ins_set_0_6 = pyparsing.Group(pyparsing.Regex("SET 0 6") + mem_value)(f"{0b00110010}:1")
+        ins_set_0_7 = pyparsing.Group(pyparsing.Regex("SET 0 7") + mem_value)(f"{0b00111010}:1")
         # SKIP 1
-        ins_set_1_0 = pyparsing.Group(pyparsing.Regex("SET 1 0") + mem_value)
-        ins_set_1_1 = pyparsing.Group(pyparsing.Regex("SET 1 1") + mem_value)
-        ins_set_1_2 = pyparsing.Group(pyparsing.Regex("SET 1 2") + mem_value)
-        ins_set_1_3 = pyparsing.Group(pyparsing.Regex("SET 1 3") + mem_value)
-        ins_set_1_4 = pyparsing.Group(pyparsing.Regex("SET 1 4") + mem_value)
-        ins_set_1_5 = pyparsing.Group(pyparsing.Regex("SET 1 5") + mem_value)
-        ins_set_1_6 = pyparsing.Group(pyparsing.Regex("SET 1 6") + mem_value)
-        ins_set_1_7 = pyparsing.Group(pyparsing.Regex("SET 1 7") + mem_value)
+        ins_set_1_0 = pyparsing.Group(pyparsing.Regex("SET 1 0") + mem_value)(f"{0b01000010}:1")
+        ins_set_1_1 = pyparsing.Group(pyparsing.Regex("SET 1 1") + mem_value)(f"{0b01001010}:1")
+        ins_set_1_2 = pyparsing.Group(pyparsing.Regex("SET 1 2") + mem_value)(f"{0b01010010}:1")
+        ins_set_1_3 = pyparsing.Group(pyparsing.Regex("SET 1 3") + mem_value)(f"{0b01011010}:1")
+        ins_set_1_4 = pyparsing.Group(pyparsing.Regex("SET 1 4") + mem_value)(f"{0b01100010}:1")
+        ins_set_1_5 = pyparsing.Group(pyparsing.Regex("SET 1 5") + mem_value)(f"{0b01101010}:1")
+        ins_set_1_6 = pyparsing.Group(pyparsing.Regex("SET 1 6") + mem_value)(f"{0b01110010}:1")
+        ins_set_1_7 = pyparsing.Group(pyparsing.Regex("SET 1 7") + mem_value)(f"{0b01111010}:1")
 
         # SHIFT
         # LEFT A
-        ins_sftl_a_1 = pyparsing.Group(pyparsing.Regex("SFTL A 1"))
-        ins_sftl_a_2 = pyparsing.Group(pyparsing.Regex("SFTL A 2"))
-        ins_sftl_a_3 = pyparsing.Group(pyparsing.Regex("SFTL A 3"))
-        ins_sftl_a_4 = pyparsing.Group(pyparsing.Regex("SFTL A 4"))
+        ins_sftl_a_1 = pyparsing.Group(pyparsing.Regex("SFTL A 1"))(f"{0b10001001}:1")
+        ins_sftl_a_2 = pyparsing.Group(pyparsing.Regex("SFTL A 2"))(f"{0b10010001}:1")
+        ins_sftl_a_3 = pyparsing.Group(pyparsing.Regex("SFTL A 3"))(f"{0b10011001}:1")
+        ins_sftl_a_4 = pyparsing.Group(pyparsing.Regex("SFTL A 4"))(f"{0b10000001}:1")
         # RIGHT A
-        ins_sftr_a_1 = pyparsing.Group(pyparsing.Regex("SFTR A 1"))
-        ins_sftr_a_2 = pyparsing.Group(pyparsing.Regex("SFTR A 2"))
-        ins_sftr_a_3 = pyparsing.Group(pyparsing.Regex("SFTR A 3"))
-        ins_sftr_a_4 = pyparsing.Group(pyparsing.Regex("SFTR A 4"))
+        ins_sftr_a_1 = pyparsing.Group(pyparsing.Regex("SFTR A 1"))(f"{0b00001001}:1")
+        ins_sftr_a_2 = pyparsing.Group(pyparsing.Regex("SFTR A 2"))(f"{0b00010001}:1")
+        ins_sftr_a_3 = pyparsing.Group(pyparsing.Regex("SFTR A 3"))(f"{0b00011001}:1")
+        ins_sftr_a_4 = pyparsing.Group(pyparsing.Regex("SFTR A 4"))(f"{0b00000001}:1")
         # LEFT B
-        ins_sftl_b_1 = pyparsing.Group(pyparsing.Regex("SFTL B 1"))
-        ins_sftl_b_2 = pyparsing.Group(pyparsing.Regex("SFTL B 2"))
-        ins_sftl_b_3 = pyparsing.Group(pyparsing.Regex("SFTL B 3"))
-        ins_sftl_b_4 = pyparsing.Group(pyparsing.Regex("SFTL B 4"))
+        ins_sftl_b_1 = pyparsing.Group(pyparsing.Regex("SFTL B 1"))(f"{0b10101001}:1")
+        ins_sftl_b_2 = pyparsing.Group(pyparsing.Regex("SFTL B 2"))(f"{0b10110001}:1")
+        ins_sftl_b_3 = pyparsing.Group(pyparsing.Regex("SFTL B 3"))(f"{0b10111001}:1")
+        ins_sftl_b_4 = pyparsing.Group(pyparsing.Regex("SFTL B 4"))(f"{0b10100001}:1")
         # RIGHT B
-        ins_sftr_b_1 = pyparsing.Group(pyparsing.Regex("SFTR B 1"))
-        ins_sftr_b_2 = pyparsing.Group(pyparsing.Regex("SFTR B 2"))
-        ins_sftr_b_3 = pyparsing.Group(pyparsing.Regex("SFTR B 3"))
-        ins_sftr_b_4 = pyparsing.Group(pyparsing.Regex("SFTR B 4"))
+        ins_sftr_b_1 = pyparsing.Group(pyparsing.Regex("SFTR B 1"))(f"{0b00101001}:1")
+        ins_sftr_b_2 = pyparsing.Group(pyparsing.Regex("SFTR B 2"))(f"{0b00110001}:1")
+        ins_sftr_b_3 = pyparsing.Group(pyparsing.Regex("SFTR B 3"))(f"{0b00111001}:1")
+        ins_sftr_b_4 = pyparsing.Group(pyparsing.Regex("SFTR B 4"))(f"{0b00100001}:1")
 
         # ROTATE
         # LEFT A
-        ins_rotl_a_1 = pyparsing.Group(pyparsing.Regex("ROTL A 1"))
-        ins_rotl_a_2 = pyparsing.Group(pyparsing.Regex("ROTL A 2"))
-        ins_rotl_a_3 = pyparsing.Group(pyparsing.Regex("ROTL A 3"))
-        ins_rotl_a_4 = pyparsing.Group(pyparsing.Regex("ROTL A 4"))
+        ins_rotl_a_1 = pyparsing.Group(pyparsing.Regex("ROTL A 1"))(f"{0b11001001}:1")
+        ins_rotl_a_2 = pyparsing.Group(pyparsing.Regex("ROTL A 2"))(f"{0b11010001}:1")
+        ins_rotl_a_3 = pyparsing.Group(pyparsing.Regex("ROTL A 3"))(f"{0b11011001}:1")
+        ins_rotl_a_4 = pyparsing.Group(pyparsing.Regex("ROTL A 4"))(f"{0b11000001}:1")
         # RIGHT A
-        ins_rotr_a_1 = pyparsing.Group(pyparsing.Regex("ROTR A 1"))
-        ins_rotr_a_2 = pyparsing.Group(pyparsing.Regex("ROTR A 2"))
-        ins_rotr_a_3 = pyparsing.Group(pyparsing.Regex("ROTR A 3"))
-        ins_rotr_a_4 = pyparsing.Group(pyparsing.Regex("ROTR A 4"))
+        ins_rotr_a_1 = pyparsing.Group(pyparsing.Regex("ROTR A 1"))(f"{0b01001001}:1")
+        ins_rotr_a_2 = pyparsing.Group(pyparsing.Regex("ROTR A 2"))(f"{0b01011001}:1")
+        ins_rotr_a_3 = pyparsing.Group(pyparsing.Regex("ROTR A 3"))(f"{0b01010001}:1")
+        ins_rotr_a_4 = pyparsing.Group(pyparsing.Regex("ROTR A 4"))(f"{0b01000001}:1")
         # LEFT B
-        ins_rotl_b_1 = pyparsing.Group(pyparsing.Regex("ROTL B 1"))
-        ins_rotl_b_2 = pyparsing.Group(pyparsing.Regex("ROTL B 2"))
-        ins_rotl_b_3 = pyparsing.Group(pyparsing.Regex("ROTL B 3"))
-        ins_rotl_b_4 = pyparsing.Group(pyparsing.Regex("ROTL B 4"))
+        ins_rotl_b_1 = pyparsing.Group(pyparsing.Regex("ROTL B 1"))(f"{0b11101001}:1")
+        ins_rotl_b_2 = pyparsing.Group(pyparsing.Regex("ROTL B 2"))(f"{0b11110001}:1")
+        ins_rotl_b_3 = pyparsing.Group(pyparsing.Regex("ROTL B 3"))(f"{0b11111001}:1")
+        ins_rotl_b_4 = pyparsing.Group(pyparsing.Regex("ROTL B 4"))(f"{0b11100001}:1")
         # RIGHT B
-        ins_rotr_b_1 = pyparsing.Group(pyparsing.Regex("ROTR B 1"))
-        ins_rotr_b_2 = pyparsing.Group(pyparsing.Regex("ROTR B 2"))
-        ins_rotr_b_3 = pyparsing.Group(pyparsing.Regex("ROTR B 3"))
-        ins_rotr_b_4 = pyparsing.Group(pyparsing.Regex("ROTR B 4"))
+        ins_rotr_b_1 = pyparsing.Group(pyparsing.Regex("ROTR B 1"))(f"{0b01101001}:1")
+        ins_rotr_b_2 = pyparsing.Group(pyparsing.Regex("ROTR B 2"))(f"{0b01110001}:1")
+        ins_rotr_b_3 = pyparsing.Group(pyparsing.Regex("ROTR B 3"))(f"{0b01111001}:1")
+        ins_rotr_b_4 = pyparsing.Group(pyparsing.Regex("ROTR B 4"))(f"{0b01100001}:1")
         
         program = pyparsing.OneOrMore(ins_halt ^ ins_noop ^ ins_add_a_im ^ ins_add_a_me ^ ins_add_a_id ^ ins_add_a_ix ^ \
                                       ins_add_a_idx ^ ins_add_b_im ^ ins_add_b_me ^ ins_add_b_id ^ ins_add_b_ix ^ \

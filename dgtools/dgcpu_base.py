@@ -78,7 +78,7 @@ class DGMemorySpaceBase:
             return self._mem_wr(idx, a_value)
         
             
-    def load(self,a_program):
+    def load(self):
         self._mem = bytearray([0 for k in range(0, self._mem_len + self._mem_base)])
         self._mem[self._mem_base:self._mem_base+len(a_program)] = a_program
         
@@ -125,7 +125,7 @@ class DGCPU:
         """
         cnt = self._exec_next()
         n = 0
-        while n<2500:
+        while n < max_n:
             cnt = self._exec_next()
             n+=1
             

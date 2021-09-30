@@ -44,7 +44,7 @@ def get_vm_hash_after_exec(a_program, use_this_vm=None):
     if use_this_vm is None:
         vm = Kenback()
         vm.mem.load(a_program)
-        vm.pc = 0
+        vm.pc = 4
     else:
         vm = use_this_vm
         
@@ -111,12 +111,13 @@ def test_LOAD():
     Program bytes used   : 1
     Status flags affected: None
     """
-    test_program = [19,0]
+    test_program = [19,2]
     vm_hash = get_vm_hash_after_exec(test_program)
     
     vm_expected = Kenback()
     vm_expected.mem.load(test_program)
-    vm_expected.pc = 2
+    vm_expected.mem._reg_wr("A",2)
+    vm_expected.pc = 6
     
     import pdb
     pdb.set_trace()
