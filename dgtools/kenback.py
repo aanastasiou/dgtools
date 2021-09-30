@@ -17,9 +17,6 @@ class MemorySpaceKenback(DGMemorySpaceBase):
         self._mem_len = 256
         self._mem = bytearray([0 for k in range(0, self._mem_len)])
         
-    def load(self, a_program, offset=4):
-        super().load(a_program, offset)
-        self._reg_wr("P",offset)
         
 class Kenback(DGCPU):
     def __init__(self):
@@ -281,7 +278,41 @@ class Kenback(DGCPU):
         pass
         
     def _add(self):
-        inst_add = self.mem[self.pc-1]
+        inst_add = self.mem[self.pc - 1]
+        operand = self._read_next()        
+        reg, stat_reg = {0:("A", "OC_A"),
+                         1:("B", "OC_B"),
+                         2:("X", "OC_X")}[inst_add >> 6]
+        addr_mode = inst_add & 7
+        
+        a = self.mem._reg_rd(reg)
+        
+        # Constant
+        if addr_mode == 3:
+            b = operand
+        # Memory
+        if addr_mode == 4:
+            b = self.mem._mem_rd(operand, absolute=True)
+        # Indirect
+        if addr_mode == 5:
+            b = self.mem._mem_rd(self.mem._mem_rd(operand, absolute=True), absolute=True)
+        # Indexed
+        if addr_mode == 6:
+            b = self.mem._mem_rd(self.mem._reg_rd("X") + operand, absolute=True)
+        # Indirect Indexed
+        if addr_mode == 7:
+            b = self.mem._mem_rd(self.mem._reg_rd("X") + \
+                                 self.mem._mem_rd(self.mem._mem_rd(operand, absolute=True), \
+                                                  absolute=True), \
+                                 absolute=True)
+
+        result = a + b
+        v_flag = int(result < -127 or result>127)
+        c_flag = int(result < 0 or result>255)
+        
+        self.mem._reg_wr(reg, result & 0xFF)
+        self.mem._reg_wr(stat_reg, v_flag + (c_flag < 1))
+        
         
     def _sub(self):
         pass
@@ -313,32 +344,36 @@ class Kenback(DGCPU):
             self.mem._reg_wr(reg, self.mem._mem_rd(self.mem._reg_rd("X") + self.mem._mem_rd(self.mem._mem_rd(operand, absolute=True), absolute=True), absolute=True))
         
     def _store(self):
-        # Store a register with a value that can come from various sources.
+        # The opposite of LOAD
         
-        inst_load = self.mem[self.pc - 1]
-        operand = self._read_next()        
+        inst_store = self.mem[self.pc - 1]
+        store_loc = self._read_next()        
         reg = {0:"A",
                1:"B",
-               2:"X"}[inst_load >> 6]
-        addr_mode = inst_load & 7
+               2:"X"}[inst_store >> 6]
+        addr_mode = inst_store & 7
                     
         # Constant
         if addr_mode == 3:
-            self.mem._reg_wr(reg, operand)
+            self.mem._mem_wr(store_loc, self.mem._reg_rd(reg), absolute=True)
         # Memory
         if addr_mode == 4:
-            self.mem._reg_wr(reg, self.mem._mem_rd(operand, absolute=True))
+            self.mem._mem_wr(self.mem._mem_rd(store_loc, absolute=True), self.mem._reg_rd(reg), absolute=True)
         # Indirect
         if addr_mode == 5:
-            self.mem._reg_wr(reg, self.mem._mem_rd(self.mem._mem_rd(operand, absolute=True), absolute=True))
+            self.mem._mem_wr(self.mem._mem_rd(self.mem._mem_rd(store_loc, absolute=True), \
+                                              self.mem._reg_rd(reg), absolute=True))
         # Indexed
         if addr_mode == 6:
-            self.mem._reg_wr(reg, self.mem._mem_rd(self.mem._reg_rd("X") + operand, absolute=True))
+            self.mem._mem_wr(self.mem._mem_rd(self.mem._reg_rd("X") + store_loc, absolute=True), \
+                                              self.mem._reg_rd(reg), absolute=True)
         # Indirect Indexed
         if addr_mode == 7:
-            self.mem._reg_wr(reg, self.mem._mem_rd(self.mem._reg_rd("X") + self.mem._mem_rd(self.mem._mem_rd(operand, absolute=True), absolute=True), absolute=True))
-        
-        
+            self.mem._mem_wr(self.mem._mem_rd(self.mem._reg_rd("X") + \
+                                              self.mem._mem_rd(self.mem._mem_rd(store_loc, \
+                                                                                absolute=True), \
+                                                                absolute=True), \
+                                              absolute=True), self.mem._reg_rd(reg), absolute=True)
         pass
         
     def _and(self):

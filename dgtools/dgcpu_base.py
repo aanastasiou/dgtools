@@ -78,9 +78,9 @@ class DGMemorySpaceBase:
             return self._mem_wr(idx, a_value)
         
             
-    def load(self, a_program, offset=0):
+    def load(self, a_program):
         self._mem = bytearray([0 for k in range(0, self._mem_len + self._mem_base)])
-        self._mem[self._mem_base+offset:(self._mem_base+offset+len(a_program))] = a_program
+        self._mem[self._mem_base:(self._mem_base+len(a_program))] = a_program
         
     def save(self):
         return self._mem

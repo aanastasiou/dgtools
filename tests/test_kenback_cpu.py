@@ -60,7 +60,7 @@ def test_HALT():
     Program bytes used   : 1
     Status flags affected: None
     """
-    test_program = [0]
+    test_program = [0, 0, 0, 4, 0]
     vm_hash = get_vm_hash_after_exec(test_program)
     
     vm_expected = Kenback()
@@ -80,7 +80,7 @@ def test_NOOP():
     # Notice the program here, it is 127 followed by 0. So 127 is no-op but the following HALT is what 
     # gracefully stops the CPU, so the program counter advances two cells in this cas rather than the one
     # that would be expected from just the noop.
-    test_program = [127,0]
+    test_program = [0, 0, 0, 4, 127,0]
     vm_hash = get_vm_hash_after_exec(test_program)
     
     vm_expected = Kenback()
@@ -90,20 +90,20 @@ def test_NOOP():
     assert get_vm_hash(vm_expected) == vm_hash
 
 
-# def test_ADD():
-    # """
-    # Add performs, no operation.
+def test_ADD():
+    """
+    Add performs, no operation.
     
-    # Program bytes used   : 1
-    # Status flags affected: None
-    # """
-    # test_program = [134,0]
-    # vm_hash = get_vm_hash_after_exec(test_program)
+    Program bytes used   : 1
+    Status flags affected: None
+    """
+    test_program = [1, 0, 0, 4, 3, 1, 0]
+    vm_hash = get_vm_hash_after_exec(test_program)
     
-    # vm_expected = Kenback()
-    # vm_expected.mem.load(test_program)
-    # # vm_expected.pc = 2
-    
+    vm_expected = Kenback()
+    vm_expected.mem.load(test_program)
+    vm_expected.mem["A"] = 2
+    vm_expected.pc = 7
         
     assert get_vm_hash(vm_expected) == vm_hash
 
@@ -114,12 +114,29 @@ def test_LOAD():
     Program bytes used   : 1
     Status flags affected: None
     """
-    test_program = [19,2]
+    # TODO: HIGH, add all the programs that check all the branches of execution
+    test_program = [0, 0, 0, 4, 19, 2]
     vm_hash = get_vm_hash_after_exec(test_program)
     
     vm_expected = Kenback()
     vm_expected.mem.load(test_program)
     vm_expected.mem._reg_wr("A",2)
+    vm_expected.pc = 7
+    
+    assert get_vm_hash(vm_expected) == vm_hash
+
+def test_STORE():
+    """
+    Program bytes used   : 1
+    Status flags affected: None
+    """
+    test_program = [0, 0, 0, 4, 27, 8, 0, 120, 120]
+    vm_hash = get_vm_hash_after_exec(test_program)
+    
+    vm_expected = Kenback()
+    vm_expected.mem.load(test_program)
+    vm_expected.mem._reg_wr("A",0)
+    vm_expected.mem[8]=0
     vm_expected.pc = 7
     
     assert get_vm_hash(vm_expected) == vm_hash
