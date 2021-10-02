@@ -411,10 +411,62 @@ class Kenback(DGCPU):
         pass
         
     def _and(self):
-        pass
+        inst_and = self.mem[self.pc - 1]
+        operand = self._read_next()        
+        addr_mode = inst_and & 7
+        
+        a = self.mem._reg_rd("A")
+        
+        # Constant
+        if addr_mode == 3:
+            b = operand
+        # Memory
+        if addr_mode == 4:
+            b = self.mem._mem_rd(operand, absolute=True)
+        # Indirect
+        if addr_mode == 5:
+            b = self.mem._mem_rd(self.mem._mem_rd(operand, absolute=True), absolute=True)
+        # Indexed
+        if addr_mode == 6:
+            b = self.mem._mem_rd(self.mem._reg_rd("X") + operand, absolute=True)
+        # Indirect Indexed
+        if addr_mode == 7:
+            b = self.mem._mem_rd(self.mem._reg_rd("X") + \
+                                 self.mem._mem_rd(self.mem._mem_rd(operand, absolute=True), \
+                                                  absolute=True), \
+                                 absolute=True)
+
+        result = a & b
+        self.mem._reg_wr(reg, result & 0xFF)
         
     def _or(self):
-        pass
+        inst_or = self.mem[self.pc - 1]
+        operand = self._read_next()        
+        addr_mode = inst_or & 7
+        
+        a = self.mem._reg_rd("A")
+        
+        # Constant
+        if addr_mode == 3:
+            b = operand
+        # Memory
+        if addr_mode == 4:
+            b = self.mem._mem_rd(operand, absolute=True)
+        # Indirect
+        if addr_mode == 5:
+            b = self.mem._mem_rd(self.mem._mem_rd(operand, absolute=True), absolute=True)
+        # Indexed
+        if addr_mode == 6:
+            b = self.mem._mem_rd(self.mem._reg_rd("X") + operand, absolute=True)
+        # Indirect Indexed
+        if addr_mode == 7:
+            b = self.mem._mem_rd(self.mem._reg_rd("X") + \
+                                 self.mem._mem_rd(self.mem._mem_rd(operand, absolute=True), \
+                                                  absolute=True), \
+                                 absolute=True)
+
+        result = a | b
+        self.mem._reg_wr(reg, result & 0xFF)
         
     def _lneg(self):
         pass
