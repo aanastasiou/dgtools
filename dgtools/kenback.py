@@ -224,46 +224,46 @@ class Kenback(DGCPU):
                           0b01111010:self._set,
                           # SHIFT
                           # LEFT A
-                          0b10001001:self._sftl,
-                          0b10010001:self._sftl,
-                          0b10011001:self._sftl,
-                          0b10000001:self._sftl,
+                          0b10001001:self._sft,
+                          0b10010001:self._sft,
+                          0b10011001:self._sft,
+                          0b10000001:self._sft,
                           # RIGHT A
-                          0b00001001:self._sftr,
-                          0b00010001:self._sftr,
-                          0b00011001:self._sftr,
-                          0b00000001:self._sftr,
+                          0b00001001:self._sft,
+                          0b00010001:self._sft,
+                          0b00011001:self._sft,
+                          0b00000001:self._sft,
                           # LEFT B
-                          0b10101001:self._sftl,
-                          0b10110001:self._sftl,
-                          0b10111001:self._sftl,
-                          0b10100001:self._sftl,
+                          0b10101001:self._sft,
+                          0b10110001:self._sft,
+                          0b10111001:self._sft,
+                          0b10100001:self._sft,
                           # RIGHT B
-                          0b00101001:self._sftr,
-                          0b00110001:self._sftr,
-                          0b00111001:self._sftr,
-                          0b00100001:self._sftr,
+                          0b00101001:self._sft,
+                          0b00110001:self._sft,
+                          0b00111001:self._sft,
+                          0b00100001:self._sft,
                           # ROTATE
                           # LEFT A
-                          0b11001001:self._rotl,
-                          0b11010001:self._rotl,
-                          0b11011001:self._rotl,
-                          0b11000001:self._rotl,
+                          0b11001001:self._rot,
+                          0b11010001:self._rot,
+                          0b11011001:self._rot,
+                          0b11000001:self._rot,
                           # RIGHT A
-                          0b01001001:self._rotr,
-                          0b01011001:self._rotr,
-                          0b01010001:self._rotr,
-                          0b01000001:self._rotr,
+                          0b01001001:self._rot,
+                          0b01011001:self._rot,
+                          0b01010001:self._rot,
+                          0b01000001:self._rot,
                           # LEFT B
-                          0b11101001:self._rotl,
-                          0b11110001:self._rotl,
-                          0b11111001:self._rotl,
-                          0b11100001:self._rotl,
+                          0b11101001:self._rot,
+                          0b11110001:self._rot,
+                          0b11111001:self._rot,
+                          0b11100001:self._rot,
                           # RIGHT B
-                          0b01101001:self._rotr,
-                          0b01110001:self._rotr,
-                          0b01111001:self._rotr,
-                          0b01100001:self._rotr,}
+                          0b01101001:self._rot,
+                          0b01110001:self._rot,
+                          0b01111001:self._rot,
+                          0b01100001:self._rot,}
         
     def _halt(self):
         """
@@ -437,7 +437,7 @@ class Kenback(DGCPU):
                                  absolute=True)
 
         result = a & b
-        self.mem._reg_wr(reg, result & 0xFF)
+        self.mem._reg_wr("A", result & 0xFF)
         
     def _or(self):
         inst_or = self.mem[self.pc - 1]
@@ -466,10 +466,38 @@ class Kenback(DGCPU):
                                  absolute=True)
 
         result = a | b
-        self.mem._reg_wr(reg, result & 0xFF)
+        self.mem._reg_wr("A", result & 0xFF)
         
     def _lneg(self):
-        pass
+        inst_lneg = self.mem[self.pc - 1]
+        operand = self._read_next()        
+        addr_mode = inst_lneg & 7
+        
+        
+        # Constant
+        if addr_mode == 3:
+            b = operand
+        # Memory
+        if addr_mode == 4:
+            b = self.mem._mem_rd(operand, absolute=True)
+        # Indirect
+        if addr_mode == 5:
+            b = self.mem._mem_rd(self.mem._mem_rd(operand, absolute=True), absolute=True)
+        # Indexed
+        if addr_mode == 6:
+            b = self.mem._mem_rd(self.mem._reg_rd("X") + operand, absolute=True)
+        # Indirect Indexed
+        if addr_mode == 7:
+            b = self.mem._mem_rd(self.mem._reg_rd("X") + \
+                                 self.mem._mem_rd(self.mem._mem_rd(operand, absolute=True), \
+                                                  absolute=True), \
+                                 absolute=True)
+
+        result = 0xFF ^ b
+        self.mem._reg_wr("A", result & 0xFF)
+        
+        # TODO: HIGH, Need to determine the status of overflow too.
+        
         
     def _jpd(self):
         pass
@@ -549,11 +577,54 @@ class Kenback(DGCPU):
     def _set(self):
         pass
         
-    def _sftl(self):
-        pass
+    def _sft(self):
+        inst_sft = self.mem[self.pc - 1]
+        shift_direction = (inst_sft & 0b10000000) >> 7
+        reg = {0:"A",
+               1:"B"}[(inst_sft & 0b0010000) >> 6]
+        shift_operand = (inst_sft & 0b00011000) >> 3
+        
+        if shift_operand == 0:
+            shift_operand = 4
+        
+        if shift_direction:
+            # Shift left
+            result = self.mem._reg_rd(reg) << shift_operand
+        else:
+            # Shift right (replicates the bit value)
+            result = self.mem._reg_rd(reg)
+            for reps in range(0, shift_operand):
+                last_value = result & 0b10000000
+                result = (result >> 1) | last_value
 
-    def _sftr(self):
-        pass
+        self.mem._reg_wr(reg, result & 0xFF)
+        
+
+    def _rot(self):
+        inst_rot = self.mem[self.pc - 1]
+        rotate_direction = (inst_rot & 0b10000000) >> 7
+        reg = {0:"A",
+               1:"B"}[(inst_rot & 0b0010000) >> 6]
+        rotate_operand = (inst_rot & 0b00011000) >> 3
+        
+        if rotate_operand == 0:
+            rotate_operand = 4
+        
+        result = self.mem._reg_rd(reg)
+        
+        if rotate_direction:
+            # Rotate left
+            for reps in range(0, rotate_operand):
+                last_value = (result & 0b10000000) >> 7
+                result = (result << 1) | last_value
+        else:
+            # Rotate right (replicates the bit value)
+            for reps in range(0, rotate_operand):
+                last_value = (result & 0b00000001) << 7
+                result = (result >> 1) | last_value
+
+        self.mem._reg_wr(reg, result & 0xFF)
+
 
     def _rotl(self):
         pass

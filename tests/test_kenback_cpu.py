@@ -157,3 +157,111 @@ def test_STORE():
     vm_expected.pc = 7
     
     assert get_vm_hash(vm_expected) == vm_hash
+
+
+def test_AND():
+    """
+    Program bytes used   : 1
+    Status flags affected: None
+    """
+    test_program = [3, 0, 0, 4, 211, 2, 0]
+    vm_hash = get_vm_hash_after_exec(test_program)
+    
+    vm_expected = Kenback()
+    vm_expected.mem.load(test_program)
+    vm_expected.mem._reg_wr("A",3 & 2)
+    vm_expected.pc = 7
+    
+    assert get_vm_hash(vm_expected) == vm_hash
+
+def test_OR():
+    """
+    Program bytes used   : 1
+    Status flags affected: None
+    """
+    test_program = [0x0F, 0, 0, 4, 195, 0xF0, 0]
+    vm_hash = get_vm_hash_after_exec(test_program)
+    
+    vm_expected = Kenback()
+    vm_expected.mem.load(test_program)
+    vm_expected.mem._reg_wr("A",0x0F | 0xF0)
+    vm_expected.pc = 7
+    
+    assert get_vm_hash(vm_expected) == vm_hash
+
+def test_LNEG():
+    """
+    Program bytes used   : 1
+    Status flags affected: None
+    """
+    test_program = [0, 0, 0, 4, 219, 0xF0, 0]
+    vm_hash = get_vm_hash_after_exec(test_program)
+    
+    vm_expected = Kenback()
+    vm_expected.mem.load(test_program)
+    vm_expected.mem._reg_wr("A",0x0F)
+    vm_expected.pc = 7
+    
+    assert get_vm_hash(vm_expected) == vm_hash
+
+def test_SHIFT_LEFT():
+    """
+    Program bytes used   : 1
+    Status flags affected: None
+    """
+    test_program = [3, 0, 0, 4, 0b10001001, 0]
+    vm_hash = get_vm_hash_after_exec(test_program)
+    
+    vm_expected = Kenback()
+    vm_expected.mem.load(test_program)
+    vm_expected.mem._reg_wr("A",3 << 1)
+    vm_expected.pc = 6
+    
+    assert get_vm_hash(vm_expected) == vm_hash
+
+
+def test_SHIFT_RIGHT():
+    """
+    Program bytes used   : 1
+    Status flags affected: None
+    """
+    test_program = [128, 0, 0, 4, 0b00001001, 0]
+    vm_hash = get_vm_hash_after_exec(test_program)
+    
+    vm_expected = Kenback()
+    vm_expected.mem.load(test_program)
+    vm_expected.mem._reg_wr("A",128 + 64)
+    vm_expected.pc = 6
+    
+    assert get_vm_hash(vm_expected) == vm_hash
+
+
+def test_ROTATE_LEFT():
+    """
+    Program bytes used   : 1
+    Status flags affected: None
+    """
+    test_program = [129, 0, 0, 4, 0b11001001, 0]
+    vm_hash = get_vm_hash_after_exec(test_program)
+    
+    vm_expected = Kenback()
+    vm_expected.mem.load(test_program)
+    vm_expected.mem._reg_wr("A",3)
+    vm_expected.pc = 6
+    
+    assert get_vm_hash(vm_expected) == vm_hash
+
+def test_ROTATE_RIGHT():
+    """
+    Program bytes used   : 1
+    Status flags affected: None
+    """
+    test_program = [3, 0, 0, 4, 0b01001001, 0]
+    vm_hash = get_vm_hash_after_exec(test_program)
+    
+    vm_expected = Kenback()
+    vm_expected.mem.load(test_program)
+    vm_expected.mem._reg_wr("A",129)
+    vm_expected.pc = 6
+    
+    assert get_vm_hash(vm_expected) == vm_hash
