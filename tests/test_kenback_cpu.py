@@ -265,3 +265,34 @@ def test_ROTATE_RIGHT():
     vm_expected.pc = 6
     
     assert get_vm_hash(vm_expected) == vm_hash
+
+
+def test_SET_ZERO_ZERO():
+    """
+    Program bytes used   : 1
+    Status flags affected: None
+    """
+    test_program = [0, 0, 0, 4, 0b00000010, 7, 0, 0xFF]
+    vm_hash = get_vm_hash_after_exec(test_program)
+    
+    vm_expected = Kenback()
+    vm_expected.mem.load(test_program)
+    vm_expected.mem._mem_wr(7,0xFE)
+    vm_expected.pc = 7
+    
+    assert get_vm_hash(vm_expected) == vm_hash
+
+def test_SET_ONE_ZERO():
+    """
+    Program bytes used   : 1
+    Status flags affected: None
+    """
+    test_program = [0, 0, 0, 4, 0b01000010, 7, 0, 0xFE]
+    vm_hash = get_vm_hash_after_exec(test_program)
+    
+    vm_expected = Kenback()
+    vm_expected.mem.load(test_program)
+    vm_expected.mem._mem_wr(7,0xFF)
+    vm_expected.pc = 7
+    
+    assert get_vm_hash(vm_expected) == vm_hash

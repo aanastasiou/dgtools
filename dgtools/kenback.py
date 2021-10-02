@@ -213,7 +213,7 @@ class Kenback(DGCPU):
                           0b00101010:self._set,
                           0b00110010:self._set,
                           0b00111010:self._set,
-                          # SKIP 1
+                          # SET 1
                           0b01000010:self._set,
                           0b01001010:self._set,
                           0b01010010:self._set,
@@ -575,7 +575,19 @@ class Kenback(DGCPU):
         pass
 
     def _set(self):
-        pass
+        inst_set = self.mem[self.pc - 1]
+        set_to = (inst_set & 0b01000000) >> 6
+        set_nth = (inst_set & 0b00111000) >> 3
+        op_mem_offset = self._read_next()
+        
+        bit_mask = 1 << set_nth
+        
+        if set_to:
+            result = self.mem._mem_rd(op_mem_offset) | bit_mask
+        else:
+            result = self.mem._mem_rd(op_mem_offset) & (0xFF ^ bit_mask)
+        
+        self.mem._mem_wr(op_mem_offset, result)
         
     def _sft(self):
         inst_sft = self.mem[self.pc - 1]
@@ -863,7 +875,7 @@ class Kenback(DGCPU):
         ins_set_0_5 = pyparsing.Group(pyparsing.Regex("SET 0 5") + mem_value)(f"{0b00101010}:1")
         ins_set_0_6 = pyparsing.Group(pyparsing.Regex("SET 0 6") + mem_value)(f"{0b00110010}:1")
         ins_set_0_7 = pyparsing.Group(pyparsing.Regex("SET 0 7") + mem_value)(f"{0b00111010}:1")
-        # SKIP 1
+        # SET 1
         ins_set_1_0 = pyparsing.Group(pyparsing.Regex("SET 1 0") + mem_value)(f"{0b01000010}:1")
         ins_set_1_1 = pyparsing.Group(pyparsing.Regex("SET 1 1") + mem_value)(f"{0b01001010}:1")
         ins_set_1_2 = pyparsing.Group(pyparsing.Regex("SET 1 2") + mem_value)(f"{0b01010010}:1")
