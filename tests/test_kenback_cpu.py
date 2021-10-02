@@ -296,3 +296,33 @@ def test_SET_ONE_ZERO():
     vm_expected.pc = 7
     
     assert get_vm_hash(vm_expected) == vm_hash
+
+
+def test_SKIP_ZERO_ZERO():
+    """
+    Program bytes used   : 1
+    Status flags affected: None
+    """
+    test_program = [0, 0, 0, 4, 0b10000010, 10, 0, 0, 0, 0, 0xFE]
+    vm_hash = get_vm_hash_after_exec(test_program)
+    
+    vm_expected = Kenback()
+    vm_expected.mem.load(test_program)
+    vm_expected.pc = 9
+    
+    assert get_vm_hash(vm_expected) == vm_hash
+
+
+def test_SKIP_ZERO_ONE():
+    """
+    Program bytes used   : 1
+    Status flags affected: None
+    """
+    test_program = [0, 0, 0, 4, 0b11000010, 10, 0, 0, 0, 0, 0xFF]
+    vm_hash = get_vm_hash_after_exec(test_program)
+    
+    vm_expected = Kenback()
+    vm_expected.mem.load(test_program)
+    vm_expected.pc = 9
+    
+    assert get_vm_hash(vm_expected) == vm_hash

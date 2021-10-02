@@ -572,8 +572,22 @@ class Kenback(DGCPU):
         pass
         
     def _skp(self):
-        pass
-
+        inst_skp = self.mem[self.pc - 1]
+        test_for = (inst_skp & 0b01000000) >> 6
+        test_nth = (inst_skp & 0b00111000) >> 3
+        op_mem_offset = self._read_next()
+        
+        bit_mask = 1 << test_nth
+        
+        if test_for:
+            test_exp = self.mem._mem_rd(op_mem_offset) & bit_mask == bit_mask
+        else:
+            test_exp = self.mem._mem_rd(op_mem_offset) & bit_mask != bit_mask
+        
+        if test_exp:
+            self._read_next()
+            self._read_next()
+            
     def _set(self):
         inst_set = self.mem[self.pc - 1]
         set_to = (inst_set & 0b01000000) >> 6
