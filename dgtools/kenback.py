@@ -109,9 +109,9 @@ class Kenback(DGCPU):
                           223:self._lneg,
                           # JUMPS
                           # Unconditional
-                          228:self._jpd,
-                          236:self._jpi,
-                          244:self._jmd,
+                          231:self._jp, #jpd
+                          239:self._jp, #jpi
+                          247:self._jp, #jmd
                           252:self._jmi,
                           # Conditional on A direct
                           0O073:self._jpdnz,
@@ -498,10 +498,45 @@ class Kenback(DGCPU):
         
         # TODO: HIGH, Need to determine the status of overflow too.
         
+    def _jp(self):
+        inst_jp = self.mem[self.pc - 1]
+        reg_field = inst_jp >> 6
+        is_unconditional = reg_field == 3
+        reg = {0:"A",
+               1:"B",
+               2:"X"}[reg_field] if not is_unconditional else -1
+        is_jp = (inst_jp & 0b00010000) != 0b00010000  
+        is_jm = (inst_jp & 0b00010000) == 0b00010000
+        is_direct = (inst_jp & 0b00001000) != 0b00001000
+        is_indirect = (inst_jp & 0b00001000) == 0b00001000
+        condition = inst_jp & 0b00000111
+        jp_addr = self.mem[self._read_next()]
         
-    def _jpd(self):
-        pass
+        condition_result = None
+        if is_unconditional:
+            condition_result = True
+        else:            
+            if condition == 3:
+                condition_result = self.mem[reg] != 0
+            if condition == 4:
+                condition_result = self.mem[reg] == 0
+            if condition == 5:
+                condition_result = (-1*int(self.mem[reg] & 0b10000000) * (self.mem[reg] & 0b01111111)) < 0
+            if condition == 6:
+                condition_result = (-1*int(self.mem[reg] & 0b10000000) * (self.mem[reg] & 0b01111111)) >= 0
+            if condition == 7:
+                condition_result = (-1*int(self.mem[reg] & 0b10000000) * (self.mem[reg] & 0b01111111)) > 0
         
+        if is_indirect:
+            jp_addr = self.mem[jp_addr]
+        
+        if condition_result:
+            if is_jm:
+                self.mem[jp_addr] = self.pc
+                self.pc = jp_addr + 1
+            else:
+                self.pc = jp_addr
+
     def _jpi(self):
         pass
         
@@ -652,12 +687,6 @@ class Kenback(DGCPU):
         self.mem._reg_wr(reg, result & 0xFF)
 
 
-    def _rotl(self):
-        pass
-
-    def _rotr(self):
-        pass
-
     @staticmethod
     def get_asm_statement_def(existing_defs):
         """
@@ -780,9 +809,9 @@ class Kenback(DGCPU):
         # Unconditional
         # The three LSb have to have specific values even in unconditional jumps
         # http://kenbak-1.net/index_files/PRM.pdf
-        ins_jpd = pyparsing.Group(pyparsing.Regex("JPD") + lit_value)("228:1") 
-        ins_jpi = pyparsing.Group(pyparsing.Regex("JPI") + idc_value)("236:1")
-        ins_jmd = pyparsing.Group(pyparsing.Regex("JMD") + lit_value)("244:1")
+        ins_jpd = pyparsing.Group(pyparsing.Regex("JPD") + lit_value)("231:1") 
+        ins_jpi = pyparsing.Group(pyparsing.Regex("JPI") + idc_value)("239:1")
+        ins_jmd = pyparsing.Group(pyparsing.Regex("JMD") + lit_value)("247:1")
         ins_jmi = pyparsing.Group(pyparsing.Regex("JMI") + idc_value)("252:1")
         # Conditional on A direct
         ins_jpd_a_nz = pyparsing.Group(pyparsing.Regex("JPDNZ A") + lit_value)(f"{0O073}:1")

@@ -326,3 +326,49 @@ def test_SKIP_ZERO_ONE():
     vm_expected.pc = 9
     
     assert get_vm_hash(vm_expected) == vm_hash
+
+def test_JPD():
+    """
+    Program bytes used   : 1
+    Status flags affected: None
+    """
+    # Jump direct to whatever address 10 points to.
+    test_program = [0, 0, 0, 4, 231, 10, 0, 0, 0, 0, 7]
+    vm_hash = get_vm_hash_after_exec(test_program)
+    
+    vm_expected = Kenback()
+    vm_expected.mem.load(test_program)
+    vm_expected.pc = 8
+    
+    assert get_vm_hash(vm_expected) == vm_hash
+
+def test_JPI():
+    """
+    Program bytes used   : 1
+    Status flags affected: None
+    """
+    # Jump direct to whatever address 10 points to.
+    test_program = [0, 0, 0, 4, 239, 10, 0, 0, 0, 7, 9]
+    vm_hash = get_vm_hash_after_exec(test_program)
+    
+    vm_expected = Kenback()
+    vm_expected.mem.load(test_program)
+    vm_expected.pc = 8
+    
+    assert get_vm_hash(vm_expected) == vm_hash
+
+def test_JMD():
+    """
+    Program bytes used   : 1
+    Status flags affected: None
+    """
+    # Jump direct to whatever address 10 points to.
+    test_program = [0, 0, 0, 4, 247, 10, 0, 0, 0, 0, 7]
+    vm_hash = get_vm_hash_after_exec(test_program)
+    
+    vm_expected = Kenback()
+    vm_expected.mem.load(test_program)
+    vm_expected.mem[7] = 6
+    vm_expected.pc = 9
+    
+    assert get_vm_hash(vm_expected) == vm_hash
