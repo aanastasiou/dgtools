@@ -95,7 +95,7 @@ class Digirule(DGCPU):
         Sets the callbacks that are used to link a Digirule object to the outside world, to a 
         reasonable set of defaults
         """
-        self._interactive_callback = DigiruleCallbackInputUserInteraction("Binary button Input (e.g. '010010' wihout " 
+        self._interactive_callback = DigiruleCallbackInputUserInteraction("Binary button Input (e.g. '010010' without " 
                                                                           "quotes):")
         
     def clear_callbacks(self):

@@ -6,6 +6,7 @@ Digirule assembler support.
 :date: June 2020
 """
 
+from .dgcpu_base import DGCPU
 from .digirule import Digirule
 from .exceptions import DgtoolsErrorSymbolAlreadyDefined, DgtoolsErrorSymbolUndefined, DgtoolsErrorASMSyntaxError
 import pyparsing
@@ -13,8 +14,8 @@ import pyparsing
 class DgAssembler:
     
     def __init__(self, digirule_cls):
-        if not issubclass(digirule_cls, Digirule):
-            raise TypeError(f"Expected Digirule, received {type(digirule_cls)}")
+        if not issubclass(digirule_cls, DGCPU):
+            raise TypeError(f"Expected DGCPU, received {type(digirule_cls)}")
         
         # Action functions to convert valid string literals to numbers
         uchar2num = lambda toks:int(toks[0])
@@ -111,6 +112,9 @@ class DgAssembler:
                 inst_data = command.split(":")
                 instruction_code = int(inst_data[0])
                 instruction_num_op = int(inst_data[1])
+
+                import pdb
+                pdb.set_trace()
                             
                 mem.append(instruction_code)
                 mem.extend(list(map(lambda x:x[0], arguments[1:(1+instruction_num_op)]))) 

@@ -29,7 +29,7 @@ from dgtools import (DgtoolsError, DgtoolsErrorASMSyntaxError,
 @click.command()
 @click.argument("input-file",type=click.Path(exists=True))
 @click.option("--output-file","-o", type=click.Path())
-@click.option("--target", "-g", type=click.Choice(["2A", "2U"],case_sensitive=False), default="2A",
+@click.option("--target", "-g", type=click.Choice(["2A", "2U", "KB"],case_sensitive=False), default="2A",
               help="Selects the target digirule model to generate code for")
 def dgasm(input_file, output_file, target):
     """

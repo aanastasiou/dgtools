@@ -6,6 +6,7 @@ Basic imports to make Digirule and DGB_Archive available to other programs.
 :date: May 2020
 """
 from .digirule import Digirule, Digirule2U
+from .kenback import Kenback 
 from .dgb_archive import DGB_Archive
 from .lexer import DigiruleASMLexer
 from .assembler import DgAssembler
@@ -21,4 +22,6 @@ from .callbacks import (DigiruleCallbackComOutStdout, DigiruleCallbackComOutStor
 from .lexer import DigiruleASMLexer
 from .makefile_rw import DgToolsMakefileParser
                                 
-BUILTIN_MODELS = {"2A":Digirule, "2U":Digirule2U}
+BUILTIN_MODELS = {"2A":Digirule, 
+                  "2U":Digirule2U, 
+                  "KB":Kenback}

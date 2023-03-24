@@ -1,5 +1,6 @@
 from .dgcpu_base import DGMemorySpaceBase, DGCPU
 from .exceptions import DgtoolsErrorProgramHalt
+import pyparsing
 
 class MemorySpaceKenback(DGMemorySpaceBase):
     def __init__(self):
@@ -112,78 +113,78 @@ class Kenback(DGCPU):
                           231:self._jp, #jpd
                           239:self._jp, #jpi
                           247:self._jp, #jmd
-                          252:self._jmi,
+                          252:self._jmi, #jmi
                           # Conditional on A direct
-                          0O073:self._jpdnz,
-                          0O074:self._jpdz,
-                          0O075:self._jpdltz,
-                          0O076:self._jpdgez,
-                          0O077:self._jpdgz,
-                          0O053:self._jpinz,
-                          0O054:self._jpiz,
-                          0O055:self._jpiltz,
-                          0O056:self._jpigez,
-                          0O057:self._jpigz,
+                          0O073:self._jp, #jpdnz
+                          0O074:self._jp, #jpdz
+                          0O075:self._jp, #jpdltz
+                          0O076:self._jp, #jpdgez
+                          0O077:self._jp, #jpdgz
+                          0O053:self._jp, #jpinz
+                          0O054:self._jp, #jpiz
+                          0O055:self._jp, #jpiltz
+                          0O056:self._jp, #jpigez
+                          0O057:self._jp, #jpigz
                           # Conditional on A mark direct
-                          0O063:self._jmdnz,
-                          0O064:self._jmdz,
-                          0O065:self._jmdltz,
-                          0O066:self._jmdgez,
-                          0O067:self._jmdgz,
+                          0O063:self._jp, #jmdnz
+                          0O064:self._jp, #jmdz
+                          0O065:self._jp, #jmdltz
+                          0O066:self._jp, #jmdgez
+                          0O067:self._jp, #jmdgz
                           # Conditional on A mark indirect
-                          0b00111011:self._jminz,
-                          0b00111100:self._jmiz,
-                          0b00111101:self._jmiltz,
-                          0b00111110:self._jmigez,
-                          0b00111111:self._jmigz,
+                          0b00111011:self._jp, #jminz
+                          0b00111100:self._jp, #jmiz
+                          0b00111101:self._jp, #jmiltz
+                          0b00111110:self._jp, #jmigez
+                          0b00111111:self._jp, #jmigz
                           # Conditional on B direct
-                          0b01100011:self._jpdnz,
-                          0b01100100:self._jpdz,
-                          0b01100101:self._jpdltz,
-                          0b01100110:self._jpdgez,
-                          0b01100111:self._jpdgz,
+                          0b01100011:self._jp, #jpdnz
+                          0b01100100:self._jp, #jpdz
+                          0b01100101:self._jp, #jpdltz
+                          0b01100110:self._jp, #jpdgez
+                          0b01100111:self._jp, #jpdgz
                           # Conditional on B indirect
-                          0b01101011:self._jpinz,
-                          0b01101100:self._jpiz,
-                          0b01101101:self._jpiltz,
-                          0b01101110:self._jpigez,
-                          0b01101111:self._jpigz,
+                          0b01101011:self._jp, #jpinz
+                          0b01101100:self._jp, #jpiz
+                          0b01101101:self._jp, #jpiltz
+                          0b01101110:self._jp, #jpigez
+                          0b01101111:self._jp, #jpigz
                           # Conditional on B mark direct
-                          0b01110011:self._jmdnz,
-                          0b01110100:self._jmdz,
-                          0b01110101:self._jmdltz,
-                          0b01110110:self._jmdgez,
-                          0b01110111:self._jmdgz,
+                          0b01110011:self._jp, #jmdnz
+                          0b01110100:self._jp, #jmdz
+                          0b01110101:self._jp, #jmdltz
+                          0b01110110:self._jp, #jmdgez
+                          0b01110111:self._jp, #jmdgz
                           # Conditional on B mark indirect
-                          0b01111011:self._jminz,
-                          0b01111100:self._jmiz,
-                          0b01111101:self._jmiltz,
-                          0b01111110:self._jmigez,
-                          0b01111111:self._jmigz,
+                          0b01111011:self._jp, #jminz
+                          0b01111100:self._jp, #jmiz
+                          0b01111101:self._jp, #jmiltz
+                          0b01111110:self._jp, #jmigez
+                          0b01111111:self._jp, #jmigz
                           # Conditional on X direct
-                          0b10100011:self._jpdnz,
-                          0b10100100:self._jpdz,
-                          0b10100101:self._jpdltz,
-                          0b10100110:self._jpdgez,
-                          0b10100111:self._jpdgz,
+                          0b10100011:self._jp, #jpdnz
+                          0b10100100:self._jp, #jpdz
+                          0b10100101:self._jp, #jpdltz
+                          0b10100110:self._jp, #jpdgez
+                          0b10100111:self._jp, #jpdgz
                           # Conditional on X indirect
-                          0b10101011:self._jpinz,
-                          0b10101100:self._jpiz,
-                          0b10101101:self._jpiltz,
-                          0b10101110:self._jpigez,
-                          0b10101111:self._jpigz,
+                          0b10101011:self._jp, #jpinz
+                          0b10101100:self._jp, #jpiz
+                          0b10101101:self._jp, #jpiltz
+                          0b10101110:self._jp, #jpigez
+                          0b10101111:self._jp, #jpigz
                           # Conditional on X mark direct
-                          0b10110011:self._jmdnz,
-                          0b10110100:self._jmdz,
-                          0b10110101:self._jmdltz,
-                          0b10110110:self._jmdgez,
-                          0b10110111:self._jmdgz,
+                          0b10110011:self._jp, #jmdnz
+                          0b10110100:self._jp, #jmdz
+                          0b10110101:self._jp, #jmdltz
+                          0b10110110:self._jp, #jmdgez
+                          0b10110111:self._jp, #jmdgz
                           # Conditional on X mark indirect
-                          0b10111011:self._jminz,
-                          0b10111100:self._jmiz,
-                          0b10111101:self._jmiltz,
-                          0b10111110:self._jmigez,
-                          0b10111111:self._jmigz,
+                          0b10111011:self._jp, #jminz
+                          0b10111100:self._jp, #jmiz
+                          0b10111101:self._jp, #jmiltz
+                          0b10111110:self._jp, #jmigez
+                          0b10111111:self._jp, #jmigz
                           # SKIPS
                           # SKIP 0
                           0b10000010:self._skp,
@@ -536,75 +537,6 @@ class Kenback(DGCPU):
                 self.pc = jp_addr + 1
             else:
                 self.pc = jp_addr
-
-    def _jpi(self):
-        pass
-        
-    def _jmi(self):
-        pass
-    
-    def _jmd(self):
-        pass
-        
-    def _jpdnz(self):
-        pass
-
-    def _jpdz(self):
-        pass
-
-    def _jpdltz(self):
-        pass
-
-    def _jpdgez(self):
-        pass
-
-    def _jpdgz(self):
-        pass
-
-    def _jpinz(self):
-        pass
-
-    def _jpiz(self):
-        pass
-
-    def _jpiltz(self):
-        pass
-
-    def _jpigez(self):
-        pass
-
-    def _jpigz(self):
-        pass
-
-    def _jmdnz(self):
-        pass
-
-    def _jmdz(self):
-        pass
-
-    def _jmdltz(self):
-        pass
-
-    def _jmdgez(self):
-        pass
-
-    def _jmdgz(self):
-        pass
-
-    def _jminz(self):
-        pass
-
-    def _jmiz(self):
-        pass
-
-    def _jmiltz(self):
-        pass
-
-    def _jmigez(self):
-        pass
-
-    def _jmigz(self):
-        pass
         
     def _skp(self):
         inst_skp = self.mem[self.pc - 1]
@@ -707,7 +639,8 @@ class Kenback(DGCPU):
         lit_num = pyparsing.Regex("[+-]?[0-9]+")
         idf = pyparsing.Regex("[a-zA-Z_][a-zA-Z_0-9]+")
         
-        lit_value = lit_num ^ idf
+        # Notice here the conversion. In the assembler, anything that is not a number is implied to be a symbol to be resolved
+        lit_value = pyparsing.Group(lit_num.set_parse_action(lambda toks:int(toks[0])) ^ idf)
         mem_value = pyparsing.Suppress("[") + lit_value + pyparsing.Suppress("]")
         idc_value = pyparsing.Suppress("@[") + lit_value + pyparsing.Suppress("]")
         idx_value = pyparsing.Suppress("X[") + lit_value + pyparsing.Suppress("]")
@@ -716,7 +649,7 @@ class Kenback(DGCPU):
         ins_halt = pyparsing.Group(pyparsing.Regex("HALT"))("0:1")
         ins_noop = pyparsing.Group(pyparsing.Regex("NOOP"))("127:1")
         # ADD
-        ins_add_a_im = pyparsing.Group(pyparsing.Regex("ADD A") +lit_value)("3:1")
+        ins_add_a_im = pyparsing.Group(pyparsing.Regex("ADD A") + lit_value)("3:1")
         ins_add_a_me = pyparsing.Group(pyparsing.Regex("ADD A") + mem_value)("4:1")
         ins_add_a_id = pyparsing.Group(pyparsing.Regex("ADD A") + idc_value)("5:1")
         ins_add_a_ix = pyparsing.Group(pyparsing.Regex("ADD A") + idx_value)("6:1")
@@ -972,7 +905,7 @@ class Kenback(DGCPU):
         ins_rotr_b_3 = pyparsing.Group(pyparsing.Regex("ROTR B 3"))(f"{0b01111001}:1")
         ins_rotr_b_4 = pyparsing.Group(pyparsing.Regex("ROTR B 4"))(f"{0b01100001}:1")
         
-        program = pyparsing.OneOrMore(ins_halt ^ ins_noop ^ ins_add_a_im ^ ins_add_a_me ^ ins_add_a_id ^ ins_add_a_ix ^ \
+        program = pyparsing.Group(ins_halt ^ ins_noop ^ ins_add_a_im ^ ins_add_a_me ^ ins_add_a_id ^ ins_add_a_ix ^ \
                                       ins_add_a_idx ^ ins_add_b_im ^ ins_add_b_me ^ ins_add_b_id ^ ins_add_b_ix ^ \
                                       ins_add_b_idx ^ ins_add_x_im ^ ins_add_x_me ^ ins_add_x_id ^ ins_add_x_ix ^ \
                                       ins_add_x_idx ^ ins_sub_a_im ^ ins_sub_a_me ^ ins_sub_a_id ^ ins_sub_a_ix ^ \
