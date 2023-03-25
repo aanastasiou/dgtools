@@ -17,6 +17,15 @@ class MemorySpaceKenback(DGMemorySpaceBase):
                          "INPUT":0O377}
         self._mem_len = 256
         self._mem = bytearray([0 for k in range(0, self._mem_len)])
+        self._reg_desc = {"A":"A",
+                          "B":"B",
+                          "X":"X",
+                          "P":"P",
+                          "OUTPUT":"OUTPUT",
+                          "OC_A":"OC_A",
+                          "OC_B":"OC_B",
+                          "OC_X":"OC_X",
+                          "INPUT":"INPUT"}
         
         
 class Kenback(DGCPU):
@@ -113,7 +122,7 @@ class Kenback(DGCPU):
                           231:self._jp, #jpd
                           239:self._jp, #jpi
                           247:self._jp, #jmd
-                          252:self._jmi, #jmi
+                          252:self._jp, #jmi
                           # Conditional on A direct
                           0O073:self._jp, #jpdnz
                           0O074:self._jp, #jpdz

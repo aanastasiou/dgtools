@@ -17,6 +17,8 @@ class DGMemorySpaceBase:
     :type reg_map:dict
     :param _mem_len: The total length of RAM.
     :type _mem_len:int
+    :param _reg_desc: Human redable register descriptions
+    :type _reg_desc: dict[str,str]
     """
     def __init__(self):
         """
@@ -26,6 +28,7 @@ class DGMemorySpaceBase:
         self._mem_base = 0
         self._reg_map = {}
         self._mem_len = 0
+        self._reg_desc = {}
         
     def _mem_rd(self, offset, absolute=False):
         """

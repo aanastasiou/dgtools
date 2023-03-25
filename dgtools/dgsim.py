@@ -108,6 +108,7 @@ def trace_program(program, output_file, skip_n=0, max_n=200, trace_title="",
     done = False
     n=0
     # Headings for the memory space dump
+    # TODO: HIGH, This initialisation has to adapt to the given memory space
     mem_space_heading_h = ["Offset (h)"]+[f"{x:02X}" for x in range(0,16)]
     mem_space_heading_v = [f"{x:02X}" for x in range(0,256,16)]
     # This function could simply be returning a data structure with all data required by a template to produce the 
@@ -131,18 +132,21 @@ def trace_program(program, output_file, skip_n=0, max_n=200, trace_title="",
                 dgen.open_tag("header")
                 dgen.heading(f"Machine Registers",3)
                 dgen.close_tag("header")
-                dgen.table_h(["Program Counter:","Accumulator:", "Status Reg:","Button Register:", "Addr.Led Register:",
-                              "Data Led Register:", "Speed setting:", "Program counter stack:"],
-                             [[f"0x{machine.pc:02X}"], 
-                              [machine.mem["Acc"]],
-                              [machine.mem["STATUS"]], 
-                              [machine.mem["INPUT"]], 
-                              [machine.mem["ADDR_LED"]], 
-                              [machine.mem["DATA_LED"]], 
-                              [machine.mem["SPEED"]], 
-                              # [machine._ppc]],
-                              [",".join(list(map(lambda x:f"0x{x:02X}",machine._ppc)))]],
-                              attrs={"class":"table_machine_state"})
+                dgen.table_h(",".join(machine.mem._reg_desc.values()), \
+                             [[machine.mem._reg_rd(v)] for v in machine.mem._reg_desc], \
+                             attrs={"class":"table_machine_state"})
+                # dgen.table_h(["Program Counter:","Accumulator:", "Status Reg:","Button Register:", "Addr.Led Register:",
+                #               "Data Led Register:", "Speed setting:", "Program counter stack:"],
+                #              [[f"0x{machine.pc:02X}"], 
+                #               [machine.mem["Acc"]],
+                #               [machine.mem["STATUS"]], 
+                #               [machine.mem["INPUT"]], 
+                #               [machine.mem["ADDR_LED"]], 
+                #               [machine.mem["DATA_LED"]], 
+                #               [machine.mem["SPEED"]], 
+                #               # [machine._ppc]],
+                #               [",".join(list(map(lambda x:f"0x{x:02X}",machine._ppc)))]],
+                #               attrs={"class":"table_machine_state"})
                 dgen.close_tag("section")
                 
                 # Memory space
@@ -151,6 +155,7 @@ def trace_program(program, output_file, skip_n=0, max_n=200, trace_title="",
                     dgen.open_tag("header")
                     dgen.heading(f"Full memory dump:",3)
                     dgen.close_tag("header")
+                    # TODO: HIGH, Adapt to the CPUs memory
                     dgen.table_hv([[f"{machine.mem[n]:02X}" for n in range(m,m+16)] for m in range(0,256,16)],
                                   mem_space_heading_h, 
                                   mem_space_heading_v,

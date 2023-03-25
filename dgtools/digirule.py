@@ -27,7 +27,13 @@ class MemorySpaceDigirule(DGMemorySpaceBase):
                          "PC":2}
         self._mem_len = 256 
         self._mem = bytearray([0 for k in range(0, self._mem_len + self._mem_base)])
-        
+        self._reg_desc = {"Acc":"Accumulator",
+                          "STATUS": "Status Reg",
+                          "INPUT": "Button Register",
+                          "ADDR_LED": "Addr.Led Register",
+                          "DATA_LED": "Data Led Register",
+                          "SPEED": "Speed Setting",
+                          "PC": "Program Counter"}
 
 
 class Digirule(DGCPU):
