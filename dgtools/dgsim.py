@@ -109,11 +109,7 @@ def trace_program(program, output_file, skip_n=0, max_n=200, trace_title="",
         machine.set_default_callbacks()
         
     done = False
-    n=0
-    # Headings for the memory space dump
-    # TODO: HIGH, This initialisation has to adapt to the given memory space
-    mem_space_heading_h = ["Offset (h)"]+[f"{x:02X}" for x in range(0,16)]
-    mem_space_heading_v = [f"{x:02X}" for x in range(0,256,16)]
+    n=0 
     # This function could simply be returning a data structure with all data required by a template to produce the 
     # actual output. But that would increase dependencies and possibly required memory too. This is why the file is 
     # created here on the fly.
@@ -130,8 +126,6 @@ def trace_program(program, output_file, skip_n=0, max_n=200, trace_title="",
                 dgen.heading(f"Machine State at n={n}",3)
                 dgen.close_tag("header")
 
-                import pdb
-                pdb.set_trace()
                 # Render the sections of the machine
                 for a_sec_title, a_sec_renderer in machine_renderer.secdesc:
                     dgen.open_tag("section")

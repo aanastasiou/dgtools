@@ -41,7 +41,7 @@ class DigiruleStateRenderer(CPUStateRendererBase):
         # Machine registers 
         
         # Create the header of all attributes
-        output_ren.table_h(",".join(list(self._machine.mem._reg_desc.values()) + ["Program counter stack"]), \
+        output_ren.table_h(list(self._machine.mem._reg_desc.values()) + ["Program counter stack"], \
                      [[self._machine.mem._reg_rd(v)] for v in self._machine.mem._reg_desc] + [",".join(list(map(lambda x:f"0x{x:02X}",self._machine._ppc)))], \
                      attrs={"class":"table_machine_state"})
         output_ren.close_tag("section")
@@ -49,13 +49,17 @@ class DigiruleStateRenderer(CPUStateRendererBase):
     def _render_memoryspace(self, output_ren):
         # Memory space
        if self._prod_mem_dump:
+           # Headings for the memory space dump
+           # TODO: HIGH, This initialisation has to adapt to the given memory space
+           mem_space_heading_h = ["Offset (h)"]+[f"{x:02X}" for x in range(0,16)]
+           mem_space_heading_v = [f"{x:02X}" for x in range(0,256,16)]
            # TODO: HIGH, Adapt to the CPUs memory
            output_ren.table_hv([[f"{self._machine.mem[n]:02X}" for n in range(m,m+16)] for m in range(0,256,16)],
                          mem_space_heading_h, 
                          mem_space_heading_v,
                          attrs={"class":"table_memory_space"},
                          cell_attrs={(self._machine.pc // 16,self._machine.pc-(self._machine.pc // 16)):{"class":"current_pc"}})
-           dgen.close_tag("section")
+           output_ren.close_tag("section")
 
     def _render_onboard_io(self, output_ren):
         # Onboard IO
