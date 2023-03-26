@@ -21,7 +21,14 @@ from .callbacks import (DigiruleCallbackComOutStdout, DigiruleCallbackComOutStor
                         DigiruleCallbackPinInUserInteraction)
 from .lexer import DigiruleASMLexer
 from .makefile_rw import DgToolsMakefileParser
+from .cpu_render_base import (DigiruleStateRenderer, 
+                              Digirule2UStateRenderer, 
+                              KenbackStateRenderer)
                                 
 BUILTIN_MODELS = {"2A":Digirule, 
                   "2U":Digirule2U, 
                   "KB":Kenback}
+
+BUILTIN_RENDERERS = {"2A":DigiruleStateRenderer, 
+                     "2U":Digirule2UStateRenderer, 
+                     "KB":KenbackStateRenderer}

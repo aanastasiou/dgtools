@@ -68,7 +68,9 @@ from dgtools import (DgtoolsErrorOpcodeNotSupported,
                      DigiruleCallbackInputUserInteraction,
                      Digirule, 
                      Digirule2U, 
-                     BUILTIN_MODELS)
+                     BUILTIN_MODELS,
+                     BUILTIN_RENDERERS
+                     )
 import inspect
 import shutil
 from dgtools.exceptions import DgtoolsError
@@ -99,6 +101,7 @@ def trace_program(program, output_file, skip_n=0, max_n=200, trace_title="",
     """
     # Setup the VM
     machine = BUILTIN_MODELS[program.version]()
+    machine_renderer = BUILTIN_RENDERERS[program.version](machine, with_mem_dump)
     #machine.load_program(program.program)
     machine.mem.load(program.program)
     
@@ -121,47 +124,21 @@ def trace_program(program, output_file, skip_n=0, max_n=200, trace_title="",
         dgen.close_tag("header")
         while not done and n<max_n:
             if n>=skip_n:
-                # Machine registers
                 dgen.open_tag("section")
                 dgen.named_anchor(f"n{n}")
                 dgen.open_tag("header")
-                dgen.heading(f"Machine State at n={n}",2)
+                dgen.heading(f"Machine State at n={n}",3)
                 dgen.close_tag("header")
-                
-                dgen.open_tag("section")
-                dgen.open_tag("header")
-                dgen.heading(f"Machine Registers",3)
-                dgen.close_tag("header")
-                dgen.table_h(",".join(machine.mem._reg_desc.values()), \
-                             [[machine.mem._reg_rd(v)] for v in machine.mem._reg_desc], \
-                             attrs={"class":"table_machine_state"})
-                # dgen.table_h(["Program Counter:","Accumulator:", "Status Reg:","Button Register:", "Addr.Led Register:",
-                #               "Data Led Register:", "Speed setting:", "Program counter stack:"],
-                #              [[f"0x{machine.pc:02X}"], 
-                #               [machine.mem["Acc"]],
-                #               [machine.mem["STATUS"]], 
-                #               [machine.mem["INPUT"]], 
-                #               [machine.mem["ADDR_LED"]], 
-                #               [machine.mem["DATA_LED"]], 
-                #               [machine.mem["SPEED"]], 
-                #               # [machine._ppc]],
-                #               [",".join(list(map(lambda x:f"0x{x:02X}",machine._ppc)))]],
-                #               attrs={"class":"table_machine_state"})
-                dgen.close_tag("section")
-                
-                # Memory space
-                if with_mem_dump:
+
+                import pdb
+                pdb.set_trace()
+                # Render the sections of the machine
+                for a_sec_title, a_sec_renderer in machine_renderer.secdesc:
                     dgen.open_tag("section")
                     dgen.open_tag("header")
-                    dgen.heading(f"Full memory dump:",3)
+                    dgen.heading(a_sec_title,3)
                     dgen.close_tag("header")
-                    # TODO: HIGH, Adapt to the CPUs memory
-                    dgen.table_hv([[f"{machine.mem[n]:02X}" for n in range(m,m+16)] for m in range(0,256,16)],
-                                  mem_space_heading_h, 
-                                  mem_space_heading_v,
-                                  attrs={"class":"table_memory_space"},
-                                  cell_attrs={(machine.pc // 16,machine.pc-(machine.pc // 16)):{"class":"current_pc"}})
-                    dgen.close_tag("section")
+                    a_sec_renderer(dgen)
                 
                 # Extra symbols
                 if len(extra_symbols):
@@ -188,18 +165,9 @@ def trace_program(program, output_file, skip_n=0, max_n=200, trace_title="",
                                           zip(extra_symbols,symbol_values))), 
                                  attrs={"class":"table_spec_sym"})
                     dgen.close_tag("section")
-                
-                # Onboard IO
-                dgen.open_tag("section")
-                dgen.open_tag("header")
-                dgen.heading("Onboard I/O",3)
-                dgen.close_tag("header")
-                dgen.table_h(["Address LEDs","Data LEDs","Button Switches"],
-                             [[machine.mem["ADDR_LED"]], [machine.mem["DATA_LED"]], [machine.mem["INPUT"]]],
-                             attrs={"class":"table_onboard_io"})
+
                 dgen.close_tag("section")
-                
-                dgen.close_tag("section")
+                # Add a ruler to delimit the next step
                 dgen.ruler()
             try:
                 machine._exec_next()
